@@ -1,4 +1,6 @@
-import { Redirect } from "wouter";
+/**
+ * Authentication utility functions for the HabitMaster application
+ */
 
 /**
  * Check if a user is authenticated by verifying their token

@@ -1,11 +1,4 @@
 import { 
-  users, 
-  routines, 
-  groups, 
-  groupRoutines, 
-  weekdaySchedules, 
-  repetitionSchedules, 
-  completions,
   type User, 
   type InsertUser, 
   type Routine, 
@@ -101,180 +94,105 @@ export class MemStorage implements IStorage {
     this.repetitionScheduleId = 1;
     this.completionId = 1;
     
-    // Seed some data for demo purposes
+    // Create seed data synchronously
     this.seedData();
   }
   
+  // Seed data method to add initial data
   private seedData() {
-    // Create demo user
-    const demoUser: InsertUser = {
+    // Create a demo user
+    const user: User = {
+      id: this.userId++,
       username: "demo",
       email: "demo@example.com",
-      password: "$2b$10$demohashedpasswordexamplehash" // Already hashed
+      password: "$2b$10$demohashedpasswordexamplehash", // Pre-hashed password
+      createdAt: new Date()
     };
-    
-    const user = this.createUser(demoUser);
+    this.users.set(user.id, user);
     
     // Create groups
-    const morningGroup: InsertGroup = {
+    const group1: Group = {
+      id: this.groupId++,
       name: "Morning Routines",
-      icon: "fa-sun",
+      icon: "sun",
       timeRange: "6:00 AM - 8:00 AM",
-      userId: 1
+      userId: user.id,
+      createdAt: new Date()
     };
+    this.groups.set(group1.id, group1);
     
-    const workGroup: InsertGroup = {
+    const group2: Group = {
+      id: this.groupId++,
       name: "Work Routines",
-      icon: "fa-briefcase",
+      icon: "briefcase",
       timeRange: "9:00 AM - 5:00 PM",
-      userId: 1
+      userId: user.id,
+      createdAt: new Date()
     };
+    this.groups.set(group2.id, group2);
     
-    const eveningGroup: InsertGroup = {
+    const group3: Group = {
+      id: this.groupId++,
       name: "Evening Routines",
-      icon: "fa-moon",
+      icon: "moon",
       timeRange: "6:00 PM - 10:00 PM",
-      userId: 1
+      userId: user.id,
+      createdAt: new Date()
     };
+    this.groups.set(group3.id, group3);
     
-    this.createGroup(morningGroup).then(group1 => {
-      this.createGroup(workGroup).then(group2 => {
-        this.createGroup(eveningGroup).then(group3 => {
-          // Create demo routines
-          const routines = [
-            {
-              name: "Morning Meditation",
-              priority: "high",
-              expectedTime: "10 min",
-              userId: 1
-            },
-            {
-              name: "Breakfast",
-              priority: "high",
-              expectedTime: "20 min",
-              userId: 1
-            },
-            {
-              name: "Daily Planning",
-              priority: "medium",
-              expectedTime: "15 min",
-              userId: 1
-            },
-            {
-              name: "Morning Exercise",
-              priority: "high",
-              expectedTime: "30 min",
-              userId: 1
-            },
-            {
-              name: "Check Emails",
-              priority: "medium",
-              expectedTime: "20 min",
-              userId: 1
-            },
-            {
-              name: "Team Meeting",
-              priority: "high",
-              expectedTime: "60 min",
-              userId: 1
-            },
-            {
-              name: "Project Work",
-              priority: "high",
-              expectedTime: "120 min",
-              userId: 1
-            },
-            {
-              name: "Lunch Break",
-              priority: "medium",
-              expectedTime: "45 min",
-              userId: 1
-            },
-            {
-              name: "Review Progress",
-              priority: "medium",
-              expectedTime: "30 min",
-              userId: 1
-            },
-            {
-              name: "Dinner",
-              priority: "high",
-              expectedTime: "45 min",
-              userId: 1
-            },
-            {
-              name: "Evening Workout",
-              priority: "medium",
-              expectedTime: "45 min",
-              userId: 1
-            },
-            {
-              name: "Reading",
-              priority: "low",
-              expectedTime: "30 min",
-              userId: 1
-            },
-            {
-              name: "Journal",
-              priority: "medium",
-              expectedTime: "15 min",
-              userId: 1
-            }
-          ] as InsertRoutine[];
-          
-          // Create routines one by one and add to groups
-          Promise.all(routines.map(r => this.createRoutine(r)))
-            .then(createdRoutines => {
-              // Add routines to groups
-              createdRoutines.forEach((routine, i) => {
-                if (i < 5) {
-                  this.addRoutineToGroup(routine.id, group1.id);
-                  
-                  // Create weekday schedule (Mon-Fri for morning routines)
-                  this.createWeekdaySchedule({
-                    routineId: routine.id,
-                    monday: true,
-                    tuesday: true,
-                    wednesday: true,
-                    thursday: true,
-                    friday: true,
-                    saturday: false,
-                    sunday: false
-                  });
-                } else if (i < 9) {
-                  this.addRoutineToGroup(routine.id, group2.id);
-                  
-                  // Create weekday schedule (Mon-Fri for work routines)
-                  this.createWeekdaySchedule({
-                    routineId: routine.id,
-                    monday: true,
-                    tuesday: true,
-                    wednesday: true,
-                    thursday: true,
-                    friday: true,
-                    saturday: false,
-                    sunday: false
-                  });
-                } else {
-                  this.addRoutineToGroup(routine.id, group3.id);
-                  
-                  // Create weekday schedule (Daily for evening routines)
-                  this.createWeekdaySchedule({
-                    routineId: routine.id,
-                    monday: true,
-                    tuesday: true,
-                    wednesday: true,
-                    thursday: true,
-                    friday: true,
-                    saturday: true,
-                    sunday: true
-                  });
-                }
-              });
-            });
-        });
-      });
-    });
+    // Create routines and add to groups
+    const routinesData = [
+      { name: "Morning Meditation", priority: "high", expectedTime: "10 min", group: group1, order: 1 },
+      { name: "Breakfast", priority: "high", expectedTime: "20 min", group: group1, order: 2 },
+      { name: "Daily Planning", priority: "medium", expectedTime: "15 min", group: group1, order: 3 },
+      { name: "Morning Exercise", priority: "high", expectedTime: "30 min", group: group1, order: 4 },
+      { name: "Check Emails", priority: "medium", expectedTime: "20 min", group: group1, order: 5 },
+      { name: "Team Meeting", priority: "high", expectedTime: "60 min", group: group2, order: 1 },
+      { name: "Project Work", priority: "high", expectedTime: "120 min", group: group2, order: 2 },
+      { name: "Lunch Break", priority: "medium", expectedTime: "45 min", group: group2, order: 3 },
+      { name: "Review Progress", priority: "medium", expectedTime: "30 min", group: group2, order: 4 },
+      { name: "Dinner", priority: "high", expectedTime: "45 min", group: group3, order: 1 },
+      { name: "Evening Workout", priority: "medium", expectedTime: "45 min", group: group3, order: 2 },
+      { name: "Reading", priority: "low", expectedTime: "30 min", group: group3, order: 3 },
+      { name: "Journal", priority: "medium", expectedTime: "15 min", group: group3, order: 4 }
+    ];
+    
+    for (const data of routinesData) {
+      const routine: Routine = {
+        id: this.routineId++,
+        name: data.name,
+        priority: data.priority as "high" | "medium" | "low",
+        expectedTime: data.expectedTime,
+        userId: user.id,
+        createdAt: new Date()
+      };
+      this.routines.set(routine.id, routine);
+      
+      // Add routine to group
+      const groupRoutine: GroupRoutine = {
+        id: this.groupRoutineId++,
+        routineId: routine.id,
+        groupId: data.group.id,
+        order: data.order
+      };
+      this.groupRoutines.set(groupRoutine.id, groupRoutine);
+      
+      // Create weekday schedule
+      const isWorkOrMorningRoutine = data.group.id === group1.id || data.group.id === group2.id;
+      const weekdaySchedule: WeekdaySchedule = {
+        id: this.weekdayScheduleId++,
+        routineId: routine.id,
+        monday: true,
+        tuesday: true,
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: !isWorkOrMorningRoutine, // Weekend only for evening routines
+        sunday: !isWorkOrMorningRoutine    // Weekend only for evening routines
+      };
+      this.weekdaySchedules.set(weekdaySchedule.id, weekdaySchedule);
+    }
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -282,7 +200,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
+    for (const user of Array.from(this.users.values())) {
       if (user.username === username) {
         return user;
       }
@@ -341,28 +259,28 @@ export class MemStorage implements IStorage {
     
     // Delete related entities
     // Delete from group-routine relationships
-    for (const [grId, gr] of this.groupRoutines.entries()) {
+    for (const [grId, gr] of Array.from(this.groupRoutines.entries())) {
       if (gr.routineId === id) {
         this.groupRoutines.delete(grId);
       }
     }
     
     // Delete weekday schedule
-    for (const [wsId, ws] of this.weekdaySchedules.entries()) {
+    for (const [wsId, ws] of Array.from(this.weekdaySchedules.entries())) {
       if (ws.routineId === id) {
         this.weekdaySchedules.delete(wsId);
       }
     }
     
     // Delete repetition schedule
-    for (const [rsId, rs] of this.repetitionSchedules.entries()) {
+    for (const [rsId, rs] of Array.from(this.repetitionSchedules.entries())) {
       if (rs.routineId === id) {
         this.repetitionSchedules.delete(rsId);
       }
     }
     
     // Delete completions
-    for (const [cId, completion] of this.completions.entries()) {
+    for (const [cId, completion] of Array.from(this.completions.entries())) {
       if (completion.routineId === id) {
         this.completions.delete(cId);
       }
@@ -379,7 +297,7 @@ export class MemStorage implements IStorage {
     
     // Get completions for the given date
     const completionsMap = new Map<number, string>();
-    for (const completion of this.completions.values()) {
+    for (const completion of Array.from(this.completions.values())) {
       if (completion.userId === userId && completion.completedAt.toISOString().substring(0, 10) === date) {
         completionsMap.set(completion.routineId, completion.completedAt.toISOString());
       }
@@ -432,7 +350,9 @@ export class MemStorage implements IStorage {
     const newGroup: Group = {
       id: this.groupId++,
       createdAt: new Date(),
-      ...group
+      ...group,
+      icon: group.icon || null,
+      timeRange: group.timeRange || null
     };
     this.groups.set(newGroup.id, newGroup);
     return newGroup;
@@ -446,7 +366,9 @@ export class MemStorage implements IStorage {
     
     const updatedGroup: Group = {
       ...group,
-      ...groupData
+      ...groupData,
+      icon: groupData.icon !== undefined ? groupData.icon : group.icon,
+      timeRange: groupData.timeRange !== undefined ? groupData.timeRange : group.timeRange
     };
     this.groups.set(id, updatedGroup);
     return updatedGroup;
@@ -460,7 +382,7 @@ export class MemStorage implements IStorage {
     this.groups.delete(id);
     
     // Remove group-routine relationships
-    for (const [grId, gr] of this.groupRoutines.entries()) {
+    for (const [grId, gr] of Array.from(this.groupRoutines.entries())) {
       if (gr.groupId === id) {
         this.groupRoutines.delete(grId);
       }
@@ -480,23 +402,32 @@ export class MemStorage implements IStorage {
     }
     
     // Check if relationship already exists
-    for (const gr of this.groupRoutines.values()) {
+    for (const gr of Array.from(this.groupRoutines.values())) {
       if (gr.routineId === routineId && gr.groupId === groupId) {
         return gr;
+      }
+    }
+    
+    // Get the current highest order in this group
+    let maxOrder = 0;
+    for (const gr of Array.from(this.groupRoutines.values())) {
+      if (gr.groupId === groupId && gr.order > maxOrder) {
+        maxOrder = gr.order;
       }
     }
     
     const newGroupRoutine: GroupRoutine = {
       id: this.groupRoutineId++,
       routineId,
-      groupId
+      groupId,
+      order: maxOrder + 1
     };
     this.groupRoutines.set(newGroupRoutine.id, newGroupRoutine);
     return newGroupRoutine;
   }
 
   async removeRoutineFromGroup(routineId: number, groupId: number): Promise<void> {
-    for (const [id, gr] of this.groupRoutines.entries()) {
+    for (const [id, gr] of Array.from(this.groupRoutines.entries())) {
       if (gr.routineId === routineId && gr.groupId === groupId) {
         this.groupRoutines.delete(id);
         return;
@@ -509,7 +440,7 @@ export class MemStorage implements IStorage {
     const routineIds = new Set<number>();
     
     // Get all routine IDs in this group
-    for (const gr of this.groupRoutines.values()) {
+    for (const gr of Array.from(this.groupRoutines.values())) {
       if (gr.groupId === groupId) {
         routineIds.add(gr.routineId);
       }
@@ -517,7 +448,7 @@ export class MemStorage implements IStorage {
     
     // Get the actual routines
     const result: Routine[] = [];
-    for (const id of routineIds) {
+    for (const id of Array.from(routineIds)) {
       const routine = await this.getRoutineById(id);
       if (routine) {
         result.push(routine);
@@ -537,7 +468,7 @@ export class MemStorage implements IStorage {
     
     // Get completions for the given date
     const completionsMap = new Map<number, string>();
-    for (const completion of this.completions.values()) {
+    for (const completion of Array.from(this.completions.values())) {
       if (completion.completedAt.toISOString().substring(0, 10) === date) {
         completionsMap.set(completion.routineId, completion.completedAt.toISOString());
       }
@@ -564,7 +495,14 @@ export class MemStorage implements IStorage {
   async createWeekdaySchedule(schedule: InsertWeekdaySchedule): Promise<WeekdaySchedule> {
     const newSchedule: WeekdaySchedule = {
       id: this.weekdayScheduleId++,
-      ...schedule
+      routineId: schedule.routineId,
+      monday: schedule.monday ?? false,
+      tuesday: schedule.tuesday ?? false,
+      wednesday: schedule.wednesday ?? false,
+      thursday: schedule.thursday ?? false,
+      friday: schedule.friday ?? false,
+      saturday: schedule.saturday ?? false,
+      sunday: schedule.sunday ?? false
     };
     this.weekdaySchedules.set(newSchedule.id, newSchedule);
     return newSchedule;
@@ -586,7 +524,7 @@ export class MemStorage implements IStorage {
   }
 
   async getWeekdayScheduleByRoutineId(routineId: number): Promise<WeekdaySchedule | undefined> {
-    for (const schedule of this.weekdaySchedules.values()) {
+    for (const schedule of Array.from(this.weekdaySchedules.values())) {
       if (schedule.routineId === routineId) {
         return schedule;
       }
@@ -619,7 +557,7 @@ export class MemStorage implements IStorage {
   }
 
   async getRepetitionScheduleByRoutineId(routineId: number): Promise<RepetitionSchedule | undefined> {
-    for (const schedule of this.repetitionSchedules.values()) {
+    for (const schedule of Array.from(this.repetitionSchedules.values())) {
       if (schedule.routineId === routineId) {
         return schedule;
       }
@@ -630,8 +568,9 @@ export class MemStorage implements IStorage {
   async createCompletion(completion: InsertCompletion): Promise<Completion> {
     const newCompletion: Completion = {
       id: this.completionId++,
-      ...completion,
-      completedAt: new Date(completion.completedAt || new Date())
+      userId: completion.userId,
+      routineId: completion.routineId,
+      completedAt: completion.completedAt ? new Date(completion.completedAt) : new Date()
     };
     this.completions.set(newCompletion.id, newCompletion);
     return newCompletion;
@@ -642,7 +581,7 @@ export class MemStorage implements IStorage {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
-    for (const [id, completion] of this.completions.entries()) {
+    for (const [id, completion] of Array.from(this.completions.entries())) {
       if (completion.routineId === routineId &&
           completion.completedAt >= startOfDay &&
           completion.completedAt <= endOfDay) {

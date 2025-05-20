@@ -1,118 +1,104 @@
-import { useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
-import { format } from "date-fns";
-import { motion } from "framer-motion";
-import type { Routine } from "@shared/schema";
+import React, { useState } from 'react';
+import { Check, Clock, AlertTriangle, Star } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { formatTime } from '@/lib/date';
 
 interface RoutineItemProps {
-  routine: Routine & { 
-    completedAt?: string 
+  routine: {
+    id: number;
+    name: string;
+    priority: 'high' | 'medium' | 'low';
+    expectedTime: string;
+    completed?: boolean;
+    completedAt?: string;
   };
-  date: Date;
+  onToggleCompletion: (id: number, completed: boolean) => void;
 }
 
-export function RoutineItem({ routine, date }: RoutineItemProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(!!routine.completedAt);
-
-  const priorityVariants: Record<string, string> = {
-    high: "high",
-    medium: "medium",
-    low: "low"
+export function RoutineItem({ routine, onToggleCompletion }: RoutineItemProps) {
+  const [isCompleted, setIsCompleted] = useState(!!routine.completed);
+  
+  const priorityColors = {
+    high: 'text-red-600 dark:text-red-400',
+    medium: 'text-yellow-600 dark:text-yellow-400',
+    low: 'text-blue-600 dark:text-blue-400'
   };
-
-  const handleToggleCompletion = async () => {
-    setIsSubmitting(true);
-    try {
-      if (!isCompleted) {
-        // Complete the routine
-        await apiRequest("POST", "/api/completions", {
-          routineId: routine.id,
-          date: date.toISOString().split("T")[0]
-        });
-        setIsCompleted(true);
-      } else {
-        // Uncomplete the routine
-        await apiRequest("DELETE", `/api/completions`, {
-          routineId: routine.id,
-          date: date.toISOString().split("T")[0]
-        });
-        setIsCompleted(false);
-      }
-      
-      // Invalidate relevant queries to refresh data
-      await queryClient.invalidateQueries({ 
-        queryKey: ['/api/routines/daily'] 
-      });
-      await queryClient.invalidateQueries({ 
-        queryKey: ['/api/groups/routines'] 
-      });
-    } catch (error) {
-      console.error("Failed to toggle completion:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+  
+  const priorityIcons = {
+    high: <AlertTriangle className="w-4 h-4" />,
+    medium: <Star className="w-4 h-4" />,
+    low: <Clock className="w-4 h-4" />
   };
-
-  const formatTime = (timeString: string) => {
-    // Convert 24-hour format to 12-hour with AM/PM
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
+  
+  const handleChange = () => {
+    const newState = !isCompleted;
+    setIsCompleted(newState);
+    onToggleCompletion(routine.id, newState);
   };
-
-  const completedTime = routine.completedAt 
-    ? new Date(routine.completedAt)
-    : null;
-
-  const formattedTime = routine.expectedTime 
-    ? formatTime(routine.expectedTime)
-    : "No time set";
-
+  
   return (
-    <motion.div 
-      className={`p-4 ${isCompleted ? 'bg-gray-50 dark:bg-gray-800/50' : ''} border-b border-gray-200 dark:border-gray-700 flex items-center justify-between`}
-      animate={{ opacity: 1, y: 0 }}
-      initial={{ opacity: 0, y: 10 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className="flex items-center">
+    <Card className={`mb-3 hover:shadow transition-all ${
+      isCompleted ? 'bg-gray-50 dark:bg-gray-800 opacity-70' : ''
+    }`}>
+      <div className="p-4 flex items-center">
         <div className="mr-3">
           <Checkbox 
-            checked={isCompleted}
-            onCheckedChange={handleToggleCompletion}
-            disabled={isSubmitting}
-            className={`w-5 h-5 ${isCompleted ? 'animate-checkmark' : ''}`}
+            checked={isCompleted} 
+            onCheckedChange={handleChange}
+            className="h-5 w-5"
           />
         </div>
-        <div>
-          <h4 className={`text-base font-medium text-gray-900 dark:text-white ${isCompleted ? 'line-through' : ''}`}>
-            {routine.name}
-          </h4>
-          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-            {isCompleted && completedTime ? (
-              <span>Completed at {format(completedTime, 'h:mm a')}</span>
-            ) : (
-              <>
-                <i className="fas fa-clock mr-1"></i>
-                <span>Expected at {formattedTime}</span>
-              </>
+        
+        <div className="flex-1">
+          <div className="flex items-center">
+            <h3 className={`font-medium ${isCompleted ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
+              {routine.name}
+            </h3>
+            <div className={`ml-2 flex items-center ${priorityColors[routine.priority]}`}>
+              {priorityIcons[routine.priority]}
+              <span className="ml-1 text-xs capitalize">{routine.priority}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <Clock className="w-3 h-3 mr-1" />
+            <span>{routine.expectedTime}</span>
+            
+            {isCompleted && (
+              <span className="ml-3 text-green-600 dark:text-green-400 flex items-center">
+                <Check className="w-3 h-3 mr-1" />
+                {routine.completedAt 
+                  ? `Completed at ${formatTime(routine.completedAt)}` 
+                  : 'Completed'}
+              </span>
             )}
           </div>
         </div>
+        
+        <div className="ml-4">
+          {isCompleted ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleChange}
+              className="text-xs px-2 py-1 h-auto"
+            >
+              Undo
+            </Button>
+          ) : (
+            <Button 
+              variant="primary" 
+              size="sm" 
+              onClick={handleChange}
+              className="text-xs px-2 py-1 h-auto"
+            >
+              Complete
+            </Button>
+          )}
+        </div>
       </div>
-      
-      <div className="flex items-center">
-        <Badge variant={priorityVariants[routine.priority]}>
-          {routine.priority.charAt(0).toUpperCase() + routine.priority.slice(1)}
-        </Badge>
-      </div>
-    </motion.div>
+    </Card>
   );
 }

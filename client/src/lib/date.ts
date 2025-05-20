@@ -1,4 +1,5 @@
-import { format, isToday, isYesterday, isTomorrow, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, isSameDay } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 /**
  * Format a date for display
@@ -7,25 +8,8 @@ import { format, isToday, isYesterday, isTomorrow, formatDistanceToNow } from "d
  * @returns Formatted date string
  */
 export const formatDate = (date: Date | string, formatStr?: string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  
-  if (formatStr) {
-    return format(dateObj, formatStr);
-  }
-  
-  if (isToday(dateObj)) {
-    return `Today, ${format(dateObj, "h:mm a")}`;
-  }
-  
-  if (isYesterday(dateObj)) {
-    return `Yesterday, ${format(dateObj, "h:mm a")}`;
-  }
-  
-  if (isTomorrow(dateObj)) {
-    return `Tomorrow, ${format(dateObj, "h:mm a")}`;
-  }
-  
-  return format(dateObj, "MMMM d, yyyy");
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return format(dateObj, formatStr || 'PP', { locale: es });
 };
 
 /**
@@ -34,14 +18,19 @@ export const formatDate = (date: Date | string, formatStr?: string): string => {
  * @returns Time in 12-hour format with AM/PM
  */
 export const formatTime = (timeString: string): string => {
-  if (!timeString) return "";
+  // If input is a full ISO date string, extract just the time part
+  if (timeString.includes('T')) {
+    const date = new Date(timeString);
+    return format(date, 'h:mm a', { locale: es });
+  }
   
-  const [hours, minutes] = timeString.split(":");
-  const hour = parseInt(hours, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour % 12 || 12;
+  // Otherwise parse as HH:MM
+  const [hours, minutes] = timeString.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours);
+  date.setMinutes(minutes);
   
-  return `${hour12}:${minutes} ${ampm}`;
+  return format(date, 'h:mm a', { locale: es });
 };
 
 /**
@@ -50,8 +39,8 @@ export const formatTime = (timeString: string): string => {
  * @returns Human-readable time ago string
  */
 export const timeAgo = (date: Date | string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return formatDistanceToNow(dateObj, { addSuffix: true });
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return formatDistanceToNow(dateObj, { addSuffix: true, locale: es });
 };
 
 /**
@@ -60,20 +49,8 @@ export const timeAgo = (date: Date | string): string => {
  * @returns Boolean indicating if routine is scheduled for today
  */
 export const isScheduledForToday = (weekdaySchedule: Record<string, boolean>): boolean => {
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-  
-  const dayMap: Record<number, string> = {
-    0: "sunday",
-    1: "monday",
-    2: "tuesday",
-    3: "wednesday",
-    4: "thursday",
-    5: "friday",
-    6: "saturday"
-  };
-  
-  return !!weekdaySchedule[dayMap[dayOfWeek]];
+  const today = getCurrentWeekday();
+  return !!weekdaySchedule[today];
 };
 
 /**
@@ -81,18 +58,37 @@ export const isScheduledForToday = (weekdaySchedule: Record<string, boolean>): b
  * @returns The current weekday name in lowercase
  */
 export const getCurrentWeekday = (): string => {
+  const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const today = new Date();
-  const dayOfWeek = today.getDay();
+  return weekdays[today.getDay()];
+};
+
+/**
+ * Check if a date is today
+ * @param date Date to check
+ * @returns Boolean indicating if date is today
+ */
+export const isToday = (date: Date | string): boolean => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return isSameDay(dateObj, new Date());
+};
+
+/**
+ * Format a duration in minutes to a readable format
+ * @param minutes Duration in minutes
+ * @returns Formatted duration string
+ */
+export const formatDuration = (minutes: number): string => {
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
   
-  const dayMap: Record<number, string> = {
-    0: "sunday",
-    1: "monday",
-    2: "tuesday",
-    3: "wednesday",
-    4: "thursday",
-    5: "friday",
-    6: "saturday"
-  };
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
   
-  return dayMap[dayOfWeek];
+  if (remainingMinutes === 0) {
+    return hours === 1 ? '1 hora' : `${hours} horas`;
+  }
+  
+  return `${hours}h ${remainingMinutes}m`;
 };

@@ -1,32 +1,33 @@
-import { ReactNode } from "react";
-import { useLocation, Redirect } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
+import { Redirect } from "wouter";
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
-
-// Protected route component that redirects to login if user is not authenticated
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
-  const [location] = useLocation();
-
-  // If still checking auth status, return nothing temporarily
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-      </div>
-    );
-  }
-
-  // If not authenticated, redirect to login
-  if (!user) {
-    return <Redirect to="/login" />;
-  }
-
-  // User is authenticated, render children
-  return <>{children}</>;
+/**
+ * Check if a user is authenticated by verifying their token
+ * @returns Boolean indicating if user is authenticated
+ */
+export const isAuthenticated = (): boolean => {
+  const token = localStorage.getItem('token');
+  return !!token;
 };
 
-export default ProtectedRoute;
+/**
+ * Store authentication token in local storage
+ * @param token JWT token
+ */
+export const setToken = (token: string): void => {
+  localStorage.setItem('token', token);
+};
+
+/**
+ * Remove authentication token from local storage
+ */
+export const removeToken = (): void => {
+  localStorage.removeItem('token');
+};
+
+/**
+ * Get the stored authentication token
+ * @returns JWT token or null if not found
+ */
+export const getToken = (): string | null => {
+  return localStorage.getItem('token');
+};

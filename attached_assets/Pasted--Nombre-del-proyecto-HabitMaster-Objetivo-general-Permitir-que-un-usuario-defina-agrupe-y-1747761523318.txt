@@ -1,0 +1,66 @@
+
+# Nombre del proyecto
+HabitMaster
+
+# Objetivo general
+Permitir que un usuario defina, agrupe y complete rutinas/​hábitos diarios y visualizar su progreso de forma clara.
+
+# Requisitos funcionales
+1. **CRUD de Rutinas**
+   - Campos: `nombre` (string), `horaEsperada` (HH:MM), `prioridad` (enum: alta, media, baja).
+2. **Programación de Rutinas**
+   - **Por días de la semana:** el usuario marca cualquier combinación de lunes-domingo.
+   - **Por repetición relativa:**  
+     - Configurar “cada n días” (p. ej. cada 2 días).  
+     - Configurar patrones tipo “1 día sí, 1 no” o “lunes + martes, viernes + sábado”.
+3. **Grupos de Rutinas**
+   - CRUD de grupos.  
+   - Un grupo se ejecuta como bloque (al completar el grupo se completan todas sus rutinas hijas).
+4. **Vista Index (Dashboard diario)**
+   - Lista solo las rutinas que tocan **hoy** según la programación.  
+   - Checkbox para marcar completadas; progreso mostrado como barra o porcentaje.
+5. **Panel de Administración**
+   - Sección protegida (auth básica o JWT) con UI para:  
+     - Crear/editar/eliminar rutinas, grupos y programaciones.  
+     - Reordenar rutinas dentro de un grupo por drag-and-drop.
+6. **Persistencia de Completados**
+   - Registrar fecha y hora real de ejecución para estadísticas futuras.
+
+# Requisitos técnicos
+- **Frontend:** React + Vite + TypeScript + Tailwind CSS.
+- **Backend:** Node.js + Express + TypeScript.
+- **Base de datos:** SQLite (migraciones con Prisma).  
+  - Tablas: `users`, `rutinas`, `grupos`, `grupo_rutina`, `programaciones`, `completados`.
+- **Autenticación:** JWT simple con refresh tokens.
+- **API REST:** `/api/rutinas`, `/api/grupos`, `/api/programaciones`, `/api/completados`.
+- **Tests:** Jest + React Testing Library + supertest (cobertura ≥ 80 %).
+- **Seed de datos demo** para probar la app al arrancar localmente.
+- **Dockerfile** y **docker-compose.yml** listos para producción.
+- **README.md** con instrucciones de instalación, variables de entorno y ejemplos de uso de la API.
+
+# Detalles UX/UI
+- Tema claro con opción dark.
+- Barra de progreso diaria destacada (verde si ≥ 80 %, ámbar 50-79 %, rojo < 50 %).
+- Etiqueta visual “Alta prioridad” para las rutinas críticas.
+- Animaciones suaves (Framer Motion) al marcar un hábito.
+- Adaptativo: móvil primero, breakpoints sm/md/lg.
+
+# Entregables
+1. Código fuente organizado en carpetas `apps/frontend` y `apps/backend`.
+2. Scripts: `dev`, `build`, `test`, `start`.
+3. Tests que se ejecutan con `npm run test`.
+4. Documentación generada automáticamente con Swagger/OpenAPI en `/api/docs`.
+
+# Restricciones
+- No usar frameworks pesados (p.ej. Next.js) ni libs de UI propietarias.
+- Solo dependencias open-source con licencia permisiva.
+- Cumplir ESLint + Prettier.
+
+# Formato de salida
+Devuelve un único repositorio con:
+- Archivos fuente completos.
+- Archivos de configuración.
+- Archivo `.replit` listo para “Run.”
+- Sin explicaciones de más: solo el código y los archivos.
+
+Genera el proyecto ahora.

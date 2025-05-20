@@ -12,8 +12,12 @@ import {
   type RepetitionSchedule, 
   type InsertRepetitionSchedule, 
   type Completion, 
-  type InsertCompletion 
+  type InsertCompletion,
+  users, routines, groups, groupRoutines, weekdaySchedules,
+  repetitionSchedules, completions
 } from "@shared/schema";
+import { eq, and, gte, lte, sql, desc, asc } from "drizzle-orm";
+import { db } from "./db";
 
 // Storage interface
 export interface IStorage {
@@ -675,4 +679,455 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  // Routine methods
+  async getRoutineById(id: number): Promise<Routine | undefined> {
+    const [routine] = await db.select().from(routines).where(eq(routines.id, id));
+    return routine;
+  }
+
+  async getRoutinesByUserId(userId: number): Promise<Routine[]> {
+    return await db.select().from(routines).where(eq(routines.userId, userId));
+  }
+
+  async createRoutine(routine: InsertRoutine): Promise<Routine> {
+    const [newRoutine] = await db.insert(routines).values(routine).returning();
+    return newRoutine;
+  }
+
+  async updateRoutine(id: number, routineData: Partial<InsertRoutine>): Promise<Routine> {
+    const [updatedRoutine] = await db
+      .update(routines)
+      .set(routineData)
+      .where(eq(routines.id, id))
+      .returning();
+    
+    if (!updatedRoutine) {
+      throw new Error(`Routine with id ${id} not found`);
+    }
+    
+    return updatedRoutine;
+  }
+
+  async deleteRoutine(id: number): Promise<void> {
+    // Delete related records first (cascade)
+    await db.delete(groupRoutines).where(eq(groupRoutines.routineId, id));
+    await db.delete(weekdaySchedules).where(eq(weekdaySchedules.routineId, id));
+    await db.delete(repetitionSchedules).where(eq(repetitionSchedules.routineId, id));
+    await db.delete(completions).where(eq(completions.routineId, id));
+    
+    // Then delete the routine
+    await db.delete(routines).where(eq(routines.id, id));
+  }
+
+  async getDailyRoutines(userId: number, date: string): Promise<(Routine & { completedAt?: string })[]> {
+    const weekday = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const weekdayField = weekdaySchedules[weekday as keyof typeof weekdaySchedules];
+    
+    // Get routines for user with their weekday schedules where this day is enabled
+    const routinesForDay = await db
+      .select({
+        id: routines.id,
+        name: routines.name,
+        description: routines.description,
+        priority: routines.priority,
+        userId: routines.userId,
+        expectedTime: routines.expectedTime,
+        createdAt: routines.createdAt
+      })
+      .from(routines)
+      .innerJoin(weekdaySchedules, eq(routines.id, weekdaySchedules.routineId))
+      .where(and(
+        eq(routines.userId, userId),
+        eq(weekdayField, true)
+      ));
+    
+    // Get completions for these routines on this date
+    const dateStart = new Date(date);
+    dateStart.setHours(0, 0, 0, 0);
+    
+    const dateEnd = new Date(date);
+    dateEnd.setHours(23, 59, 59, 999);
+    
+    const routineIds = routinesForDay.map(r => r.id);
+    
+    const completionsForDay = await db
+      .select()
+      .from(completions)
+      .where(and(
+        gte(completions.completedAt, dateStart.toISOString()),
+        lte(completions.completedAt, dateEnd.toISOString()),
+        sql`${completions.routineId} IN ${routineIds}`
+      ));
+    
+    // Map completions to routines
+    const completionsByRoutineId = new Map(
+      completionsForDay.map(c => [c.routineId, c.completedAt])
+    );
+    
+    return routinesForDay.map(routine => ({
+      ...routine,
+      completedAt: completionsByRoutineId.get(routine.id)
+    }));
+  }
+
+  async getDailyRoutinesByGroup(userId: number, date: string): Promise<Group[]> {
+    const userGroups = await this.getGroupsByUserId(userId);
+    const routinesWithCompletion = await this.getDailyRoutines(userId, date);
+    
+    const result: Group[] = [];
+    
+    for (const group of userGroups) {
+      const routineIdsInGroup = await db
+        .select({ routineId: groupRoutines.routineId })
+        .from(groupRoutines)
+        .where(eq(groupRoutines.groupId, group.id));
+      
+      const routineIds = routineIdsInGroup.map(r => r.routineId);
+      
+      const groupRoutines = routinesWithCompletion
+        .filter(routine => routineIds.includes(routine.id));
+      
+      if (groupRoutines.length > 0) {
+        result.push({
+          ...group,
+          routines: groupRoutines
+        } as any); // Type cast as any due to extended Group with routines
+      }
+    }
+    
+    return result;
+  }
+
+  // Group methods
+  async getGroupById(id: number): Promise<Group | undefined> {
+    const [group] = await db.select().from(groups).where(eq(groups.id, id));
+    return group;
+  }
+
+  async getGroupsByUserId(userId: number): Promise<Group[]> {
+    return await db.select().from(groups).where(eq(groups.userId, userId));
+  }
+
+  async createGroup(group: InsertGroup): Promise<Group> {
+    const [newGroup] = await db.insert(groups).values(group).returning();
+    return newGroup;
+  }
+
+  async updateGroup(id: number, groupData: Partial<InsertGroup>): Promise<Group> {
+    const [updatedGroup] = await db
+      .update(groups)
+      .set(groupData)
+      .where(eq(groups.id, id))
+      .returning();
+    
+    if (!updatedGroup) {
+      throw new Error(`Group with id ${id} not found`);
+    }
+    
+    return updatedGroup;
+  }
+
+  async deleteGroup(id: number): Promise<void> {
+    // Delete group-routine relationships first
+    await db.delete(groupRoutines).where(eq(groupRoutines.groupId, id));
+    
+    // Then delete the group
+    await db.delete(groups).where(eq(groups.id, id));
+  }
+
+  // Group-Routine relationship methods
+  async addRoutineToGroup(routineId: number, groupId: number): Promise<GroupRoutine> {
+    // Check if relationship already exists
+    const [existing] = await db
+      .select()
+      .from(groupRoutines)
+      .where(and(
+        eq(groupRoutines.routineId, routineId),
+        eq(groupRoutines.groupId, groupId)
+      ));
+    
+    if (existing) {
+      return existing;
+    }
+    
+    // Get the current highest order in this group
+    const [maxOrderResult] = await db
+      .select({ maxOrder: sql`max(${groupRoutines.order})` })
+      .from(groupRoutines)
+      .where(eq(groupRoutines.groupId, groupId));
+
+    const maxOrder = maxOrderResult?.maxOrder || 0;
+    
+    const [newGroupRoutine] = await db
+      .insert(groupRoutines)
+      .values({
+        routineId,
+        groupId,
+        order: maxOrder + 1
+      })
+      .returning();
+    
+    return newGroupRoutine;
+  }
+
+  async removeRoutineFromGroup(routineId: number, groupId: number): Promise<void> {
+    await db
+      .delete(groupRoutines)
+      .where(and(
+        eq(groupRoutines.routineId, routineId),
+        eq(groupRoutines.groupId, groupId)
+      ));
+  }
+
+  async getRoutinesByGroupId(groupId: number): Promise<Routine[]> {
+    const routinesInGroup = await db
+      .select({
+        routine: routines
+      })
+      .from(routines)
+      .innerJoin(
+        groupRoutines, 
+        eq(routines.id, groupRoutines.routineId)
+      )
+      .where(eq(groupRoutines.groupId, groupId))
+      .orderBy(groupRoutines.order);
+    
+    return routinesInGroup.map(r => r.routine);
+  }
+
+  async getRoutinesByGroupIdAndDate(groupId: number, date: string): Promise<(Routine & { completedAt?: string })[]> {
+    const weekday = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const weekdayField = weekdaySchedules[weekday as keyof typeof weekdaySchedules];
+    
+    // Get routines for this group with their weekday schedules where this day is enabled
+    const routinesForDay = await db
+      .select({
+        id: routines.id,
+        name: routines.name,
+        description: routines.description,
+        priority: routines.priority,
+        userId: routines.userId,
+        expectedTime: routines.expectedTime,
+        createdAt: routines.createdAt
+      })
+      .from(routines)
+      .innerJoin(groupRoutines, eq(routines.id, groupRoutines.routineId))
+      .innerJoin(weekdaySchedules, eq(routines.id, weekdaySchedules.routineId))
+      .where(and(
+        eq(groupRoutines.groupId, groupId),
+        eq(weekdayField, true)
+      ))
+      .orderBy(groupRoutines.order);
+    
+    // Get completions for these routines on this date
+    const dateStart = new Date(date);
+    dateStart.setHours(0, 0, 0, 0);
+    
+    const dateEnd = new Date(date);
+    dateEnd.setHours(23, 59, 59, 999);
+    
+    const routineIds = routinesForDay.map(r => r.id);
+    
+    const completionsForDay = await db
+      .select()
+      .from(completions)
+      .where(and(
+        gte(completions.completedAt, dateStart.toISOString()),
+        lte(completions.completedAt, dateEnd.toISOString()),
+        sql`${completions.routineId} IN ${routineIds}`
+      ));
+    
+    // Map completions to routines
+    const completionsByRoutineId = new Map(
+      completionsForDay.map(c => [c.routineId, c.completedAt])
+    );
+    
+    return routinesForDay.map(routine => ({
+      ...routine,
+      completedAt: completionsByRoutineId.get(routine.id)
+    }));
+  }
+
+  // Weekday schedule methods
+  async createWeekdaySchedule(schedule: InsertWeekdaySchedule): Promise<WeekdaySchedule> {
+    const [newSchedule] = await db
+      .insert(weekdaySchedules)
+      .values(schedule)
+      .returning();
+    
+    return newSchedule;
+  }
+
+  async updateWeekdaySchedule(routineId: number, weekdaysData: Record<string, boolean>): Promise<WeekdaySchedule> {
+    const [updatedSchedule] = await db
+      .update(weekdaySchedules)
+      .set(weekdaysData)
+      .where(eq(weekdaySchedules.routineId, routineId))
+      .returning();
+    
+    if (!updatedSchedule) {
+      throw new Error(`Weekday schedule for routine ${routineId} not found`);
+    }
+    
+    return updatedSchedule;
+  }
+
+  async getWeekdayScheduleByRoutineId(routineId: number): Promise<WeekdaySchedule | undefined> {
+    const [schedule] = await db
+      .select()
+      .from(weekdaySchedules)
+      .where(eq(weekdaySchedules.routineId, routineId));
+    
+    return schedule;
+  }
+
+  // Repetition schedule methods
+  async createRepetitionSchedule(schedule: InsertRepetitionSchedule): Promise<RepetitionSchedule> {
+    const [newSchedule] = await db
+      .insert(repetitionSchedules)
+      .values(schedule)
+      .returning();
+    
+    return newSchedule;
+  }
+
+  async updateRepetitionSchedule(id: number, scheduleData: Partial<InsertRepetitionSchedule>): Promise<RepetitionSchedule> {
+    const [updatedSchedule] = await db
+      .update(repetitionSchedules)
+      .set(scheduleData)
+      .where(eq(repetitionSchedules.id, id))
+      .returning();
+    
+    if (!updatedSchedule) {
+      throw new Error(`Repetition schedule with id ${id} not found`);
+    }
+    
+    return updatedSchedule;
+  }
+
+  async getRepetitionScheduleByRoutineId(routineId: number): Promise<RepetitionSchedule | undefined> {
+    const [schedule] = await db
+      .select()
+      .from(repetitionSchedules)
+      .where(eq(repetitionSchedules.routineId, routineId));
+    
+    return schedule;
+  }
+
+  // Completion methods
+  async createCompletion(completion: InsertCompletion): Promise<Completion> {
+    const [newCompletion] = await db
+      .insert(completions)
+      .values(completion)
+      .returning();
+    
+    return newCompletion;
+  }
+
+  async deleteCompletion(routineId: number, date: string): Promise<void> {
+    const dateStart = new Date(date);
+    dateStart.setHours(0, 0, 0, 0);
+    
+    const dateEnd = new Date(date);
+    dateEnd.setHours(23, 59, 59, 999);
+    
+    await db
+      .delete(completions)
+      .where(and(
+        eq(completions.routineId, routineId),
+        gte(completions.completedAt, dateStart.toISOString()),
+        lte(completions.completedAt, dateEnd.toISOString())
+      ));
+  }
+
+  async getCompletionStats(userId: number, startDate: string, endDate: string): Promise<any> {
+    // Get user's routines
+    const userRoutines = await this.getRoutinesByUserId(userId);
+    const routineIds = userRoutines.map(r => r.id);
+    
+    // Get completions for the date range
+    const startDateObj = new Date(startDate);
+    startDateObj.setHours(0, 0, 0, 0);
+    
+    const endDateObj = new Date(endDate);
+    endDateObj.setHours(23, 59, 59, 999);
+    
+    const completionsInRange = await db
+      .select()
+      .from(completions)
+      .where(and(
+        gte(completions.completedAt, startDateObj.toISOString()),
+        lte(completions.completedAt, endDateObj.toISOString()),
+        sql`${completions.routineId} IN ${routineIds}`
+      ));
+    
+    // Group by date
+    const completionsByDate: Record<string, number> = {};
+    
+    completionsInRange.forEach(completion => {
+      const date = completion.completedAt.split('T')[0];
+      completionsByDate[date] = (completionsByDate[date] || 0) + 1;
+    });
+    
+    // Group by routine
+    const completionsByRoutine: Record<number, number> = {};
+    
+    completionsInRange.forEach(completion => {
+      completionsByRoutine[completion.routineId] = 
+        (completionsByRoutine[completion.routineId] || 0) + 1;
+    });
+    
+    // Calculate streaks
+    const dates = Object.keys(completionsByDate).sort();
+    let currentStreak = 0;
+    let longestStreak = 0;
+    
+    for (let i = 0; i < dates.length; i++) {
+      if (i === 0) {
+        currentStreak = 1;
+      } else {
+        const current = new Date(dates[i]);
+        const previous = new Date(dates[i - 1]);
+        
+        const diffDays = Math.floor(
+          (current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (diffDays === 1) {
+          currentStreak++;
+        } else {
+          currentStreak = 1;
+        }
+      }
+      
+      longestStreak = Math.max(longestStreak, currentStreak);
+    }
+    
+    return {
+      totalCompletions: completionsInRange.length,
+      completionsByDate,
+      completionsByRoutine,
+      currentStreak,
+      longestStreak
+    };
+  }
+}
+
+export const storage = new DatabaseStorage();

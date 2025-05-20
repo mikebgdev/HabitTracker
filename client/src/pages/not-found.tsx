@@ -1,21 +1,38 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import React from 'react';
+import { Link } from 'wouter';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
-          </p>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+          <AlertTriangle className="h-24 w-24 text-yellow-500" />
+        </div>
+        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+          Página no encontrada
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+          La página que estás buscando no existe o ha sido movida a otra ubicación.
+        </p>
+      </div>
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button asChild variant="outline">
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver al inicio
+          </Link>
+        </Button>
+        
+        <Button asChild variant="primary">
+          <a href="https://habitmaster.replit.app/help" target="_blank" rel="noopener noreferrer">
+            ¿Necesitas ayuda?
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }

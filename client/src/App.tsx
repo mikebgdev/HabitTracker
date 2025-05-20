@@ -1,7 +1,7 @@
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/useAuth";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import ProtectedRoute from "@/lib/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";

@@ -422,7 +422,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                   </SelectItem>
                   
                   {ICON_CATEGORIES.map((category) => (
-                    <React.Fragment key={category.name}>
+                    <div key={category.name}>
                       <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1">
                         {category.name}
                       </div>
@@ -434,7 +434,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                           </div>
                         </SelectItem>
                       ))}
-                    </React.Fragment>
+                    </div>
                   ))}
                 </SelectContent>
               </Select>

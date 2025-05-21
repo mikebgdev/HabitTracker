@@ -163,12 +163,12 @@ export default function ProgressPage() {
       }
     }
     
-    // Find most and least completed routines
-    const routineCompletionCounts: Record<string, { completed: number, total: number, name: string }> = {};
+    // Create temporary variable for counting completions
+    const routineStats: Record<number, { completed: number, total: number, name: string }> = {};
     
     // Initialize counts
     userRoutines.forEach(routine => {
-      routineCompletionCounts[routine.id] = {
+      routineStats[routine.id] = {
         completed: 0,
         total: dailyData.length, // Maximum possible completions
         name: routine.name
@@ -176,9 +176,9 @@ export default function ProgressPage() {
     });
     
     // Count completions per routine
-    completionStats.forEach(completion => {
-      if (routineCompletionCounts[completion.routineId]) {
-        routineCompletionCounts[completion.routineId].completed++;
+    completionStats.forEach((completion: any) => {
+      if (routineStats[completion.routineId]) {
+        routineStats[completion.routineId].completed++;
       }
     });
     
@@ -186,7 +186,7 @@ export default function ProgressPage() {
     let mostCompletedRoutine = { name: "Ninguna", rate: 0 };
     let leastCompletedRoutine = { name: "Ninguna", rate: 100 };
     
-    Object.values(routineCompletionCounts).forEach(({ completed, total, name }) => {
+    Object.values(routineStats).forEach(({ completed, total, name }) => {
       if (total > 0) {
         const rate = (completed / total) * 100;
         if (rate > mostCompletedRoutine.rate) {
@@ -204,31 +204,54 @@ export default function ProgressPage() {
       completionRate,
       streak: currentStreak,
       mostCompletedRoutine: mostCompletedRoutine.name,
-      leastCompletedRoutine: leastCompletedRoutine.name
+      leastCompletedRoutine: leastCompletedRoutine.name,
+      routineStats // Include the stats for use in the component
     };
   };
   
-  const stats = calculateOverallStats();
+  const calculatedStats = calculateOverallStats();
+  
+  // Extraer los valores necesarios para un uso más fácil
+  const { 
+    totalRoutines, 
+    completedRoutines, 
+    completionRate, 
+    streak, 
+    mostCompletedRoutine, 
+    leastCompletedRoutine,
+    routineStats
+  } = calculatedStats;
+
+  // Buscar información específica de las rutinas más y menos completadas
+  const mostCompletedStats = Object.values(routineStats).find(r => r.name === mostCompletedRoutine) || {
+    completed: 0,
+    total: 0
+  };
+  
+  const leastCompletedStats = Object.values(routineStats).find(r => r.name === leastCompletedRoutine) || {
+    completed: 0,
+    total: 0
+  };
 
   return (
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progress & Analytics</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progreso y Análisis</h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Track your routine completion over time
+            Seguimiento de tus rutinas a lo largo del tiempo
           </p>
         </div>
         
         <div className="mt-4 md:mt-0 w-full md:w-48">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select time range" />
+              <SelectValue placeholder="Seleccionar período" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Last 7 Days</SelectItem>
-              <SelectItem value="month">Last 30 Days</SelectItem>
-              <SelectItem value="year">Last 365 Days</SelectItem>
+              <SelectItem value="week">Últimos 7 días</SelectItem>
+              <SelectItem value="month">Últimos 30 días</SelectItem>
+              <SelectItem value="year">Últimos 365 días</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -239,16 +262,16 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Completion Rate
+              Tasa de Completado
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getColorClass(stats.completionRate)}`}>
-              {stats.completionRate}%
+            <div className={`text-3xl font-bold ${getColorClass(completionRate)}`}>
+              {completionRate}%
             </div>
-            <ProgressBar value={stats.completionRate} className="mt-2 h-2" />
+            <ProgressBar value={completionRate} className="mt-2 h-2" />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              {stats.completedRoutines} of {stats.totalRoutines} routines completed
+              {completedRoutines} de {totalRoutines} rutinas completadas
             </p>
           </CardContent>
         </Card>
@@ -256,15 +279,15 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Current Streak
+              Racha Actual
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {stats.streak} days
+              {streak} días
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Keep it up! You're doing great.
+              ¡Sigue así! Lo estás haciendo genial.
             </p>
           </CardContent>
         </Card>
@@ -272,15 +295,15 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Most Completed
+              Más Completada
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {stats.mostCompletedRoutine}
+              {mostCompletedRoutine}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Completed 29 out of 30 days
+              {mostCompletedStats.completed} de {mostCompletedStats.total} días
             </p>
           </CardContent>
         </Card>
@@ -288,15 +311,15 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Needs Improvement
+              Necesita Mejorar
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {stats.leastCompletedRoutine}
+              {leastCompletedRoutine}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Completed only 12 out of 30 days
+              Completada solo {leastCompletedStats.completed} de {leastCompletedStats.total} días
             </p>
           </CardContent>
         </Card>

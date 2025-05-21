@@ -47,6 +47,7 @@ export interface IStorage {
   removeRoutineFromGroup(routineId: number, groupId: number): Promise<void>;
   getRoutinesByGroupId(groupId: number): Promise<Routine[]>;
   getRoutinesByGroupIdAndDate(groupId: number, date: string): Promise<(Routine & { completedAt?: string })[]>;
+  getAllGroupRoutines(): Promise<GroupRoutine[]>;
   
   // Weekday schedule methods
   createWeekdaySchedule(schedule: InsertWeekdaySchedule): Promise<WeekdaySchedule>;

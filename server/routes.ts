@@ -432,6 +432,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get all group-routine relationships
+  app.get("/api/group-routines", authenticate, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      // We need to get all group-routine relationships for the user's groups
+      // In a real implementation, this would check if the groups belong to the user
+      const allGroupRoutines = await storage.getAllGroupRoutines();
+      
+      // Filter to only include relationships for groups that belong to the user
+      const userGroups = await storage.getGroupsByUserId(userId);
+      const userGroupIds = userGroups.map(group => group.id);
+      
+      const filteredGroupRoutines = allGroupRoutines.filter(gr => 
+        userGroupIds.includes(gr.groupId)
+      );
+      
+      res.json(filteredGroupRoutines);
+    } catch (error) {
+      console.error("Error fetching group-routine relationships:", error);
+      res.status(500).json({ message: "Failed to fetch group-routine relationships" });
+    }
+  });
+  
   // Group routines for a specific date
   app.get("/api/groups/routines/:id/:date?", authenticate, async (req, res) => {
     try {

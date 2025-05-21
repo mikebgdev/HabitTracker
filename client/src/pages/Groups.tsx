@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,11 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash } from "lucide-react";
+import { Plus, Edit, Trash, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
-import type { Group, InsertGroup } from "@shared/schema";
+import type { Group, InsertGroup, GroupRoutine } from "@shared/schema";
 
 export default function Groups() {
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
@@ -40,12 +40,37 @@ export default function Groups() {
     icon: "fa-layer-group",
     timeRange: "",
   });
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("09:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [routineCountByGroup, setRoutineCountByGroup] = useState<Record<number, number>>({});
   
   // Fetch all groups
-  const { data: groups = [], isLoading } = useQuery<Group[]>({
+  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
+  
+  // Fetch group-routine relationships to count routines per group
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>({
+    queryKey: ['/api/group-routines'],
+  });
+  
+  // Calculate routine counts for each group
+  useEffect(() => {
+    if (groupRoutines.length > 0) {
+      const counts: Record<number, number> = {};
+      
+      groupRoutines.forEach(gr => {
+        if (counts[gr.groupId]) {
+          counts[gr.groupId]++;
+        } else {
+          counts[gr.groupId] = 1;
+        }
+      });
+      
+      setRoutineCountByGroup(counts);
+    }
+  }, [groupRoutines]);
   
   const handleOpenEditGroupModal = (group: Group | null = null) => {
     setEditingGroup(group);
@@ -55,28 +80,75 @@ export default function Groups() {
         icon: group.icon || "fa-layer-group",
         timeRange: group.timeRange || "",
       });
+      
+      // Parse timeRange if it exists to populate start and end time fields
+      if (group.timeRange) {
+        const timeParts = group.timeRange.split(" - ");
+        if (timeParts.length === 2) {
+          // Convert from "8:00 AM" format to "08:00" format
+          const convertToMilitaryTime = (time: string) => {
+            const [timePart, ampm] = time.split(" ");
+            let [hours, minutes] = timePart.split(":");
+            hours = parseInt(hours) === 12 ? "00" : hours;
+            
+            if (ampm === "PM" && parseInt(hours) < 12) {
+              hours = (parseInt(hours) + 12).toString();
+            }
+            
+            return `${hours.padStart(2, "0")}:${minutes}`;
+          };
+          
+          setStartTime(convertToMilitaryTime(timeParts[0]));
+          setEndTime(convertToMilitaryTime(timeParts[1]));
+        }
+      } else {
+        // Default times if no timeRange
+        setStartTime("08:00");
+        setEndTime("09:00");
+      }
     } else {
       setGroupFormState({
         name: "",
         icon: "fa-layer-group",
         timeRange: "",
       });
+      setStartTime("08:00");
+      setEndTime("09:00");
     }
     setIsEditGroupModalOpen(true);
+  };
+  
+  // Format the time from 24-hour format to 12-hour format with AM/PM
+  const formatTimeFor12Hour = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
   };
   
   const handleSaveGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Format start and end times into timeRange
+    const formattedStartTime = formatTimeFor12Hour(startTime);
+    const formattedEndTime = formatTimeFor12Hour(endTime);
+    const timeRange = `${formattedStartTime} - ${formattedEndTime}`;
+
     try {
+      const dataToSend = {
+        ...groupFormState,
+        timeRange,
+      };
+      
       if (editingGroup) {
         // Update existing group
-        await apiRequest("PATCH", `/api/groups/${editingGroup.id}`, groupFormState);
+        await apiRequest("PATCH", `/api/groups/${editingGroup.id}`, dataToSend);
       } else {
         // Create new group
         await apiRequest("POST", "/api/groups", {
-          ...groupFormState,
+          ...dataToSend,
           userId: 1, // In a real app, this would come from auth context
         });
       }
@@ -121,6 +193,8 @@ export default function Groups() {
     }
   };
 
+  const isLoading = isLoadingGroups || isLoadingGroupRoutines;
+
   return (
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -161,7 +235,7 @@ export default function Groups() {
                 {group.timeRange && (
                   <CardDescription>
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <i className="fas fa-clock mr-1"></i>
+                      <Clock className="w-4 h-4 mr-1" />
                       <span>{group.timeRange}</span>
                     </div>
                   </CardDescription>
@@ -172,8 +246,9 @@ export default function Groups() {
                   Routines in this group:
                 </div>
                 <div className="text-gray-900 dark:text-white">
-                  {/* In a real implementation, we would show the count of routines in this group */}
-                  <span className="font-medium">5 routines</span>
+                  <span className="font-medium">
+                    {routineCountByGroup[group.id] || 0} routine{routineCountByGroup[group.id] !== 1 ? 's' : ''}
+                  </span>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end space-x-2 p-4 border-t border-gray-200 dark:border-gray-700">
@@ -252,15 +327,35 @@ export default function Groups() {
               </div>
               
               <div className="mb-4">
-                <Label htmlFor="group-time-range" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Time Range (optional)
+                <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Time Range
                 </Label>
-                <Input 
-                  id="group-time-range"
-                  value={groupFormState.timeRange}
-                  onChange={e => setGroupFormState({...groupFormState, timeRange: e.target.value})}
-                  placeholder="e.g. 6:00 AM - 8:00 AM"
-                />
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1">
+                    <Label htmlFor="start-time" className="text-xs mb-1 block">Start Time</Label>
+                    <Input 
+                      id="start-time"
+                      type="time"
+                      value={startTime}
+                      onChange={e => setStartTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400 mt-6">to</span>
+                  <div className="flex-1">
+                    <Label htmlFor="end-time" className="text-xs mb-1 block">End Time</Label>
+                    <Input 
+                      id="end-time"
+                      type="time"
+                      value={endTime}
+                      onChange={e => setEndTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Preview: {formatTimeFor12Hour(startTime)} - {formatTimeFor12Hour(endTime)}
+                </p>
               </div>
               
               <div className="mb-4">
@@ -268,13 +363,25 @@ export default function Groups() {
                   Icon
                 </Label>
                 <Select 
-                  value={groupFormState.icon} 
+                  value={groupFormState.icon || undefined}
                   onValueChange={(val: string) => 
                     setGroupFormState({...groupFormState, icon: val})
                   }
                 >
                   <SelectTrigger id="group-icon">
-                    <SelectValue placeholder="Select an icon" />
+                    <SelectValue>
+                      {groupFormState.icon && (
+                        <div className="flex items-center">
+                          <i className={getIconClass(groupFormState.icon)} style={{marginRight: '8px'}}></i>
+                          <span>{groupFormState.icon === 'fa-layer-group' ? 'General' :
+                                 groupFormState.icon === 'fa-sun' ? 'Morning' : 
+                                 groupFormState.icon === 'fa-briefcase' ? 'Work' :
+                                 groupFormState.icon === 'fa-moon' ? 'Evening' :
+                                 groupFormState.icon === 'fa-dumbbell' ? 'Fitness' :
+                                 groupFormState.icon === 'fa-book' ? 'Study' : 'Select an icon'}</span>
+                        </div>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="fa-sun">

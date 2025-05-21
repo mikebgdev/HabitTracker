@@ -6,7 +6,7 @@ import type { User } from "@shared/schema";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
@@ -28,8 +28,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        // Intentar obtener el usuario desde localStorage o sessionStorage
+        const storedUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
+        const storedToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        
+        if (storedUser && storedToken) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Si no hay usuario en storage, verificar con el servidor
         const res = await fetch("/api/auth/me", {
           credentials: "include",
+          headers: {
+            'Authorization': storedToken ? `Bearer ${storedToken}` : ''
+          }
         });
 
         if (res.ok) {
@@ -46,7 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkAuthStatus();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, rememberMe = false) => {
     setIsLoading(true);
     setError(null);
     
@@ -54,9 +69,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const res = await apiRequest("POST", "/api/auth/login", {
         username,
         password,
+        rememberMe
       });
       
       const userData = await res.json();
+      
+      // Guardar usuario en localStorage si remember me está activado
+      if (rememberMe) {
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem('auth_token', userData.token);
+      } else {
+        // O guardar en sessionStorage si no
+        sessionStorage.setItem('auth_user', JSON.stringify(userData));
+        sessionStorage.setItem('auth_token', userData.token);
+      }
+      
       setUser(userData);
       setLocation("/dashboard");
     } catch (err) {
@@ -94,6 +121,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     try {
       await apiRequest("POST", "/api/auth/logout", {});
+      // Limpiar almacenamiento
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_user');
+      sessionStorage.removeItem('auth_token');
       setUser(null);
       setLocation("/login");
     } catch (err) {

@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const { login, isLoading, error } = useAuth();
   const { toast } = useToast();
 
@@ -24,7 +25,7 @@ export default function Login() {
     e.preventDefault();
     
     try {
-      await login(username, password);
+      await login(username, password, rememberMe);
     } catch (err) {
       toast({
         title: "Login failed",
@@ -78,6 +79,16 @@ export default function Login() {
                 placeholder="Enter your password"
                 required
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <Label htmlFor="rememberMe" className="text-sm font-normal">Remember me</Label>
             </div>
             {error && (
               <div className="text-sm text-red-500">

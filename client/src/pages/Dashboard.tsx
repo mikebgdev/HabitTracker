@@ -116,13 +116,26 @@ export default function Dashboard() {
     queryKey: ['/api/routines/daily', dateParam],
     queryFn: async () => {
       try {
-        // Por ahora vamos a volver a usar los datos de mockup para poder probar la funcionalidad
-        // pero con la fecha seleccionada
-        return mockData.groups.map(group => ({
-          ...group,
-          // Añadir la fecha seleccionada para simular datos diferentes según el día
-          name: `${group.name} (${dateParam})`
-        }));
+        // Usamos datos de mockup para cada fecha
+        // En un entorno real, se consultaría la API con la fecha específica
+        const today = format(new Date(), 'yyyy-MM-dd');
+        
+        // Para la fecha actual, usar los datos existentes
+        if (dateParam === today) {
+          return mockData.groups;
+        } else {
+          // Para otras fechas, generar datos con todas las rutinas sin completar
+          // para simular días diferentes
+          return mockData.groups.map(group => ({
+            ...group,
+            name: `${group.name} (${dateParam})`,
+            routines: group.routines.map(routine => ({
+              ...routine,
+              completed: false, // Reset completion status for different days
+              completedAt: undefined
+            }))
+          }));
+        }
       } catch (error) {
         console.error("Error fetching routines:", error);
         throw error;
@@ -177,8 +190,18 @@ export default function Dashboard() {
     }
   });
   
+  // Determinar si estamos en el día actual
+  const isToday = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+  
   const handleToggleCompletion = (id: number, completed: boolean) => {
-    toggleCompletionMutation.mutate({ routineId: id, completed });
+    // Solo permitir cambios si estamos viendo el día actual
+    if (isToday) {
+      toggleCompletionMutation.mutate({ routineId: id, completed });
+    } else {
+      // Para días diferentes al actual, mostrar un mensaje o no hacer nada
+      // Podríamos añadir un toast aquí para informar al usuario
+      console.log("Las rutinas solo pueden completarse en el día actual");
+    }
   };
   
   const goToPrevDay = () => {

@@ -152,6 +152,7 @@ export default function Groups() {
 
       // Refresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/group-routines'] });
       setIsEditGroupModalOpen(false);
     } catch (error) {
       console.error("Failed to save group:", error);

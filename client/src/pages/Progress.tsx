@@ -68,24 +68,26 @@ export default function ProgressPage() {
     
     return days.map(day => {
       const dayStr = format(day, "yyyy-MM-dd");
-      const dayOfWeek = day.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const currentDay = weekdayMap[dayOfWeek];
+      const isToday = dayStr === format(new Date(), 'yyyy-MM-dd');
       
-      // Find routines scheduled for this day
-      const scheduledRoutines = userRoutines.filter(routine => {
-        const schedule = weekdaySchedules.find((s: any) => s.routineId === routine.id);
-        return schedule && schedule[currentDay];
+      // Para todos los días, usar el total de rutinas disponibles
+      const total = userRoutines.length;
+      
+      // Obtener las rutinas únicas completadas para este día específico
+      const uniqueCompletedIds = new Set();
+      completionStats.forEach((completion: any) => {
+        if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
+          uniqueCompletedIds.add(completion.routineId);
+        }
       });
       
-      // Find completions for this day
-      const dayCompletions = completionStats.filter((completion: any) => 
-        format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr
-      );
+      // El número de rutinas completadas es el tamaño del conjunto (rutinas únicas)
+      const completed = uniqueCompletedIds.size;
       
-      const total = scheduledRoutines.length;
-      const completed = dayCompletions.length;
-      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      // Para hoy, especialmente si estamos navegando en la página, mostrar el dato real actualizado
+      const percentage = isToday && uniqueCompletedIds.size > 0 
+        ? Math.min(Math.round((completed / total) * 100), 100) 
+        : total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
       
       return {
         date: format(day, "MMM dd"),
@@ -107,35 +109,54 @@ export default function ProgressPage() {
       low: userRoutines.filter(r => r.priority === 'low')
     };
     
-    // Count completions for each priority
+    // Obtener sólo completados para hoy
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayCompletions = completionStats.filter(c => 
+      format(new Date(c.completedAt), 'yyyy-MM-dd') === todayStr
+    );
+    
+    // Obtener rutinas únicas completadas por prioridad
+    const uniqueCompletedByPriority = {
+      high: new Set<number>(),
+      medium: new Set<number>(),
+      low: new Set<number>()
+    };
+    
+    // Clasificar las rutinas completadas por prioridad
+    todayCompletions.forEach((c: any) => {
+      const routineId = c.routineId;
+      if (routinesByPriority.high.some(r => r.id === routineId)) {
+        uniqueCompletedByPriority.high.add(routineId);
+      } else if (routinesByPriority.medium.some(r => r.id === routineId)) {
+        uniqueCompletedByPriority.medium.add(routineId);
+      } else if (routinesByPriority.low.some(r => r.id === routineId)) {
+        uniqueCompletedByPriority.low.add(routineId);
+      }
+    });
+    
+    // Crear los datos para la gráfica
     const result = [
       { 
         name: "High", 
-        completed: completionStats.filter(c => 
-          routinesByPriority.high.some(r => r.id === c.routineId)
-        ).length,
-        expected: routinesByPriority.high.length * dailyData.length || 1 // Avoid division by zero
+        completed: uniqueCompletedByPriority.high.size,
+        expected: routinesByPriority.high.length || 1 // Evitar división por cero
       },
       { 
         name: "Medium", 
-        completed: completionStats.filter(c => 
-          routinesByPriority.medium.some(r => r.id === c.routineId)
-        ).length,
-        expected: routinesByPriority.medium.length * dailyData.length || 1
+        completed: uniqueCompletedByPriority.medium.size,
+        expected: routinesByPriority.medium.length || 1
       },
       { 
         name: "Low", 
-        completed: completionStats.filter(c => 
-          routinesByPriority.low.some(r => r.id === c.routineId)
-        ).length,
-        expected: routinesByPriority.low.length * dailyData.length || 1
+        completed: uniqueCompletedByPriority.low.size,
+        expected: routinesByPriority.low.length || 1
       }
     ];
     
-    // Convert to percentages
+    // Convertir a porcentajes y limitar a 100%
     return result.map(item => ({
       ...item,
-      completed: Math.round((item.completed / item.expected) * 100)
+      completed: Math.min(Math.round((item.completed / item.expected) * 100), 100)
     }));
   };
   
@@ -448,24 +469,45 @@ export default function ProgressPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-2">
-            {dailyData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  {day.date}
+            {dailyData.map((day, index) => {
+              // Determinar si es hoy para mostrar los datos actualizados
+              const isToday = day.date === format(new Date(), 'MMM dd');
+              
+              // Obtener rutinas completadas para este día específico
+              const dayStr = format(new Date(day.date), 'yyyy-MM-dd');
+              const uniqueCompletedIds = new Set();
+              
+              completionStats.forEach((completion: any) => {
+                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
+                  uniqueCompletedIds.add(completion.routineId);
+                }
+              });
+              
+              // Calcular porcentaje actualizado para el día
+              const total = userRoutines.length;
+              const completed = uniqueCompletedIds.size;
+              const percentage = total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
+              
+              // Usar el porcentaje calculado para determinar el color
+              return (
+                <div key={index} className="flex flex-col items-center">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {day.date}
+                  </div>
+                  <div 
+                    className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
+                      percentage >= 80 
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
+                        : percentage >= 50 
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                    }`}
+                  >
+                    {percentage}%
+                  </div>
                 </div>
-                <div 
-                  className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
-                    day.percentage >= 80 
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
-                      : day.percentage >= 50 
-                        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                  }`}
-                >
-                  {day.percentage}%
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

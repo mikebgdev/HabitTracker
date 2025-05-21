@@ -17,6 +17,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -30,6 +40,7 @@ import { Plus, Edit, Trash, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Group, InsertGroup, GroupRoutine } from "@shared/schema";
 
 export default function Groups() {
@@ -161,14 +172,40 @@ export default function Groups() {
     }
   };
 
-  const handleDeleteGroup = async (groupId: number) => {
-    if (!confirm("Are you sure you want to delete this group? All associated routines will be unlinked.")) return;
+  // Estado para el diálogo de confirmación de eliminación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
 
+  // Mostrar diálogo de confirmación antes de eliminar
+  const confirmDeleteGroup = (groupId: number) => {
+    setGroupToDelete(groupId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Proceder con la eliminación después de confirmar
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete) return;
+    
     try {
-      await apiRequest("DELETE", `/api/groups/${groupId}`, {});
+      await apiRequest("DELETE", `/api/groups/${groupToDelete}`, {});
+      
+      // Actualizar ambas consultas para asegurar que la UI se actualice
       await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/group-routines'] });
+      
+      setToast({
+        title: "Grupo eliminado",
+        description: "El grupo ha sido eliminado correctamente"
+      });
     } catch (error) {
       console.error("Failed to delete group:", error);
+      setToast({
+        title: "Error",
+        description: "No se pudo eliminar el grupo. Inténtalo de nuevo."
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setGroupToDelete(null);
     }
   };
   
@@ -262,7 +299,7 @@ export default function Groups() {
                   variant="outline"
                   size="sm"
                   className="text-red-600 dark:text-red-400"
-                  onClick={() => handleDeleteGroup(group.id)}
+                  onClick={() => confirmDeleteGroup(group.id)}
                 >
                   <Trash className="h-4 w-4 mr-1" /> Delete
                 </Button>

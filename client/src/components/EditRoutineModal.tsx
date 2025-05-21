@@ -319,12 +319,15 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
               <Label htmlFor="routine-group" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Grupo
               </Label>
-              <Select value={groupId?.toString() || ""} onValueChange={(val) => setGroupId(val ? parseInt(val, 10) : null)}>
+              <Select 
+                value={groupId?.toString() || "none"} 
+                onValueChange={(val) => setGroupId(val === "none" ? null : parseInt(val, 10))}
+              >
                 <SelectTrigger id="routine-group">
                   <SelectValue placeholder="Selecciona un grupo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguno</SelectItem>
+                  <SelectItem value="none">Ninguno</SelectItem>
                   {groups.map(group => (
                     <SelectItem key={group.id} value={group.id.toString()}>
                       {group.name}

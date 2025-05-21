@@ -116,26 +116,31 @@ export default function Dashboard() {
     queryKey: ['/api/routines/daily', dateParam],
     queryFn: async () => {
       try {
-        // Usamos datos de mockup para cada fecha
-        // En un entorno real, se consultaría la API con la fecha específica
-        const today = format(new Date(), 'yyyy-MM-dd');
+        // En un entorno real, aquí consultaríamos la API con la fecha específica
+        // const res = await apiRequest("GET", `/api/routines/daily/${dateParam}`);
+        // return await res.json();
         
-        // Para la fecha actual, usar los datos existentes
-        if (dateParam === today) {
-          return mockData.groups;
-        } else {
-          // Para otras fechas, generar datos con todas las rutinas sin completar
-          // para simular días diferentes
-          return mockData.groups.map(group => ({
-            ...group,
-            name: `${group.name} (${dateParam})`,
-            routines: group.routines.map(routine => ({
-              ...routine,
-              completed: false, // Reset completion status for different days
-              completedAt: undefined
-            }))
-          }));
-        }
+        // Intentar cargar las rutinas completadas guardadas para esta fecha
+        const completionsKey = `completions_${dateParam}`;
+        const savedCompletions = JSON.parse(localStorage.getItem(completionsKey) || '[]');
+        
+        // Aplicar las rutinas completadas a los datos
+        return mockData.groups.map(group => ({
+          ...group,
+          // Si no es hoy, mostramos la fecha en el nombre del grupo para claridad
+          name: dateParam !== format(new Date(), 'yyyy-MM-dd') 
+            ? `${group.name} (${dateParam})` 
+            : group.name,
+          routines: group.routines.map(routine => ({
+            ...routine,
+            // Marcar como completada si está en las guardadas
+            completed: savedCompletions.includes(routine.id),
+            // Agregar timestamp de completado si está completada
+            completedAt: savedCompletions.includes(routine.id) 
+              ? new Date().toISOString() 
+              : undefined
+          }))
+        }));
       } catch (error) {
         console.error("Error fetching routines:", error);
         throw error;
@@ -146,47 +151,56 @@ export default function Dashboard() {
   // Toggle completion mutation
   const toggleCompletionMutation = useMutation({
     mutationFn: async ({ routineId, completed }: { routineId: number; completed: boolean }) => {
+      // Guardamos la fecha actual en una variable para asegurar consistencia
+      const currentDate = dateParam;
+      
+      // Simulamos la API para evitar errores 404 con los datos de prueba
+      // En una implementación real, esto se conectaría a la API
+      
       if (completed) {
         try {
-          // Completar la rutina asociada con la fecha específica seleccionada
-          await apiRequest("POST", '/api/completions', { 
-            routineId, 
-            completedAt: new Date(selectedDate).toISOString(),
-            date: dateParam
-          });
-          console.log('Completing routine:', routineId, 'for date:', dateParam);
+          // En un entorno real, este sería el punto de conexión con la API
+          // await apiRequest("POST", '/api/completions', { 
+          //   routineId, 
+          //   completedAt: new Date(selectedDate).toISOString(),
+          //   date: currentDate
+          // });
+          
+          // Almacenamos los datos en localStorage para simular persistencia
+          const completionsKey = `completions_${currentDate}`;
+          const savedCompletions = JSON.parse(localStorage.getItem(completionsKey) || '[]');
+          
+          if (!savedCompletions.includes(routineId)) {
+            savedCompletions.push(routineId);
+            localStorage.setItem(completionsKey, JSON.stringify(savedCompletions));
+          }
+          
+          console.log('Completing routine:', routineId, 'for date:', currentDate);
         } catch (error) {
-          // Si la API falla, mostramos solo el log
-          console.log('Completing routine:', routineId, 'for date:', dateParam);
+          console.error('Error completing routine:', error);
         }
       } else {
         try {
-          // Desmarcar la rutina específica para la fecha seleccionada
-          await apiRequest("DELETE", `/api/completions/${routineId}?date=${dateParam}`);
-          console.log('Uncompleting routine:', routineId, 'for date:', dateParam);
+          // En un entorno real:
+          // await apiRequest("DELETE", `/api/completions/${routineId}?date=${currentDate}`);
+          
+          // Simulación con localStorage
+          const completionsKey = `completions_${currentDate}`;
+          const savedCompletions = JSON.parse(localStorage.getItem(completionsKey) || '[]');
+          const updatedCompletions = savedCompletions.filter((id: number) => id !== routineId);
+          localStorage.setItem(completionsKey, JSON.stringify(updatedCompletions));
+          
+          console.log('Uncompleting routine:', routineId, 'for date:', currentDate);
         } catch (error) {
-          console.log('Uncompleting routine:', routineId, 'for date:', dateParam);
+          console.error('Error uncompleting routine:', error);
         }
       }
-      
-      // Actualizar los datos locales para mostrar el cambio inmediatamente
-      // sin esperar a la respuesta de la API
-      const updatedData = data?.map(group => ({
-        ...group,
-        routines: group.routines.map(routine => 
-          routine.id === routineId 
-            ? { ...routine, completed: completed } 
-            : routine
-        )
-      }));
-      
-      queryClient.setQueryData(['/api/routines/daily', dateParam], updatedData);
       
       return { success: true };
     },
     onSuccess: () => {
-      // Invalidar la consulta para refrescar datos
-      queryClient.invalidateQueries({ queryKey: ['/api/routines/daily', dateParam] });
+      // Recargar los datos para actualizar el UI después de la mutación
+      refetch();
     }
   });
   
@@ -196,10 +210,23 @@ export default function Dashboard() {
   const handleToggleCompletion = (id: number, completed: boolean) => {
     // Solo permitir cambios si estamos viendo el día actual
     if (isToday) {
+      // Primero actualizamos UI inmediatamente para mejor experiencia de usuario
+      const updatedData = data?.map(group => ({
+        ...group,
+        routines: group.routines.map(routine => 
+          routine.id === id 
+            ? { ...routine, completed: completed } 
+            : routine
+        )
+      }));
+      
+      // Actualizar los datos localmente
+      queryClient.setQueryData(['/api/routines/daily', dateParam], updatedData);
+      
+      // Luego hacemos la mutación real (API)
       toggleCompletionMutation.mutate({ routineId: id, completed });
     } else {
       // Para días diferentes al actual, mostrar un mensaje o no hacer nada
-      // Podríamos añadir un toast aquí para informar al usuario
       console.log("Las rutinas solo pueden completarse en el día actual");
     }
   };

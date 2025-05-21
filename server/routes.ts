@@ -487,11 +487,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // For each group, get the routines and build the relationships
       for (const group of userGroups) {
-        const routines = await storage.getRoutinesByGroupId(group.id);
+        console.log(`Getting routines for group ${group.id} (${group.name})`);
+        
+        // Fetch all routines that belong to this group
+        const routinesInGroup = await storage.getRoutinesByGroupId(group.id);
+        console.log(`Found ${routinesInGroup.length} routines in group ${group.id}`);
         
         // Add an entry for each routine with group info
-        if (routines.length > 0) {
-          routines.forEach(routine => {
+        if (routinesInGroup.length > 0) {
+          routinesInGroup.forEach(routine => {
+            console.log(`Adding routine ${routine.id} to group ${group.id}`);
             routineGroupAssignments.push({
               groupId: group.id,
               groupName: group.name,
@@ -501,6 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } else {
           // Even if there are no routines, add an entry for the group
+          console.log(`No routines found in group ${group.id}, adding empty record`);
           routineGroupAssignments.push({
             groupId: group.id,
             groupName: group.name,
@@ -510,6 +516,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      console.log(`Returning ${routineGroupAssignments.length} group-routine assignments`);
+      console.log(routineGroupAssignments);
       res.json(routineGroupAssignments);
     } catch (error) {
       console.error("Error fetching routine-group relationships:", error);

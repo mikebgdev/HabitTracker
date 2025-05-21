@@ -119,10 +119,22 @@ export default function MyRoutines() {
     // Verificar que tengamos datos válidos
     if (!Array.isArray(groupRoutines)) return null;
     
-    // Buscar la asignación de grupo para esta rutina
-    const assignment = groupRoutines.find((gr: any) => gr.routineId === routineId);
+    // Imprimir los datos para depuración
+    console.log("Group Routines:", groupRoutines);
+    console.log("Looking for routine ID:", routineId);
     
-    if (!assignment) return null;
+    // Buscar la asignación de grupo para esta rutina
+    const assignment = groupRoutines.find((gr: any) => {
+      console.log("Checking group routine:", gr);
+      return gr.routineId === routineId;
+    });
+    
+    if (!assignment) {
+      console.log("No group assignment found for routine:", routineId);
+      return null;
+    }
+    
+    console.log("Found group assignment:", assignment);
     
     // Devolver la información del grupo directamente desde la asignación
     return {

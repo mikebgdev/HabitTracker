@@ -126,22 +126,29 @@ export default function MyRoutines() {
     return true;
   });
   
-  // Obtener información de los grupos y rutinas
+  // Obtener información de grupos y asociaciones de rutinas con grupos
   const { data: groupRoutines = [] } = useQuery({
     queryKey: ['/api/group-routines'],
   });
   
   // Función para obtener el grupo al que pertenece una rutina
   const getRoutineGroup = (routineId: number) => {
-    if (!Array.isArray(groupRoutines)) return null;
+    // Verificar que tengamos datos válidos
+    if (!Array.isArray(groupRoutines) || !Array.isArray(groups)) return null;
     
-    const routineGroup = groupRoutines.find((gr: any) => gr.routineId === routineId);
-    if (!routineGroup) return null;
+    // Buscar las asignaciones de grupo para esta rutina
+    const routineGroupAssignment = groupRoutines.find((gr: any) => {
+      return gr.routineId === routineId || 
+             (gr.routineIds && gr.routineIds.includes(routineId));
+    });
     
-    const group = Array.isArray(groups) 
-      ? groups.find(g => g.id === routineGroup.groupId) 
-      : null;
-      
+    if (!routineGroupAssignment) return null;
+    
+    // Obtener el ID del grupo al que pertenece la rutina
+    const groupId = routineGroupAssignment.groupId;
+    
+    // Buscar el grupo completo por su ID
+    const group = groups.find(g => g.id === groupId);
     return group;
   };
   

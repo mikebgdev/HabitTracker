@@ -367,17 +367,6 @@ export default function MyRoutines() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-blue-600 dark:text-blue-400"
-                    onClick={() => {
-                      setRoutineToEdit(routine);
-                      setIsAssignGroupModalOpen(true);
-                    }}
-                  >
-                    <FolderOpen className="h-4 w-4 mr-1" /> Asignar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
                     className="text-gray-700 dark:text-gray-300"
                     onClick={() => {
                       // Abrir el modal de edición y establecer la rutina a editar

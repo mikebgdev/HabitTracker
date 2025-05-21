@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import {
   Select,
   SelectContent,
@@ -149,7 +149,7 @@ export default function ProgressPage() {
                 <div className={`text-3xl font-bold ${getColorClass(stats.completionRate)}`}>
                   {stats.completionRate}%
                 </div>
-                <Progress value={stats.completionRate} className="mt-2 h-2" />
+                <ProgressBar value={stats.completionRate} className="mt-2 h-2" />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   {stats.completedRoutines} of {stats.totalRoutines} routines completed
                 </p>

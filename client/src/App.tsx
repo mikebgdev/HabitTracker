@@ -7,7 +7,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import MyRoutines from "@/pages/MyRoutines";
 import Groups from "@/pages/Groups";
-import Progress from "@/pages/Progress";
+import ProgressPage from "@/pages/Progress";
 import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/not-found";
 
@@ -42,7 +42,7 @@ function App() {
         
         <Route path="/progress">
           <ProtectedRoute>
-            <Progress />
+            <ProgressPage />
           </ProtectedRoute>
         </Route>
         

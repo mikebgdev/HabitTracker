@@ -77,27 +77,7 @@ export function RoutineItem({ routine, onToggleCompletion }: RoutineItemProps) {
           </div>
         </div>
         
-        <div className="ml-4">
-          {isCompleted ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleChange}
-              className="text-xs px-2 py-1 h-auto"
-            >
-              Undo
-            </Button>
-          ) : (
-            <Button 
-              variant="primary" 
-              size="sm" 
-              onClick={handleChange}
-              className="text-xs px-2 py-1 h-auto"
-            >
-              Complete
-            </Button>
-          )}
-        </div>
+        {/* Eliminamos el botón ya que el checkbox cumple la misma función */}
       </div>
     </Card>
   );

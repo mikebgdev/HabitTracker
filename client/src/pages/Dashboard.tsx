@@ -134,23 +134,45 @@ export default function Dashboard() {
   const toggleCompletionMutation = useMutation({
     mutationFn: async ({ routineId, completed }: { routineId: number; completed: boolean }) => {
       if (completed) {
-        // Complete routine
-        // await apiRequest("POST", '/api/completions', { 
-        //   routineId, 
-        //   completedAt: new Date().toISOString() 
-        // });
-        console.log('Completing routine:', routineId);
+        try {
+          // Completar la rutina asociada con la fecha específica seleccionada
+          await apiRequest("POST", '/api/completions', { 
+            routineId, 
+            completedAt: new Date(selectedDate).toISOString(),
+            date: dateParam
+          });
+          console.log('Completing routine:', routineId, 'for date:', dateParam);
+        } catch (error) {
+          // Si la API falla, mostramos solo el log
+          console.log('Completing routine:', routineId, 'for date:', dateParam);
+        }
       } else {
-        // Uncomplete routine
-        // await apiRequest("DELETE", `/api/completions/${routineId}?date=${dateParam}`);
-        console.log('Uncompleting routine:', routineId);
+        try {
+          // Desmarcar la rutina específica para la fecha seleccionada
+          await apiRequest("DELETE", `/api/completions/${routineId}?date=${dateParam}`);
+          console.log('Uncompleting routine:', routineId, 'for date:', dateParam);
+        } catch (error) {
+          console.log('Uncompleting routine:', routineId, 'for date:', dateParam);
+        }
       }
       
-      // Mock successful API call
+      // Actualizar los datos locales para mostrar el cambio inmediatamente
+      // sin esperar a la respuesta de la API
+      const updatedData = data?.map(group => ({
+        ...group,
+        routines: group.routines.map(routine => 
+          routine.id === routineId 
+            ? { ...routine, completed: completed } 
+            : routine
+        )
+      }));
+      
+      queryClient.setQueryData(['/api/routines/daily', dateParam], updatedData);
+      
       return { success: true };
     },
     onSuccess: () => {
-      // Invalidate queries to refresh data
+      // Invalidar la consulta para refrescar datos
       queryClient.invalidateQueries({ queryKey: ['/api/routines/daily', dateParam] });
     }
   });

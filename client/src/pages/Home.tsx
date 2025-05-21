@@ -1,9 +1,19 @@
-import React from 'react';
-import { Link } from 'wouter';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
+  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  
+  useEffect(() => {
+    // Si el usuario ya está autenticado, redirigir al dashboard
+    if (user && !isLoading) {
+      setLocation('/dashboard');
+    }
+  }, [user, isLoading, setLocation]);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-3xl mx-auto text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">

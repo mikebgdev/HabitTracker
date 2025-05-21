@@ -432,27 +432,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get all group-routine relationships
+  // Get routine count by group
   app.get("/api/group-routines", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
       
-      // We need to get all group-routine relationships for the user's groups
-      // In a real implementation, this would check if the groups belong to the user
-      const allGroupRoutines = await storage.getAllGroupRoutines();
-      
-      // Filter to only include relationships for groups that belong to the user
+      // Get all groups for the user
       const userGroups = await storage.getGroupsByUserId(userId);
-      const userGroupIds = userGroups.map(group => group.id);
       
-      const filteredGroupRoutines = allGroupRoutines.filter(gr => 
-        userGroupIds.includes(gr.groupId)
-      );
+      // Create a map to store routine counts
+      const routineCountByGroup: Record<number, number> = {};
       
-      res.json(filteredGroupRoutines);
+      // For each group, get the routines and count them
+      for (const group of userGroups) {
+        const routines = await storage.getRoutinesByGroupId(group.id);
+        routineCountByGroup[group.id] = routines.length;
+      }
+      
+      // Format data as expected by the client
+      const result = Object.entries(routineCountByGroup).map(([groupId, count]) => ({
+        groupId: parseInt(groupId),
+        count
+      }));
+      
+      res.json(result);
     } catch (error) {
-      console.error("Error fetching group-routine relationships:", error);
-      res.status(500).json({ message: "Failed to fetch group-routine relationships" });
+      console.error("Error fetching group routine counts:", error);
+      res.status(500).json({ message: "Failed to fetch group routine counts" });
     }
   });
   

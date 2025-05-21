@@ -60,12 +60,9 @@ export default function Groups() {
     if (groupRoutines.length > 0) {
       const counts: Record<number, number> = {};
       
-      groupRoutines.forEach(gr => {
-        if (counts[gr.groupId]) {
-          counts[gr.groupId]++;
-        } else {
-          counts[gr.groupId] = 1;
-        }
+      // The API now returns objects with groupId and count
+      groupRoutines.forEach((gr: any) => {
+        counts[gr.groupId] = gr.count;
       });
       
       setRoutineCountByGroup(counts);

@@ -24,12 +24,16 @@ import {
   Utensils,
   Waves,
   LucideIcon,
-  CircleCheckBig
+  CircleCheckBig,
+  FolderOpen,
+  Timer
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { formatTime } from '@/lib/date';
+import { useQuery } from '@tanstack/react-query';
 
 interface RoutineItemProps {
   routine: {
@@ -50,8 +54,23 @@ export function RoutineItem({
   onToggleCompletion, 
   isEditable = true 
 }: RoutineItemProps) {
-  // Usamos directamente routine.completed en lugar de un estado local
-  // Esto garantiza que siempre refleje el estado actual de los datos
+  // Obtener información del grupo al que pertenece la rutina, si existe
+  const { data: groupRoutines = [] } = useQuery({
+    queryKey: ['/api/group-routines'],
+  });
+  
+  const { data: groups = [] } = useQuery({
+    queryKey: ['/api/groups'],
+  });
+  
+  // Buscar el grupo al que pertenece esta rutina (con comprobación de tipo)
+  const routineGroup = Array.isArray(groupRoutines) 
+    ? groupRoutines.find((gr: any) => gr.routineId === routine.id)
+    : null;
+    
+  const group = routineGroup && Array.isArray(groups)
+    ? groups.find((g: any) => g.id === routineGroup.groupId) 
+    : null;
   
   const priorityColors = {
     high: 'text-red-600 dark:text-red-400',
@@ -59,10 +78,16 @@ export function RoutineItem({
     low: 'text-blue-600 dark:text-blue-400'
   };
   
+  const priorityLabels = {
+    high: 'Alta',
+    medium: 'Media',
+    low: 'Baja'
+  };
+  
   const priorityIcons = {
     high: <Flame className="w-4 h-4" />,
     medium: <BatteryMedium className="w-4 h-4" />,
-    low: <Clock className="w-4 h-4" />
+    low: <Timer className="w-4 h-4" />
   };
   
   // Mapa de nombres de iconos a componentes de Lucide
@@ -119,9 +144,10 @@ export function RoutineItem({
         </div>
         
         <div className="flex-1">
-          <div className="flex items-center flex-wrap">
+          {/* Primera fila: Nombre, prioridad y grupo */}
+          <div className="flex items-center flex-wrap gap-2">
             {/* Icono + nombre */}
-            <div className="flex items-center mr-3">
+            <div className="flex items-center mr-1">
               {renderRoutineIcon()}
               <h3 className={`font-medium ${routine.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
                 {routine.name}
@@ -129,23 +155,32 @@ export function RoutineItem({
             </div>
             
             {/* Indicador de prioridad */}
-            <div className={`flex items-center px-2 py-0.5 rounded-full text-xs ${
+            <Badge variant="outline" className={`flex items-center px-2 py-0.5 text-xs ${
               routine.priority === 'high' 
-                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' 
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800' 
                 : routine.priority === 'medium'
-                  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
+                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
             }`}>
               {priorityIcons[routine.priority]}
               <span className="ml-1 font-medium">
-                {routine.priority === 'high' ? 'Alta' : routine.priority === 'medium' ? 'Media' : 'Baja'}
+                {priorityLabels[routine.priority]}
               </span>
-            </div>
+            </Badge>
+            
+            {/* Información del grupo si está disponible */}
+            {group && (
+              <Badge variant="secondary" className="flex items-center text-xs">
+                <FolderOpen className="w-3 h-3 mr-1" />
+                <span>{group.name}</span>
+              </Badge>
+            )}
           </div>
           
-          <div className="flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+          {/* Segunda fila: Tiempo estimado y estado */}
+          <div className="flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400 gap-3">
             {/* Tiempo estimado */}
-            <div className="flex items-center mr-4">
+            <div className="flex items-center">
               <Clock className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
               <span>Tiempo: {formatTime(routine.expectedTime)}</span>
             </div>

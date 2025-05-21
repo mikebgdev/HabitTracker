@@ -256,20 +256,7 @@ export default function Dashboard() {
   
   return (
     <Layout>
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        
-        <div className="mt-4 md:mt-0 flex space-x-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button variant="primary" size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Routine
-          </Button>
-        </div>
-      </div>
+      {/* Eliminamos el encabezado con botones para simplificar la interfaz */}
       
       {/* Date navigation */}
       <Card className="mb-6">

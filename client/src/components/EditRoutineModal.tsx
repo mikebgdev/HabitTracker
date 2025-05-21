@@ -120,6 +120,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   });
 
   // Inicializar datos al abrir el modal con una rutina para editar
+  // Efecto para datos básicos de la rutina - solo se ejecuta cuando cambia la rutina o isOpen
   useEffect(() => {
     if (routine) {
       setName(routine.name);
@@ -127,31 +128,39 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
       setPriority(routine.priority);
       setIcon(routine.icon || null);
       setRoutineId(routine.id);
-      
-      // Buscar el grupo al que pertenece esta rutina
-      const routineGroup = groupRoutines?.find(gr => gr.routineId === routine.id);
+    } else {
+      resetForm();
+    }
+  }, [routine, isOpen]);
+  
+  // Efecto separado para el grupo - solo se ejecuta cuando groupRoutines cambia
+  useEffect(() => {
+    if (routine && Array.isArray(groupRoutines) && groupRoutines.length > 0) {
+      // Usamos tipo any para evitar problemas de tipado
+      const routineGroup = groupRoutines.find((gr: any) => gr.routineId === routine.id);
       if (routineGroup) {
         setGroupId(routineGroup.groupId);
       } else {
         setGroupId(null);
       }
-      
-      // Cargar la programación de días de la semana si existe
-      if (weekdaySchedule) {
-        setSelectedDays({
-          monday: weekdaySchedule.monday,
-          tuesday: weekdaySchedule.tuesday,
-          wednesday: weekdaySchedule.wednesday,
-          thursday: weekdaySchedule.thursday,
-          friday: weekdaySchedule.friday,
-          saturday: weekdaySchedule.saturday,
-          sunday: weekdaySchedule.sunday,
-        });
-      }
-    } else {
-      resetForm();
     }
-  }, [routine, isOpen, weekdaySchedule, groupRoutines]);
+  }, [routine?.id, groupRoutines]);
+  
+  // Efecto separado para días de la semana - solo se ejecuta cuando weekdaySchedule cambia
+  useEffect(() => {
+    if (routine && weekdaySchedule && typeof weekdaySchedule === 'object') {
+      // Aseguramos valores por defecto en caso de que alguna propiedad sea undefined
+      setSelectedDays({
+        monday: !!weekdaySchedule.monday,
+        tuesday: !!weekdaySchedule.tuesday,
+        wednesday: !!weekdaySchedule.wednesday,
+        thursday: !!weekdaySchedule.thursday,
+        friday: !!weekdaySchedule.friday,
+        saturday: !!weekdaySchedule.saturday,
+        sunday: !!weekdaySchedule.sunday,
+      });
+    }
+  }, [routine?.id, weekdaySchedule]);
 
   const toggleDay = (day: string) => {
     setSelectedDays(prev => ({

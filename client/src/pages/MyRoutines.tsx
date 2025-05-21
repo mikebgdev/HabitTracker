@@ -320,14 +320,19 @@ export default function MyRoutines() {
                       </CardTitle>
                       
                       {/* Grupo al que pertenece */}
-                      {getRoutineGroupInfo(routine.id) && (
-                        <div className="mt-1">
+                      <div className="mt-1">
+                        {getRoutineGroupInfo(routine.id) ? (
                           <Badge variant="outline" className="flex items-center text-xs gap-1">
                             <FolderOpen className="w-3 h-3" />
                             <span>{getRoutineGroupInfo(routine.id)?.name}</span>
                           </Badge>
-                        </div>
-                      )}
+                        ) : (
+                          <Badge variant="outline" className="flex items-center text-xs gap-1 text-gray-400 dark:text-gray-500">
+                            <FolderX className="w-3 h-3" />
+                            <span>Sin grupo</span>
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                   

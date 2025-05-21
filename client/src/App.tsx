@@ -11,15 +11,18 @@ import Progress from "@/pages/Progress";
 import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/not-found";
 
+import Home from "@/pages/Home";
+
 function App() {
   return (
     <AuthProvider>
       <Toaster />
       <Switch>
+        <Route path="/" component={Home} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         
-        <Route path="/">
+        <Route path="/dashboard">
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>

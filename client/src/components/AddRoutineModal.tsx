@@ -21,14 +21,17 @@ import { Toggle } from "@/components/ui/toggle";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import type { Group, InsertRoutine } from "@shared/schema";
 
 interface AddRoutineModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRoutineCreated?: () => Promise<void>;
 }
 
-export function AddRoutineModal({ isOpen, onClose }: AddRoutineModalProps) {
+export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutineModalProps) {
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [expectedTime, setExpectedTime] = useState("");
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
@@ -119,17 +122,33 @@ export function AddRoutineModal({ isOpen, onClose }: AddRoutineModalProps) {
 
       routineData.weekdays = selectedDays;
 
-      await apiRequest("POST", "/api/routines", routineData);
+      const response = await apiRequest("POST", "/api/routines", routineData);
+      const newRoutine = await response.json();
 
-      // Refresh data
-      await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/routines/daily'] });
+      // Mostrar notificación de éxito
+      toast({
+        title: "Rutina creada",
+        description: `La rutina "${name}" ha sido creada correctamente.`
+      });
+
+      // Actualizar los datos usando la función de refetch si está disponible
+      if (onRoutineCreated) {
+        await onRoutineCreated();
+      } else {
+        // Fallback para actualizar mediante invalidación de consultas
+        await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/routines/daily'] });
+      }
 
       resetForm();
       onClose();
     } catch (error) {
       console.error("Failed to create routine:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear la rutina. Inténtalo de nuevo."
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -274,6 +274,10 @@ export default function MyRoutines() {
       <AddRoutineModal 
         isOpen={isAddRoutineModalOpen}
         onClose={() => setIsAddRoutineModalOpen(false)}
+        onRoutineCreated={async () => {
+          await refetchRoutines();
+          await refetchGroups();
+        }}
       />
       
       {/* Diálogo de confirmación para eliminar rutina */}

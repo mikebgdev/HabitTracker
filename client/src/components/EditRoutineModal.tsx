@@ -110,7 +110,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   // Cargar los horarios semanales para la rutina si está siendo editada
   const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['/api/routines/weekday-schedule', routineId],
-    enabled: !!routineId,
+    enabled: !!routineId && !isNaN(Number(routineId)), // Añadimos validación para evitar parámetros NaN
   });
   
   // Cargar la relación grupo-rutina para conocer el grupo actual

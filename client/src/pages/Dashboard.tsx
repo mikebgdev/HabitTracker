@@ -150,21 +150,19 @@ export default function Dashboard() {
         
         // Filtrar rutinas que deben mostrarse en el día seleccionado
         const routinesForToday = userRoutines.filter(routine => {
-          // Si estamos en el día actual, mostrar todas las rutinas creadas hoy
-          const createdToday = format(new Date(routine.createdAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-          const isCurrentDay = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-          
-          if (isCurrentDay && createdToday) {
-            return true;
-          }
-          
           // Buscar la programación semanal para esta rutina
           const schedule = weekdaySchedules.find((schedule: any) => 
             schedule.routineId === routine.id
           );
           
-          // Verificar si la rutina está programada para el día seleccionado
-          return schedule && schedule[currentDay];
+          // Si no hay programación semanal, mostrar la rutina en el día actual
+          if (!schedule) {
+            const isCurrentDay = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+            return isCurrentDay;
+          }
+          
+          // Verificar si la rutina está programada para el día seleccionado según su configuración
+          return schedule[currentDay];
         });
         
         // Verificar si las rutinas están completadas

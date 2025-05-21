@@ -155,14 +155,14 @@ export default function Dashboard() {
             schedule.routineId === routine.id
           );
           
-          // Si no hay programación semanal, mostrar la rutina en el día actual
-          if (!schedule) {
-            const isCurrentDay = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-            return isCurrentDay;
+          // Si existe una programación semanal para esta rutina
+          if (schedule) {
+            // Verificar si la rutina está programada para el día de la semana seleccionado
+            return schedule[currentDay] === true;
           }
           
-          // Verificar si la rutina está programada para el día seleccionado según su configuración
-          return schedule[currentDay];
+          // Si la rutina no tiene programación semanal, mostrarla solo el día actual
+          return format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
         });
         
         // Verificar si las rutinas están completadas

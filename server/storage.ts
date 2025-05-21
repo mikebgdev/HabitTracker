@@ -16,7 +16,7 @@ import {
   users, routines, groups, groupRoutines, weekdaySchedules,
   repetitionSchedules, completions
 } from "@shared/schema";
-import { eq, and, gte, lte, sql, desc, asc } from "drizzle-orm";
+import { eq, and, gte, lte, sql, desc, asc, inArray } from "drizzle-orm";
 import { db } from "./db";
 
 // Storage interface
@@ -737,20 +737,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDailyRoutines(userId: number, date: string): Promise<(Routine & { completedAt?: string })[]> {
-    const weekday = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
-    const weekdayField = weekdaySchedules[weekday as keyof typeof weekdaySchedules];
+    // Get the day of week from the date (0-6, where 0 is Sunday)
+    const dayOfWeek = new Date(date).getDay();
+    const weekdayName = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][dayOfWeek];
+    const weekdayField = weekdaySchedules[weekdayName as keyof typeof weekdaySchedules];
     
     // Get routines for user with their weekday schedules where this day is enabled
     const routinesForDay = await db
-      .select({
-        id: routines.id,
-        name: routines.name,
-        description: routines.description,
-        priority: routines.priority,
-        userId: routines.userId,
-        expectedTime: routines.expectedTime,
-        createdAt: routines.createdAt
-      })
+      .select()
       .from(routines)
       .innerJoin(weekdaySchedules, eq(routines.id, weekdaySchedules.routineId))
       .where(and(
@@ -765,26 +759,33 @@ export class DatabaseStorage implements IStorage {
     const dateEnd = new Date(date);
     dateEnd.setHours(23, 59, 59, 999);
     
-    const routineIds = routinesForDay.map(r => r.id);
+    const routineIds = routinesForDay.map(r => r.routines.id);
+    
+    if (routineIds.length === 0) {
+      return [];
+    }
     
     const completionsForDay = await db
       .select()
       .from(completions)
       .where(and(
-        gte(completions.completedAt, dateStart.toISOString()),
-        lte(completions.completedAt, dateEnd.toISOString()),
-        sql`${completions.routineId} IN ${routineIds}`
+        gte(completions.completedAt, dateStart),
+        lte(completions.completedAt, dateEnd),
+        sql`${completions.routineId} IN (${routineIds.join(',')})`
       ));
     
     // Map completions to routines
     const completionsByRoutineId = new Map(
-      completionsForDay.map(c => [c.routineId, c.completedAt])
+      completionsForDay.map(c => [c.routineId, c.completedAt.toISOString()])
     );
     
-    return routinesForDay.map(routine => ({
-      ...routine,
-      completedAt: completionsByRoutineId.get(routine.id)
-    }));
+    return routinesForDay.map(r => {
+      const routine = r.routines;
+      return {
+        ...routine,
+        completedAt: completionsByRoutineId.get(routine.id)
+      };
+    });
   }
 
   async getDailyRoutinesByGroup(userId: number, date: string): Promise<Group[]> {

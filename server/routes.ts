@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { hashPassword, verifyPassword, generateToken, verifyToken } from "./auth";
 import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema, completions, weekdaySchedules, routines } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import express from "express";
 
 // Middleware to validate authentication
@@ -260,25 +260,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req as any).user.id;
       
-      // Get all user routines first
+      // Obtener todas las rutinas del usuario usando storage en lugar de db directo
       const userRoutines = await storage.getRoutinesByUserId(userId);
       
-      // Create a list to hold all schedules
+      // Array para almacenar todos los horarios (existentes o predeterminados)
       const schedules = [];
       
-      // For each routine, get its weekday schedule or create a default one
+      // Para cada rutina, intentar obtener su horario o crear uno predeterminado
       for (const routine of userRoutines) {
         try {
-          // Try to get existing schedule
-          const existingSchedule = await db
+          // Buscar el horario existente en la base de datos directamente
+          const existingSchedules = await db
             .select()
             .from(weekdaySchedules)
             .where(eq(weekdaySchedules.routineId, routine.id));
           
-          if (existingSchedule && existingSchedule.length > 0) {
-            schedules.push(existingSchedule[0]);
+          if (existingSchedules && existingSchedules.length > 0) {
+            // Si existe, añadir el horario existente
+            schedules.push(existingSchedules[0]);
           } else {
-            // Create a default schedule if none exists
+            // Si no existe, crear un horario predeterminado
             schedules.push({
               id: 0,
               routineId: routine.id,
@@ -292,7 +293,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
         } catch (err) {
-          // If there's an error for this routine, just create a default schedule
+          console.error(`Error al obtener horario para rutina ${routine.id}:`, err);
+          // En caso de error, crear un horario predeterminado
           schedules.push({
             id: 0,
             routineId: routine.id,

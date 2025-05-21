@@ -112,6 +112,9 @@ export default function MyRoutines() {
   // Obtener información de grupos y asociaciones de rutinas con grupos
   const { data: groupRoutines = [] } = useQuery({
     queryKey: ['/api/group-routines'],
+    onSuccess: (data) => {
+      console.log("Asignaciones grupo-rutina:", data);
+    }
   });
   
   // Función para obtener el grupo al que pertenece una rutina

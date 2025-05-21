@@ -21,9 +21,10 @@ interface RoutineGroupProps {
     routines: Routine[];
   };
   onToggleCompletion: (id: number, completed: boolean) => void;
+  isEditable?: boolean;
 }
 
-export function RoutineGroup({ group, onToggleCompletion }: RoutineGroupProps) {
+export function RoutineGroup({ group, onToggleCompletion, isEditable = true }: RoutineGroupProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   
   const totalRoutines = group.routines.length;
@@ -96,6 +97,7 @@ export function RoutineGroup({ group, onToggleCompletion }: RoutineGroupProps) {
                 key={routine.id} 
                 routine={routine}
                 onToggleCompletion={onToggleCompletion}
+                isEditable={isEditable}
               />
             ))}
             

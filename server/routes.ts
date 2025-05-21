@@ -744,6 +744,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para obtener todas las relaciones grupo-rutina
+  app.get("/api/group-routines", authenticate, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      // Obtener todas las rutinas del usuario para verificar acceso
+      const userRoutines = await storage.getRoutinesByUserId(userId);
+      const userRoutineIds = userRoutines.map(routine => routine.id);
+      
+      // Obtener todas las relaciones grupo-rutina para las rutinas del usuario
+      const allGroupRoutines = await storage.getAllGroupRoutines();
+      const userGroupRoutines = allGroupRoutines.filter(gr => 
+        userRoutineIds.includes(gr.routineId)
+      );
+      
+      res.json(userGroupRoutines);
+    } catch (error) {
+      console.error("Error fetching group-routine relationships:", error);
+      res.status(500).json({ message: "Failed to fetch group-routine relationships" });
+    }
+  });
+
   // Endpoint para obtener las completaciones por fecha
   app.get("/api/completions/:date?", authenticate, async (req, res) => {
     try {

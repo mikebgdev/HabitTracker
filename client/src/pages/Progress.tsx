@@ -68,24 +68,26 @@ export default function ProgressPage() {
     
     return days.map(day => {
       const dayStr = format(day, "yyyy-MM-dd");
-      const dayOfWeek = day.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const currentDay = weekdayMap[dayOfWeek];
+      const isToday = dayStr === format(new Date(), 'yyyy-MM-dd');
       
-      // Find routines scheduled for this day
-      const scheduledRoutines = userRoutines.filter(routine => {
-        const schedule = weekdaySchedules.find((s: any) => s.routineId === routine.id);
-        return schedule && schedule[currentDay];
+      // Para todos los días, usar el total de rutinas disponibles
+      const total = userRoutines.length;
+      
+      // Obtener las rutinas únicas completadas para este día específico
+      const uniqueCompletedIds = new Set();
+      completionStats.forEach((completion: any) => {
+        if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
+          uniqueCompletedIds.add(completion.routineId);
+        }
       });
       
-      // Find completions for this day
-      const dayCompletions = completionStats.filter((completion: any) => 
-        format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr
-      );
+      // El número de rutinas completadas es el tamaño del conjunto (rutinas únicas)
+      const completed = uniqueCompletedIds.size;
       
-      const total = scheduledRoutines.length;
-      const completed = dayCompletions.length;
-      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      // Para hoy, especialmente si estamos navegando en la página, mostrar el dato real actualizado
+      const percentage = isToday && uniqueCompletedIds.size > 0 
+        ? Math.min(Math.round((completed / total) * 100), 100) 
+        : total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
       
       return {
         date: format(day, "MMM dd"),
@@ -107,45 +109,93 @@ export default function ProgressPage() {
       low: userRoutines.filter(r => r.priority === 'low')
     };
     
-    // Count completions for each priority
+    // Obtener sólo completados para hoy
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayCompletions = completionStats.filter(c => 
+      format(new Date(c.completedAt), 'yyyy-MM-dd') === todayStr
+    );
+    
+    // Obtener rutinas únicas completadas por prioridad
+    const uniqueCompletedByPriority = {
+      high: new Set<number>(),
+      medium: new Set<number>(),
+      low: new Set<number>()
+    };
+    
+    // Clasificar las rutinas completadas por prioridad
+    todayCompletions.forEach((c: any) => {
+      const routineId = c.routineId;
+      if (routinesByPriority.high.some(r => r.id === routineId)) {
+        uniqueCompletedByPriority.high.add(routineId);
+      } else if (routinesByPriority.medium.some(r => r.id === routineId)) {
+        uniqueCompletedByPriority.medium.add(routineId);
+      } else if (routinesByPriority.low.some(r => r.id === routineId)) {
+        uniqueCompletedByPriority.low.add(routineId);
+      }
+    });
+    
+    // Crear los datos para la gráfica
     const result = [
       { 
         name: "High", 
-        completed: completionStats.filter(c => 
-          routinesByPriority.high.some(r => r.id === c.routineId)
-        ).length,
-        expected: routinesByPriority.high.length * dailyData.length || 1 // Avoid division by zero
+        completed: uniqueCompletedByPriority.high.size,
+        expected: routinesByPriority.high.length || 1 // Evitar división por cero
       },
       { 
         name: "Medium", 
-        completed: completionStats.filter(c => 
-          routinesByPriority.medium.some(r => r.id === c.routineId)
-        ).length,
-        expected: routinesByPriority.medium.length * dailyData.length || 1
+        completed: uniqueCompletedByPriority.medium.size,
+        expected: routinesByPriority.medium.length || 1
       },
       { 
         name: "Low", 
-        completed: completionStats.filter(c => 
-          routinesByPriority.low.some(r => r.id === c.routineId)
-        ).length,
-        expected: routinesByPriority.low.length * dailyData.length || 1
+        completed: uniqueCompletedByPriority.low.size,
+        expected: routinesByPriority.low.length || 1
       }
     ];
     
-    // Convert to percentages
+    // Convertir a porcentajes y limitar a 100%
     return result.map(item => ({
       ...item,
-      completed: Math.round((item.completed / item.expected) * 100)
+      completed: Math.min(Math.round((item.completed / item.expected) * 100), 100)
     }));
   };
   
   const priorityData = generatePriorityData();
   
+  // Obtener las completadas para hoy directamente
+  const todayString = format(new Date(), 'yyyy-MM-dd');
+  
+  // Consulta para obtener las completadas para hoy directamente
+  const { data: todayCompletions = [] } = useQuery<Completion[]>({
+    queryKey: ['/api/completions', todayString],
+  });
+  
   // Calculate overall stats based on actual data
   const calculateOverallStats = () => {
-    const totalRoutines = dailyData.reduce((sum, day) => sum + day.total, 0);
-    const completedRoutines = dailyData.reduce((sum, day) => sum + day.completed, 0);
-    const completionRate = totalRoutines > 0 ? Math.round((completedRoutines / totalRoutines) * 100) : 0;
+    // Cálculo directo basado en datos reales y actuales (hoy)
+    const totalRoutines = userRoutines.length || 0;
+    
+    // Obtenemos las completadas para hoy directamente 
+    // Filtramos para asegurarnos que son sólo de hoy
+    const todayFormatted = format(new Date(), 'yyyy-MM-dd');
+    
+    // Usar un Set para evitar contar rutinas duplicadas
+    const completedRoutineIds = new Set();
+    
+    // Añadir solo rutinas únicas al set
+    completionStats.forEach((c: any) => {
+      if (format(new Date(c.completedAt), 'yyyy-MM-dd') === todayFormatted) {
+        completedRoutineIds.add(c.routineId);
+      }
+    });
+    
+    // El número de rutinas completadas es el tamaño del set (rutinas únicas)
+    const completedRoutines = completedRoutineIds.size;
+    
+    // Asegurarnos que el porcentaje no exceda el 100%
+    const completionRate = totalRoutines > 0 
+      ? Math.min(Math.round((completedRoutines / totalRoutines) * 100), 100) 
+      : 0;
     
     // Calculate streak
     let currentStreak = 0;
@@ -163,12 +213,12 @@ export default function ProgressPage() {
       }
     }
     
-    // Find most and least completed routines
-    const routineCompletionCounts: Record<string, { completed: number, total: number, name: string }> = {};
+    // Create temporary variable for counting completions
+    const routineStats: Record<number, { completed: number, total: number, name: string }> = {};
     
     // Initialize counts
     userRoutines.forEach(routine => {
-      routineCompletionCounts[routine.id] = {
+      routineStats[routine.id] = {
         completed: 0,
         total: dailyData.length, // Maximum possible completions
         name: routine.name
@@ -176,9 +226,9 @@ export default function ProgressPage() {
     });
     
     // Count completions per routine
-    completionStats.forEach(completion => {
-      if (routineCompletionCounts[completion.routineId]) {
-        routineCompletionCounts[completion.routineId].completed++;
+    completionStats.forEach((completion: any) => {
+      if (routineStats[completion.routineId]) {
+        routineStats[completion.routineId].completed++;
       }
     });
     
@@ -186,7 +236,7 @@ export default function ProgressPage() {
     let mostCompletedRoutine = { name: "Ninguna", rate: 0 };
     let leastCompletedRoutine = { name: "Ninguna", rate: 100 };
     
-    Object.values(routineCompletionCounts).forEach(({ completed, total, name }) => {
+    Object.values(routineStats).forEach(({ completed, total, name }) => {
       if (total > 0) {
         const rate = (completed / total) * 100;
         if (rate > mostCompletedRoutine.rate) {
@@ -204,31 +254,54 @@ export default function ProgressPage() {
       completionRate,
       streak: currentStreak,
       mostCompletedRoutine: mostCompletedRoutine.name,
-      leastCompletedRoutine: leastCompletedRoutine.name
+      leastCompletedRoutine: leastCompletedRoutine.name,
+      routineStats // Include the stats for use in the component
     };
   };
   
-  const stats = calculateOverallStats();
+  const calculatedStats = calculateOverallStats();
+  
+  // Extraer los valores necesarios para un uso más fácil
+  const { 
+    totalRoutines, 
+    completedRoutines, 
+    completionRate, 
+    streak, 
+    mostCompletedRoutine, 
+    leastCompletedRoutine,
+    routineStats
+  } = calculatedStats;
+
+  // Buscar información específica de las rutinas más y menos completadas
+  const mostCompletedStats = Object.values(routineStats).find(r => r.name === mostCompletedRoutine) || {
+    completed: 0,
+    total: 0
+  };
+  
+  const leastCompletedStats = Object.values(routineStats).find(r => r.name === leastCompletedRoutine) || {
+    completed: 0,
+    total: 0
+  };
 
   return (
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progress & Analytics</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progreso y Análisis</h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Track your routine completion over time
+            Seguimiento de tus rutinas a lo largo del tiempo
           </p>
         </div>
         
         <div className="mt-4 md:mt-0 w-full md:w-48">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select time range" />
+              <SelectValue placeholder="Seleccionar período" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Last 7 Days</SelectItem>
-              <SelectItem value="month">Last 30 Days</SelectItem>
-              <SelectItem value="year">Last 365 Days</SelectItem>
+              <SelectItem value="week">Últimos 7 días</SelectItem>
+              <SelectItem value="month">Últimos 30 días</SelectItem>
+              <SelectItem value="year">Últimos 365 días</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -239,32 +312,56 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Completion Rate
+              Tasa de Completado
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getColorClass(stats.completionRate)}`}>
-              {stats.completionRate}%
-            </div>
-            <ProgressBar value={stats.completionRate} className="mt-2 h-2" />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              {stats.completedRoutines} of {stats.totalRoutines} routines completed
-            </p>
+            {/* Cálculo dinámico de porcentaje */}
+            {(() => {
+              // Calcular las rutinas completadas hoy
+              const todayFormatted = format(new Date(), 'yyyy-MM-dd');
+              const uniqueCompletedIds = new Set();
+              
+              // Encontrar IDs únicos de rutinas completadas hoy
+              completionStats.forEach((completion: any) => {
+                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === todayFormatted) {
+                  uniqueCompletedIds.add(completion.routineId);
+                }
+              });
+              
+              const totalCount = userRoutines.length || 0;
+              const completedCount = uniqueCompletedIds.size;
+              const percentage = totalCount > 0 
+                ? Math.min(Math.round((completedCount / totalCount) * 100), 100) 
+                : 0;
+                
+              return (
+                <>
+                  <div className={`text-3xl font-bold ${getColorClass(percentage)}`}>
+                    {percentage}%
+                  </div>
+                  <ProgressBar value={percentage} className="mt-2 h-2" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {completedCount} de {totalCount} rutinas completadas
+                  </p>
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Current Streak
+              Racha Actual
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {stats.streak} days
+              {streak} días
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Keep it up! You're doing great.
+              ¡Sigue así! Lo estás haciendo genial.
             </p>
           </CardContent>
         </Card>
@@ -272,15 +369,15 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Most Completed
+              Más Completada
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {stats.mostCompletedRoutine}
+              {mostCompletedRoutine}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Completed 29 out of 30 days
+              {mostCompletedStats.completed} de {mostCompletedStats.total} días
             </p>
           </CardContent>
         </Card>
@@ -288,15 +385,15 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Needs Improvement
+              Necesita Mejorar
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {stats.leastCompletedRoutine}
+              {leastCompletedRoutine}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Completed only 12 out of 30 days
+              Completada solo {leastCompletedStats.completed} de {leastCompletedStats.total} días
             </p>
           </CardContent>
         </Card>
@@ -372,24 +469,45 @@ export default function ProgressPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-2">
-            {dailyData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  {day.date}
+            {dailyData.map((day, index) => {
+              // Determinar si es hoy para mostrar los datos actualizados
+              const isToday = day.date === format(new Date(), 'MMM dd');
+              
+              // Obtener rutinas completadas para este día específico
+              const dayStr = format(new Date(day.date), 'yyyy-MM-dd');
+              const uniqueCompletedIds = new Set();
+              
+              completionStats.forEach((completion: any) => {
+                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
+                  uniqueCompletedIds.add(completion.routineId);
+                }
+              });
+              
+              // Calcular porcentaje actualizado para el día
+              const total = userRoutines.length;
+              const completed = uniqueCompletedIds.size;
+              const percentage = total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
+              
+              // Usar el porcentaje calculado para determinar el color
+              return (
+                <div key={index} className="flex flex-col items-center">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {day.date}
+                  </div>
+                  <div 
+                    className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
+                      percentage >= 80 
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
+                        : percentage >= 50 
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                    }`}
+                  >
+                    {percentage}%
+                  </div>
                 </div>
-                <div 
-                  className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
-                    day.percentage >= 80 
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
-                      : day.percentage >= 50 
-                        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                  }`}
-                >
-                  {day.percentage}%
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

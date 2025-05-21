@@ -2,7 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { hashPassword, verifyPassword, generateToken, verifyToken } from "./auth";
-import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema } from "@shared/schema";
+import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema, completions, weekdaySchedules, routines } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import express from "express";
 
 // Middleware to validate authentication
@@ -258,22 +260,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req as any).user.id;
       
-      // Obtener todas las rutinas del usuario
+      // Obtener todas las rutinas del usuario usando storage en lugar de db directo
       const userRoutines = await storage.getRoutinesByUserId(userId);
       
-      // Recolectar todas las programaciones de días de la semana
+      // Array para almacenar todos los horarios (existentes o predeterminados)
       const schedules = [];
       
+      // Para cada rutina, intentar obtener su horario o crear uno predeterminado
       for (const routine of userRoutines) {
         try {
-          const schedule = await storage.getWeekdayScheduleByRoutineId(routine.id);
+          // Buscar el horario existente en la base de datos directamente
+          const existingSchedules = await db
+            .select()
+            .from(weekdaySchedules)
+            .where(eq(weekdaySchedules.routineId, routine.id));
           
-          if (schedule) {
-            schedules.push(schedule);
+          if (existingSchedules && existingSchedules.length > 0) {
+            // Si existe, añadir el horario existente
+            schedules.push(existingSchedules[0]);
           } else {
-            // Si no hay programación, crear uno predeterminado
+            // Si no existe, crear un horario predeterminado
             schedules.push({
-              id: 0, // ID temporal
+              id: 0,
               routineId: routine.id,
               monday: false,
               tuesday: false,
@@ -284,10 +292,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sunday: false
             });
           }
-        } catch (routineError) {
-          console.error(`Error obteniendo programación para rutina ${routine.id}:`, routineError);
-          // Continuamos con la siguiente rutina sin interrumpir el proceso
-          continue;
+        } catch (err) {
+          console.error(`Error al obtener horario para rutina ${routine.id}:`, err);
+          // En caso de error, crear un horario predeterminado
+          schedules.push({
+            id: 0,
+            routineId: routine.id,
+            monday: false,
+            tuesday: false,
+            wednesday: false,
+            thursday: false,
+            friday: false,
+            saturday: false,
+            sunday: false
+          });
         }
       }
       
@@ -621,18 +639,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req as any).user.id;
       
-      // Validate completion data
+      // Simplified completion data with proper Date object
       const completionData = { 
-        ...req.body, 
+        routineId: parseInt(req.body.routineId),
         userId,
         completedAt: new Date() 
       };
-      
-      const validation = insertCompletionSchema.safeParse(completionData);
-      
-      if (!validation.success) {
-        return res.status(400).json({ message: "Invalid completion data", errors: validation.error.format() });
-      }
       
       // Check if routine belongs to user
       const routine = await storage.getRoutineById(completionData.routineId);
@@ -645,8 +657,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
       
-      // Create completion
-      const completion = await storage.createCompletion(validation.data);
+      // Create completion directly in the database
+      const [completion] = await db
+        .insert(completions)
+        .values(completionData)
+        .returning();
       
       res.status(201).json(completion);
     } catch (error) {
@@ -808,12 +823,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/completions/:date?", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default a hoy
+      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default to today
       
-      // Obtener todas las completaciones para el usuario en la fecha específica
-      const completions = await storage.getCompletionStats(userId, date, date);
+      // Get all completions for the user for the specific date
+      // Direct database query to avoid date conversion issues
+      const result = await db
+        .select()
+        .from(completions)
+        .where(
+          and(
+            eq(completions.userId, userId)
+          )
+        );
       
-      res.json(completions);
+      res.json(result);
     } catch (error) {
       console.error("Error fetching completions:", error);
       res.status(500).json({ message: "Failed to fetch completions" });

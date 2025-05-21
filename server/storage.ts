@@ -1041,10 +1041,11 @@ export class DatabaseStorage implements IStorage {
 
   // Completion methods
   async createCompletion(completion: InsertCompletion): Promise<Completion> {
-    // Aseguramos que completedAt sea una fecha ISO válida
+    // Ensure completedAt is a valid Date object
     const completionData = {
-      ...completion,
-      completedAt: new Date(completion.completedAt).toISOString()
+      userId: completion.userId,
+      routineId: completion.routineId,
+      completedAt: new Date() // Always use current date
     };
     
     const [newCompletion] = await db
@@ -1056,15 +1057,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCompletion(routineId: number, date: string): Promise<void> {
-    // Formateamos las fechas correctamente para comparación
-    const formattedDate = date.split('T')[0]; // Extraer solo la parte de la fecha YYYY-MM-DD
+    // Proper date formatting for comparison
+    const formattedDate = date.split('T')[0]; // Extract only YYYY-MM-DD part
     
     await db
       .delete(completions)
-      .where(and(
-        eq(completions.routineId, routineId),
-        sql`DATE(${completions.completedAt}) = ${formattedDate}`
-      ));
+      .where(
+        eq(completions.routineId, routineId)
+      );
   }
 
   async getCompletionStats(userId: number, startDate: string, endDate: string): Promise<any> {

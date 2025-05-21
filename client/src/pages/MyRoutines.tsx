@@ -109,23 +109,6 @@ export default function MyRoutines() {
     }
   };
   
-  // Filter routines based on current filters
-  const filteredRoutines = routines.filter(routine => {
-    // Filter by priority
-    if (filter !== "all" && routine.priority !== filter) {
-      return false;
-    }
-    
-    // Filter by group
-    if (groupFilter !== "all") {
-      // In a real implementation, we would check if the routine belongs to the selected group
-      // For this demo, we'll just assume that each routine has a groupId field
-      return true; // Placeholder - would actually filter by group
-    }
-    
-    return true;
-  });
-  
   // Obtener información de grupos y asociaciones de rutinas con grupos
   const { data: groupRoutines = [] } = useQuery({
     queryKey: ['/api/group-routines'],
@@ -138,8 +121,9 @@ export default function MyRoutines() {
     
     // Buscar las asignaciones de grupo para esta rutina
     const routineGroupAssignment = groupRoutines.find((gr: any) => {
-      return gr.routineId === routineId || 
-             (gr.routineIds && gr.routineIds.includes(routineId));
+      if (gr.routineId === routineId) return true;
+      if (gr.routineIds && Array.isArray(gr.routineIds) && gr.routineIds.includes(routineId)) return true;
+      return false;
     });
     
     if (!routineGroupAssignment) return null;
@@ -151,6 +135,25 @@ export default function MyRoutines() {
     const group = groups.find(g => g.id === groupId);
     return group;
   };
+  
+  // Filter routines based on current filters
+  const filteredRoutines = routines.filter(routine => {
+    // Filter by priority
+    if (filter !== "all" && routine.priority !== filter) {
+      return false;
+    }
+    
+    // Filter by group
+    if (groupFilter !== "all") {
+      // Verificar si la rutina pertenece al grupo seleccionado
+      const routineGroup = getRoutineGroup(routine.id);
+      if (!routineGroup || routineGroup.id !== parseInt(groupFilter)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
   
   // Iconos de prioridad
   const priorityIcons = {

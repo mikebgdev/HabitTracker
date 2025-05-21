@@ -474,7 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get routine count by group
+  // Get routine-group relationships
   app.get("/api/group-routines", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
@@ -482,25 +482,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all groups for the user
       const userGroups = await storage.getGroupsByUserId(userId);
       
-      // Create a map to store routine counts
-      const routineCountByGroup: Record<number, number> = {};
+      // Array to store routine-group assignments
+      const routineGroupAssignments = [];
       
-      // For each group, get the routines and count them
+      // For each group, get the routines and build the relationships
       for (const group of userGroups) {
         const routines = await storage.getRoutinesByGroupId(group.id);
-        routineCountByGroup[group.id] = routines.length;
+        
+        // Add an entry for this group with its routines
+        if (routines.length > 0) {
+          routines.forEach(routine => {
+            routineGroupAssignments.push({
+              groupId: group.id,
+              routineId: routine.id
+            });
+          });
+        } else {
+          // Even if there are no routines, add an entry for the group
+          routineGroupAssignments.push({
+            groupId: group.id,
+            count: 0
+          });
+        }
       }
       
-      // Format data as expected by the client
-      const result = Object.entries(routineCountByGroup).map(([groupId, count]) => ({
-        groupId: parseInt(groupId),
-        count
-      }));
-      
-      res.json(result);
+      res.json(routineGroupAssignments);
     } catch (error) {
-      console.error("Error fetching group routine counts:", error);
-      res.status(500).json({ message: "Failed to fetch group routine counts" });
+      console.error("Error fetching routine-group relationships:", error);
+      res.status(500).json({ message: "Failed to fetch routine-group relationships" });
     }
   });
   

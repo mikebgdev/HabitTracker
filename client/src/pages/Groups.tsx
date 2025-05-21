@@ -360,25 +360,23 @@ export default function Groups() {
                   Icon
                 </Label>
                 <Select 
-                  value={groupFormState.icon || undefined}
+                  value={groupFormState.icon || "fa-layer-group"}
                   onValueChange={(val: string) => 
                     setGroupFormState({...groupFormState, icon: val})
                   }
                 >
                   <SelectTrigger id="group-icon">
-                    <SelectValue>
-                      {groupFormState.icon && (
-                        <div className="flex items-center">
-                          <i className={getIconClass(groupFormState.icon)} style={{marginRight: '8px'}}></i>
-                          <span>{groupFormState.icon === 'fa-layer-group' ? 'General' :
-                                 groupFormState.icon === 'fa-sun' ? 'Morning' : 
-                                 groupFormState.icon === 'fa-briefcase' ? 'Work' :
-                                 groupFormState.icon === 'fa-moon' ? 'Evening' :
-                                 groupFormState.icon === 'fa-dumbbell' ? 'Fitness' :
-                                 groupFormState.icon === 'fa-book' ? 'Study' : 'Select an icon'}</span>
-                        </div>
-                      )}
-                    </SelectValue>
+                    <div className="flex items-center">
+                      <i className={getIconClass(groupFormState.icon)} style={{marginRight: '8px'}}></i>
+                      <span>{
+                        groupFormState.icon === 'fa-layer-group' ? 'General' :
+                        groupFormState.icon === 'fa-sun' ? 'Morning' : 
+                        groupFormState.icon === 'fa-briefcase' ? 'Work' :
+                        groupFormState.icon === 'fa-moon' ? 'Evening' :
+                        groupFormState.icon === 'fa-dumbbell' ? 'Fitness' :
+                        groupFormState.icon === 'fa-book' ? 'Study' : 'Select an icon'
+                      }</span>
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="fa-sun">

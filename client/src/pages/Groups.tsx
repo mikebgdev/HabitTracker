@@ -62,12 +62,12 @@ export default function Groups() {
   const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
   
   // Fetch all groups
-  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>({
+  const { data: groups = [], isLoading: isLoadingGroups, refetch: refetchGroups } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
   
   // Fetch group-routine relationships to count routines per group
-  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<any[]>({
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines, refetch: refetchGroupRoutines } = useQuery<any[]>({
     queryKey: ['/api/group-routines'],
   });
   
@@ -167,8 +167,8 @@ export default function Groups() {
       }
 
       // Refresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/group-routines'] });
+      await refetchGroups();
+      await refetchGroupRoutines();
       setIsEditGroupModalOpen(false);
     } catch (error) {
       console.error("Failed to save group:", error);
@@ -191,8 +191,8 @@ export default function Groups() {
       await apiRequest("DELETE", `/api/groups/${groupToDelete}`, {});
       
       // Actualizar ambas consultas para asegurar que la UI se actualice
-      queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/group-routines'] });
+      await refetchGroups();
+      await refetchGroupRoutines();
       
       toast({
         title: "Grupo eliminado",

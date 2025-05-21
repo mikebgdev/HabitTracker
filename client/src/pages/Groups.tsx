@@ -44,6 +44,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Group, InsertGroup, GroupRoutine } from "@shared/schema";
 
 export default function Groups() {
+  const { toast } = useToast();
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [groupFormState, setGroupFormState] = useState<Partial<InsertGroup>>({
@@ -55,6 +56,10 @@ export default function Groups() {
   const [endTime, setEndTime] = useState("09:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [routineCountByGroup, setRoutineCountByGroup] = useState<Record<number, number>>({});
+  
+  // Estado para el diálogo de confirmación de eliminación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
   
   // Fetch all groups
   const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>({

@@ -1041,27 +1041,29 @@ export class DatabaseStorage implements IStorage {
 
   // Completion methods
   async createCompletion(completion: InsertCompletion): Promise<Completion> {
+    // Aseguramos que completedAt sea una fecha ISO válida
+    const completionData = {
+      ...completion,
+      completedAt: new Date(completion.completedAt).toISOString()
+    };
+    
     const [newCompletion] = await db
       .insert(completions)
-      .values(completion)
+      .values(completionData)
       .returning();
     
     return newCompletion;
   }
 
   async deleteCompletion(routineId: number, date: string): Promise<void> {
-    const dateStart = new Date(date);
-    dateStart.setHours(0, 0, 0, 0);
-    
-    const dateEnd = new Date(date);
-    dateEnd.setHours(23, 59, 59, 999);
+    // Formateamos las fechas correctamente para comparación
+    const formattedDate = date.split('T')[0]; // Extraer solo la parte de la fecha YYYY-MM-DD
     
     await db
       .delete(completions)
       .where(and(
         eq(completions.routineId, routineId),
-        gte(completions.completedAt, dateStart.toISOString()),
-        lte(completions.completedAt, dateEnd.toISOString())
+        sql`DATE(${completions.completedAt}) = ${formattedDate}`
       ));
   }
 

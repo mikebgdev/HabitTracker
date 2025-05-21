@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { AddRoutineModal } from "@/components/AddRoutineModal";
 import { EditRoutineModal } from "@/components/EditRoutineModal";
@@ -314,10 +314,7 @@ export default function MyRoutines() {
                   <div className="flex gap-3 items-start">
                     {/* Icono de la rutina */}
                     <div className="w-10 h-10 flex items-center justify-center bg-primary-100 dark:bg-primary-800/30 rounded-full text-primary-700 dark:text-primary-300">
-                      {routine.icon && iconMap[routine.icon] ? 
-                        React.createElement(iconMap[routine.icon], { className: "w-5 h-5" }) : 
-                        <Activity className="w-5 h-5" />
-                      }
+                      <Activity className="w-5 h-5" />
                     </div>
                     
                     <div>

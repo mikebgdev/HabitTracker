@@ -2,6 +2,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { AddRoutineModal } from "@/components/AddRoutineModal";
 import { EditRoutineModal } from "@/components/EditRoutineModal";
+import { AssignGroupToRoutine } from "@/components/AssignGroupToRoutine";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,6 +60,7 @@ export default function MyRoutines() {
   const { toast } = useToast();
   const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
   const [isEditRoutineModalOpen, setIsEditRoutineModalOpen] = useState(false);
+  const [isAssignGroupModalOpen, setIsAssignGroupModalOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
   
@@ -361,7 +363,18 @@ export default function MyRoutines() {
                 <WeekdayScheduleDisplay routineId={routine.id} />
                 
                 
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-end space-x-2 flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 dark:text-blue-400"
+                    onClick={() => {
+                      setRoutineToEdit(routine);
+                      setIsAssignGroupModalOpen(true);
+                    }}
+                  >
+                    <FolderOpen className="h-4 w-4 mr-1" /> Asignar
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -446,6 +459,23 @@ export default function MyRoutines() {
         onRoutineUpdated={async () => {
           await refetchRoutines();
           await refetchGroups();
+        }}
+      />
+      
+      {/* Modal para asignar grupo a rutina */}
+      <AssignGroupToRoutine
+        isOpen={isAssignGroupModalOpen}
+        onClose={() => {
+          setIsAssignGroupModalOpen(false);
+          setRoutineToEdit(null);
+        }}
+        routine={routineToEdit || undefined}
+        onComplete={async () => {
+          await refetchRoutines();
+          // Refrescar los datos de grupo
+          await refetchGroups();
+          // Refrescar las asignaciones rutina-grupo
+          await queryClient.invalidateQueries({ queryKey: ['/api/routines/group-assignments'] });
         }}
       />
     </Layout>

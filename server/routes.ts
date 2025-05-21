@@ -703,5 +703,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint específico para asignar/desasignar un grupo a una rutina
+  app.post("/api/routines/:id/assign-group", authenticate, async (req, res) => {
+    try {
+      const routineId = parseInt(req.params.id);
+      const userId = (req as any).user.id;
+      const { groupId } = req.body; // groupId puede ser null para desasignar
+      
+      // Verificar que la rutina existe y pertenece al usuario
+      const routine = await storage.getRoutineById(routineId);
+      
+      if (!routine) {
+        return res.status(404).json({ message: "Routine not found" });
+      }
+      
+      if (routine.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
+      }
+      
+      // Obtener todas las asignaciones de grupo-rutina actuales
+      const groupRoutines = await storage.getAllGroupRoutines();
+      
+      // Buscar si la rutina ya está asignada a un grupo
+      const existingAssignment = groupRoutines.find(gr => gr.routineId === routineId);
+      
+      // Si hay una asignación existente, removerla
+      if (existingAssignment) {
+        await storage.removeRoutineFromGroup(routineId, existingAssignment.groupId);
+      }
+      
+      // Si se proporcionó un nuevo groupId, crear la nueva asignación
+      if (groupId !== null && groupId !== undefined) {
+        // Verificar que el grupo existe y pertenece al usuario
+        const group = await storage.getGroupById(groupId);
+        
+        if (!group) {
+          return res.status(404).json({ message: "Group not found" });
+        }
+        
+        if (group.userId !== userId) {
+          return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
+        }
+        
+        // Asignar la rutina al grupo
+        await storage.addRoutineToGroup(routineId, groupId);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: groupId !== null && groupId !== undefined 
+          ? "Routine assigned to group successfully" 
+          : "Routine removed from group successfully" 
+      });
+    } catch (error) {
+      console.error("Error assigning group to routine:", error);
+      res.status(500).json({ message: "Failed to assign group to routine" });
+    }
+  });
+
   return httpServer;
 }

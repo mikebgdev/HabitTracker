@@ -247,20 +247,12 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
               </Label>
               <div className="grid grid-cols-7 gap-1">
                 <Toggle 
-                  variant={selectedDays.sunday ? "selected" : "day"}
-                  pressed={selectedDays.sunday}
-                  onPressedChange={() => toggleDay("sunday")}
-                  className="text-xs font-medium text-center"
-                >
-                  S
-                </Toggle>
-                <Toggle 
                   variant={selectedDays.monday ? "selected" : "day"}
                   pressed={selectedDays.monday}
                   onPressedChange={() => toggleDay("monday")}
                   className="text-xs font-medium text-center"
                 >
-                  M
+                  L
                 </Toggle>
                 <Toggle 
                   variant={selectedDays.tuesday ? "selected" : "day"}
@@ -268,7 +260,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   onPressedChange={() => toggleDay("tuesday")}
                   className="text-xs font-medium text-center"
                 >
-                  T
+                  M
                 </Toggle>
                 <Toggle 
                   variant={selectedDays.wednesday ? "selected" : "day"}
@@ -276,7 +268,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   onPressedChange={() => toggleDay("wednesday")}
                   className="text-xs font-medium text-center"
                 >
-                  W
+                  X
                 </Toggle>
                 <Toggle 
                   variant={selectedDays.thursday ? "selected" : "day"}
@@ -284,7 +276,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   onPressedChange={() => toggleDay("thursday")}
                   className="text-xs font-medium text-center"
                 >
-                  T
+                  J
                 </Toggle>
                 <Toggle 
                   variant={selectedDays.friday ? "selected" : "day"}
@@ -292,7 +284,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   onPressedChange={() => toggleDay("friday")}
                   className="text-xs font-medium text-center"
                 >
-                  F
+                  V
                 </Toggle>
                 <Toggle 
                   variant={selectedDays.saturday ? "selected" : "day"}
@@ -301,6 +293,14 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   className="text-xs font-medium text-center"
                 >
                   S
+                </Toggle>
+                <Toggle 
+                  variant={selectedDays.sunday ? "selected" : "day"}
+                  pressed={selectedDays.sunday}
+                  onPressedChange={() => toggleDay("sunday")}
+                  className="text-xs font-medium text-center"
+                >
+                  D
                 </Toggle>
               </div>
             </div>

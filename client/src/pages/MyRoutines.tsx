@@ -26,6 +26,7 @@ import {
   BatteryMedium,
   Timer,
   FolderOpen,
+  FolderX,
   Activity,
   Bike,
   Book,
@@ -328,7 +329,7 @@ export default function MyRoutines() {
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="flex items-center text-xs gap-1 text-gray-400 dark:text-gray-500">
-                            <FolderX className="w-3 h-3" />
+                            <FolderOpen className="w-3 h-3 opacity-50" />
                             <span>Sin grupo</span>
                           </Badge>
                         )}

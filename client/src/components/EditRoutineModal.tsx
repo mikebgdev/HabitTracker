@@ -136,11 +136,24 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   // Efecto separado para el grupo - solo se ejecuta cuando groupRoutines cambia
   useEffect(() => {
     if (routine && Array.isArray(groupRoutines) && groupRoutines.length > 0) {
-      // Usamos tipo any para evitar problemas de tipado
-      const routineGroup = groupRoutines.find((gr: any) => gr.routineId === routine.id);
-      if (routineGroup) {
-        setGroupId(routineGroup.groupId);
-      } else {
+      console.log("Buscando grupo para la rutina:", routine.id);
+      console.log("Grupos disponibles:", groupRoutines);
+      
+      // Buscar rutina en cada grupo
+      let foundGroup = false;
+      
+      // Iterar por cada relación de grupo para buscar la rutina
+      for (const gr of groupRoutines) {
+        if (gr.routineId === routine.id) {
+          console.log("Rutina encontrada en el grupo:", gr.groupId);
+          setGroupId(gr.groupId);
+          foundGroup = true;
+          break;
+        }
+      }
+      
+      if (!foundGroup) {
+        console.log("No se encontró grupo asignado para la rutina", routine.id);
         setGroupId(null);
       }
     }

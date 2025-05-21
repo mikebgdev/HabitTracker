@@ -501,28 +501,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Array to store routine-group assignments
       const routineGroupAssignments = [];
       
-      // For each group, get the routines and build the relationships
+      // Obtenemos todas las relaciones entre grupos y rutinas
+      const allGroupRoutines = await storage.getAllGroupRoutines();
+      
+      // Para cada grupo del usuario, agregamos sus relaciones con rutinas
       for (const group of userGroups) {
-        console.log(`Getting routines for group ${group.id} (${group.name})`);
+        console.log(`Procesando grupo ${group.id} (${group.name})`);
         
-        // Fetch all routines that belong to this group
-        const routinesInGroup = await storage.getRoutinesByGroupId(group.id);
-        console.log(`Found ${routinesInGroup.length} routines in group ${group.id}`);
+        // Filtramos las relaciones para este grupo específico
+        const groupRelations = allGroupRoutines.filter(gr => gr.groupId === group.id);
         
-        // Add an entry for each routine with group info
-        if (routinesInGroup.length > 0) {
-          routinesInGroup.forEach(routine => {
-            console.log(`Adding routine ${routine.id} to group ${group.id}`);
+        if (groupRelations.length > 0) {
+          // Si hay rutinas en este grupo, agregamos cada una con la información del grupo
+          groupRelations.forEach(relation => {
+            console.log(`Agregando rutina ${relation.routineId} al grupo ${group.id}`);
             routineGroupAssignments.push({
               groupId: group.id,
               groupName: group.name,
               groupIcon: group.icon,
-              routineId: routine.id
+              routineId: relation.routineId
             });
           });
         } else {
-          // Even if there are no routines, add an entry for the group
-          console.log(`No routines found in group ${group.id}, adding empty record`);
+          // Si no hay rutinas en este grupo, agregamos solo la información del grupo
+          console.log(`No hay rutinas en el grupo ${group.id}, agregando registro vacío`);
           routineGroupAssignments.push({
             groupId: group.id,
             groupName: group.name,

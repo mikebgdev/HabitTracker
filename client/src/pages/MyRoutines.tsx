@@ -51,6 +51,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteRoutineDialog } from "@/components/dialogs/DeleteRoutineDialog";
+import { WeekdayScheduleDisplay } from "@/components/WeekdayScheduleDisplay";
 import type { Routine, Group, GroupRoutine } from "@shared/schema";
 
 export default function MyRoutines() {
@@ -325,48 +326,8 @@ export default function MyRoutines() {
                 </div>
                 
                 {/* Programación semanal */}
-                <div className="mb-4">
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Días de la semana</div>
-                  
-                  {/* Cargar la programación de días de la semana para esta rutina */}
-                  {(() => {
-                    // Query para obtener la programación de días de la semana
-                    const { data: weekdaySchedule } = useQuery({
-                      queryKey: ['/api/routines/weekday-schedule', routine.id],
-                      enabled: !!routine.id,
-                    });
-                    
-                    const days = [
-                      { key: 'monday', label: 'L' },
-                      { key: 'tuesday', label: 'M' },
-                      { key: 'wednesday', label: 'X' },
-                      { key: 'thursday', label: 'J' },
-                      { key: 'friday', label: 'V' },
-                      { key: 'saturday', label: 'S' },
-                      { key: 'sunday', label: 'D' }
-                    ];
-                    
-                    return (
-                      <div className="flex flex-wrap gap-1">
-                        {days.map(day => {
-                          const isSelected = weekdaySchedule && weekdaySchedule[day.key];
-                          return (
-                            <span 
-                              key={day.key}
-                              className={`text-xs px-2 py-1 rounded ${
-                                isSelected
-                                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' 
-                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                              }`}
-                            >
-                              {day.label}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </div>
+                <WeekdayScheduleDisplay routineId={routine.id} />
+                
                 
                 <div className="flex justify-end space-x-2">
                   <Button

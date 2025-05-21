@@ -211,6 +211,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta para obtener la programación de días de la semana de una rutina
+  app.get("/api/routines/weekday-schedule/:routineId", authenticate, async (req, res) => {
+    try {
+      const routineId = parseInt(req.params.routineId);
+      if (isNaN(routineId)) {
+        return res.status(400).json({ message: "Invalid routine ID" });
+      }
+      
+      const userId = (req as any).user.id;
+      
+      // Verificar que la rutina pertenezca al usuario
+      const routine = await storage.getRoutineById(routineId);
+      if (!routine) {
+        return res.status(404).json({ message: "Routine not found" });
+      }
+      
+      if (routine.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
+      }
+      
+      // Obtener la programación de días de la semana
+      const weekdaySchedule = await storage.getWeekdayScheduleByRoutineId(routineId);
+      if (!weekdaySchedule) {
+        // Si no hay programación, devolver un objeto con todos los días en false
+        return res.json({
+          monday: false,
+          tuesday: false,
+          wednesday: false,
+          thursday: false,
+          friday: false,
+          saturday: false,
+          sunday: false
+        });
+      }
+      
+      res.json(weekdaySchedule);
+    } catch (error) {
+      console.error("Error fetching weekday schedule:", error);
+      res.status(500).json({ message: "Failed to fetch weekday schedule" });
+    }
+  });
+  
   app.patch("/api/routines/:id", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);

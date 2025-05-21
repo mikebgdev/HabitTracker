@@ -111,32 +111,25 @@ export default function MyRoutines() {
   
   // Obtener información de grupos y asociaciones de rutinas con grupos
   const { data: groupRoutines = [] } = useQuery({
-    queryKey: ['/api/group-routines'],
-    onSuccess: (data) => {
-      console.log("Asignaciones grupo-rutina:", data);
-    }
+    queryKey: ['/api/group-routines']
   });
   
   // Función para obtener el grupo al que pertenece una rutina
-  const getRoutineGroup = (routineId: number) => {
+  const getRoutineGroupInfo = (routineId: number) => {
     // Verificar que tengamos datos válidos
-    if (!Array.isArray(groupRoutines) || !Array.isArray(groups)) return null;
+    if (!Array.isArray(groupRoutines)) return null;
     
-    // Buscar las asignaciones de grupo para esta rutina
-    const routineGroupAssignment = groupRoutines.find((gr: any) => {
-      if (gr.routineId === routineId) return true;
-      if (gr.routineIds && Array.isArray(gr.routineIds) && gr.routineIds.includes(routineId)) return true;
-      return false;
-    });
+    // Buscar la asignación de grupo para esta rutina
+    const assignment = groupRoutines.find((gr: any) => gr.routineId === routineId);
     
-    if (!routineGroupAssignment) return null;
+    if (!assignment) return null;
     
-    // Obtener el ID del grupo al que pertenece la rutina
-    const groupId = routineGroupAssignment.groupId;
-    
-    // Buscar el grupo completo por su ID
-    const group = groups.find(g => g.id === groupId);
-    return group;
+    // Devolver la información del grupo directamente desde la asignación
+    return {
+      id: assignment.groupId,
+      name: assignment.groupName,
+      icon: assignment.groupIcon
+    };
   };
   
   // Filter routines based on current filters
@@ -149,8 +142,8 @@ export default function MyRoutines() {
     // Filter by group
     if (groupFilter !== "all") {
       // Verificar si la rutina pertenece al grupo seleccionado
-      const routineGroup = getRoutineGroup(routine.id);
-      if (!routineGroup || routineGroup.id !== parseInt(groupFilter)) {
+      const groupInfo = getRoutineGroupInfo(routine.id);
+      if (!groupInfo || groupInfo.id !== parseInt(groupFilter)) {
         return false;
       }
     }
@@ -315,11 +308,11 @@ export default function MyRoutines() {
                       </CardTitle>
                       
                       {/* Grupo al que pertenece */}
-                      {getRoutineGroup(routine.id) && (
+                      {getRoutineGroupInfo(routine.id) && (
                         <div className="mt-1">
                           <Badge variant="outline" className="flex items-center text-xs gap-1">
                             <FolderOpen className="w-3 h-3" />
-                            <span>{getRoutineGroup(routine.id)?.name}</span>
+                            <span>{getRoutineGroupInfo(routine.id)?.name}</span>
                           </Badge>
                         </div>
                       )}

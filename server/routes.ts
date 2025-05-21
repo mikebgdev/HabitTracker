@@ -474,7 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get routine-group relationships
+  // Get routine-group relationships with group names
   app.get("/api/group-routines", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
@@ -489,11 +489,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const group of userGroups) {
         const routines = await storage.getRoutinesByGroupId(group.id);
         
-        // Add an entry for this group with its routines
+        // Add an entry for each routine with group info
         if (routines.length > 0) {
           routines.forEach(routine => {
             routineGroupAssignments.push({
               groupId: group.id,
+              groupName: group.name,
+              groupIcon: group.icon,
               routineId: routine.id
             });
           });
@@ -501,6 +503,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Even if there are no routines, add an entry for the group
           routineGroupAssignments.push({
             groupId: group.id,
+            groupName: group.name,
+            groupIcon: group.icon,
             count: 0
           });
         }

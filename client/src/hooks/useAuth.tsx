@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       const userData = await res.json();
       setUser(userData);
-      setLocation("/");
+      setLocation("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
       throw err;

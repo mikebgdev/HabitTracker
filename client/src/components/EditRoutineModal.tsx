@@ -54,27 +54,45 @@ interface EditRoutineModalProps {
   onRoutineUpdated?: () => Promise<void>;
 }
 
-// Lista de iconos disponibles para las rutinas
-const ROUTINE_ICONS = [
-  { name: "activity", icon: Activity },
-  { name: "bike", icon: Bike },
-  { name: "book", icon: Book },
-  { name: "brain", icon: BrainCircuit },
-  { name: "coffee", icon: Coffee },
-  { name: "dumbbell", icon: Dumbbell },
-  { name: "footprints", icon: Footprints },
-  { name: "food", icon: HandPlatter },
-  { name: "heart", icon: Heart },
-  { name: "laptop", icon: Laptop },
-  { name: "microscope", icon: Microscope },
-  { name: "music", icon: Music },
-  { name: "palette", icon: Palette },
-  { name: "pen", icon: Pen },
-  { name: "phone", icon: Smartphone },
-  { name: "sparkles", icon: Sparkles },
-  { name: "utensils", icon: Utensils },
-  { name: "waves", icon: Waves }
+// Categorías de iconos para mejor organización
+const ICON_CATEGORIES = [
+  {
+    name: "Actividades",
+    icons: [
+      { name: "activity", icon: Activity, label: "Actividad" },
+      { name: "bike", icon: Bike, label: "Bicicleta" },
+      { name: "footprints", icon: Footprints, label: "Caminar" },
+      { name: "dumbbell", icon: Dumbbell, label: "Ejercicio" },
+      { name: "palette", icon: Palette, label: "Arte" },
+      { name: "music", icon: Music, label: "Música" },
+      { name: "waves", icon: Waves, label: "Relajación" }
+    ]
+  },
+  {
+    name: "Trabajo y Estudio",
+    icons: [
+      { name: "book", icon: Book, label: "Lectura" },
+      { name: "brain", icon: BrainCircuit, label: "Aprendizaje" },
+      { name: "laptop", icon: Laptop, label: "Computadora" },
+      { name: "microscope", icon: Microscope, label: "Ciencia" },
+      { name: "pen", icon: Pen, label: "Escritura" },
+      { name: "phone", icon: Smartphone, label: "Celular" }
+    ]
+  },
+  {
+    name: "Salud y Bienestar",
+    icons: [
+      { name: "coffee", icon: Coffee, label: "Café" },
+      { name: "food", icon: HandPlatter, label: "Comida" },
+      { name: "heart", icon: Heart, label: "Salud" },
+      { name: "sparkles", icon: Sparkles, label: "Bienestar" },
+      { name: "utensils", icon: Utensils, label: "Alimentación" }
+    ]
+  }
 ];
+
+// Lista plana de iconos para funciones que necesitan todos los iconos
+const ROUTINE_ICONS = ICON_CATEGORIES.flatMap(category => category.icons);
 
 // Mapa de iconos para cada nivel de prioridad
 const PRIORITY_ICONS = {
@@ -397,18 +415,26 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                     )}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[300px]">
                   <SelectItem value="none" className="flex items-center gap-2">
                     <div className="w-4 h-4 mr-2"></div>
                     <span>Sin icono</span>
                   </SelectItem>
-                  {ROUTINE_ICONS.map(({ name: iconName, icon: Icon }) => (
-                    <SelectItem key={iconName} value={iconName} className="flex items-center gap-2">
-                      <div className="w-4 h-4 flex items-center justify-center mr-2">
-                        <Icon className="h-4 w-4" />
+                  
+                  {ICON_CATEGORIES.map((category) => (
+                    <React.Fragment key={category.name}>
+                      <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1">
+                        {category.name}
                       </div>
-                      <span>{iconName.charAt(0).toUpperCase() + iconName.slice(1)}</span>
-                    </SelectItem>
+                      {category.icons.map(({ name: iconName, icon: Icon, label }) => (
+                        <SelectItem key={iconName} value={iconName} className="flex items-center gap-2">
+                          <div className="w-5 h-5 flex items-center justify-center mr-2 bg-gray-100 dark:bg-gray-700 rounded-full">
+                            <Icon className="h-3.5 w-3.5" />
+                          </div>
+                          <span>{label}</span>
+                        </SelectItem>
+                      ))}
+                    </React.Fragment>
                   ))}
                 </SelectContent>
               </Select>

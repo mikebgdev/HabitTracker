@@ -28,7 +28,7 @@ const getColorClass = (percentage: number) => {
   return "text-red-500";
 };
 
-export default function Progress() {
+export default function ProgressPage() {
   const [timeRange, setTimeRange] = useState("week");
   const today = new Date();
   

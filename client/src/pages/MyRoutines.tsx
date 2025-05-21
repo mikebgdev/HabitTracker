@@ -290,10 +290,28 @@ export default function MyRoutines() {
             <Card key={routine.id} className="overflow-hidden">
               <CardHeader className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg font-semibold flex items-center">
-                    {routine.icon && renderRoutineIcon(routine.icon)}
-                    {routine.name}
-                  </CardTitle>
+                  <div className="flex gap-3 items-start">
+                    {/* Icono de la rutina */}
+                    <div className="w-10 h-10 flex items-center justify-center bg-primary-100 dark:bg-primary-800/30 rounded-full text-primary-700 dark:text-primary-300">
+                      {renderRoutineIcon(routine.icon || 'activity')}
+                    </div>
+                    
+                    <div>
+                      <CardTitle className="text-lg font-semibold">
+                        {routine.name}
+                      </CardTitle>
+                      
+                      {/* Grupo al que pertenece */}
+                      {getRoutineGroup(routine.id) && (
+                        <div className="mt-1">
+                          <Badge variant="outline" className="flex items-center text-xs gap-1">
+                            <FolderOpen className="w-3 h-3" />
+                            <span>{getRoutineGroup(routine.id)?.name}</span>
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   
                   <Badge variant={getPriorityBadgeVariant(routine.priority)} className="flex items-center">
                     {priorityIcons[routine.priority as keyof typeof priorityIcons]}
@@ -302,17 +320,7 @@ export default function MyRoutines() {
                 </div>
               </CardHeader>
               <CardContent className="p-4">
-                {/* Grupo */}
-                {getRoutineGroup(routine.id) && (
-                  <div className="mb-4">
-                    <div className="flex items-center">
-                      <Badge variant="secondary" className="flex items-center text-xs">
-                        <FolderOpen className="w-3 h-3 mr-1" />
-                        <span>{getRoutineGroup(routine.id)?.name}</span>
-                      </Badge>
-                    </div>
-                  </div>
-                )}
+                {/* Ya mostramos el grupo en el encabezado */}
                 
                 {/* Tiempo esperado */}
                 <div className="mb-4">

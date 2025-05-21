@@ -141,10 +141,19 @@ export default function ProgressPage() {
   
   const priorityData = generatePriorityData();
   
+  // Obtener las completadas para hoy directamente
+  const todayString = format(new Date(), 'yyyy-MM-dd');
+  
+  // Consulta para obtener las completadas para hoy directamente
+  const { data: todayCompletions = [] } = useQuery<Completion[]>({
+    queryKey: ['/api/completions', todayString],
+  });
+  
   // Calculate overall stats based on actual data
   const calculateOverallStats = () => {
-    const totalRoutines = dailyData.reduce((sum, day) => sum + day.total, 0);
-    const completedRoutines = dailyData.reduce((sum, day) => sum + day.completed, 0);
+    // Cálculo directo basado en datos reales
+    const totalRoutines = userRoutines.length;
+    const completedRoutines = todayCompletions.length;
     const completionRate = totalRoutines > 0 ? Math.round((completedRoutines / totalRoutines) * 100) : 0;
     
     // Calculate streak

@@ -119,28 +119,52 @@ export function RoutineItem({
         </div>
         
         <div className="flex-1">
-          <div className="flex items-center">
-            {renderRoutineIcon()}
-            <h3 className={`font-medium ${routine.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
-              {routine.name}
-            </h3>
-            <div className={`ml-2 flex items-center ${priorityColors[routine.priority]}`}>
+          <div className="flex items-center flex-wrap">
+            {/* Icono + nombre */}
+            <div className="flex items-center mr-3">
+              {renderRoutineIcon()}
+              <h3 className={`font-medium ${routine.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
+                {routine.name}
+              </h3>
+            </div>
+            
+            {/* Indicador de prioridad */}
+            <div className={`flex items-center px-2 py-0.5 rounded-full text-xs ${
+              routine.priority === 'high' 
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' 
+                : routine.priority === 'medium'
+                  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+            }`}>
               {priorityIcons[routine.priority]}
-              <span className="ml-1 text-xs capitalize">{routine.priority}</span>
+              <span className="ml-1 font-medium">
+                {routine.priority === 'high' ? 'Alta' : routine.priority === 'medium' ? 'Media' : 'Baja'}
+              </span>
             </div>
           </div>
           
-          <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-            <Clock className="w-3 h-3 mr-1" />
-            <span>{formatTime(routine.expectedTime)}</span>
+          <div className="flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {/* Tiempo estimado */}
+            <div className="flex items-center mr-4">
+              <Clock className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
+              <span>Tiempo: {formatTime(routine.expectedTime)}</span>
+            </div>
             
-            {routine.completed && (
-              <span className="ml-3 text-green-600 dark:text-green-400 flex items-center">
-                <Check className="w-3 h-3 mr-1" />
-                {routine.completedAt 
-                  ? `Completado a las ${formatTime(routine.completedAt)}` 
-                  : 'Completado'}
-              </span>
+            {/* Estado de completado */}
+            {routine.completed ? (
+              <div className="flex items-center text-green-600 dark:text-green-400">
+                <CircleCheckBig className="w-4 h-4 mr-1" />
+                <span>
+                  {routine.completedAt 
+                    ? `Completado a las ${formatTime(routine.completedAt)}` 
+                    : 'Completado'}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center text-gray-500 dark:text-gray-400">
+                <AlertTriangle className="w-4 h-4 mr-1" />
+                <span>Pendiente</span>
+              </div>
             )}
           </div>
         </div>

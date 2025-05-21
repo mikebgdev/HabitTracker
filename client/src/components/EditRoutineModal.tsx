@@ -325,17 +325,29 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                   <SelectValue placeholder="Selecciona la prioridad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="high" className="flex items-center">
-                    {renderPriorityIcon("high")}
-                    Alta
+                  <SelectItem value="high">
+                    <div className="flex items-center">
+                      {React.createElement(PRIORITY_ICONS["high"].icon, { 
+                        className: `mr-2 h-4 w-4 ${PRIORITY_ICONS["high"].color}` 
+                      })}
+                      <span>Alta</span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="medium" className="flex items-center">
-                    {renderPriorityIcon("medium")}
-                    Media
+                  <SelectItem value="medium">
+                    <div className="flex items-center">
+                      {React.createElement(PRIORITY_ICONS["medium"].icon, { 
+                        className: `mr-2 h-4 w-4 ${PRIORITY_ICONS["medium"].color}` 
+                      })}
+                      <span>Media</span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="low" className="flex items-center">
-                    {renderPriorityIcon("low")}
-                    Baja
+                  <SelectItem value="low">
+                    <div className="flex items-center">
+                      {React.createElement(PRIORITY_ICONS["low"].icon, { 
+                        className: `mr-2 h-4 w-4 ${PRIORITY_ICONS["low"].color}` 
+                      })}
+                      <span>Baja</span>
+                    </div>
                   </SelectItem>
                 </SelectContent>
               </Select>

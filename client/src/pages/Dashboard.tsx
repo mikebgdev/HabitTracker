@@ -121,9 +121,52 @@ export default function Dashboard() {
     queryKey: ['/api/routines'],
   });
   
-  // Consultar programación semanal para todas las rutinas
+  // Consultar las programaciones individuales para cada rutina
+  const fetchSchedules = async () => {
+    // Para cada rutina, consultar su programación individual
+    if (userRoutines && userRoutines.length > 0) {
+      const schedules = await Promise.all(
+        userRoutines.map(async (routine) => {
+          try {
+            const response = await fetch(`/api/routines/weekday-schedule/${routine.id}`);
+            if (response.ok) {
+              return await response.json();
+            }
+            return {
+              routineId: routine.id,
+              monday: true,
+              tuesday: true,
+              wednesday: true,
+              thursday: true,
+              friday: true,
+              saturday: true,
+              sunday: true
+            };
+          } catch (error) {
+            console.error(`Error al obtener programación para rutina ${routine.id}:`, error);
+            return {
+              routineId: routine.id,
+              monday: true,
+              tuesday: true,
+              wednesday: true,
+              thursday: true,
+              friday: true,
+              saturday: true,
+              sunday: true
+            };
+          }
+        })
+      );
+      return schedules;
+    }
+    return [];
+  };
+
+  // Obtener programaciones de días de la semana para las rutinas
   const { data: weekdaySchedules = [] } = useQuery<any[]>({
-    queryKey: ['/api/routines/weekday-schedule'],
+    queryKey: ['/api/routines/weekday-schedules', userRoutines],
+    queryFn: fetchSchedules,
+    enabled: userRoutines.length > 0,
   });
   
   // Consultar las completadas para la fecha seleccionada

@@ -685,6 +685,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // New route to handle DELETE with URL parameters (to match frontend implementation)
+  app.delete("/api/completions/:routineId/:date", authenticate, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const routineId = parseInt(req.params.routineId);
+      const date = req.params.date;
+      
+      if (isNaN(routineId) || !date) {
+        return res.status(400).json({ message: "Valid routineId and date are required" });
+      }
+      
+      // Check if routine belongs to user
+      const routine = await storage.getRoutineById(routineId);
+      
+      if (!routine) {
+        return res.status(404).json({ message: "Routine not found" });
+      }
+      
+      if (routine.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
+      }
+      
+      // Delete completion
+      await storage.deleteCompletion(routineId, date);
+      
+      res.json({ message: "Completion removed successfully" });
+    } catch (error) {
+      console.error("Error deleting completion:", error);
+      res.status(500).json({ message: "Failed to remove completion" });
+    }
+  });
+  
   app.post("/api/completions/group", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;

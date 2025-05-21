@@ -235,34 +235,13 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   // Renderizar el icono para un nivel de prioridad
   const renderPriorityIcon = (priorityLevel: "high" | "medium" | "low") => {
     const { icon: Icon, color } = PRIORITY_ICONS[priorityLevel];
-    return <Icon className={`mr-2 h-4 w-4 ${color}`} />;
+    return <Icon className={`mr-2 h-4 w-4 inline-flex ${color}`} />;
   };
 
-  // Renderizar opciones de iconos
-  const renderIconOptions = () => {
-    return (
-      <div className="grid grid-cols-6 gap-2 mt-2">
-        <div 
-          className={`p-2 flex justify-center items-center cursor-pointer rounded border ${
-            icon === null ? 'border-primary bg-primary/10' : 'border-gray-200 dark:border-gray-700'
-          }`}
-          onClick={() => setIcon(null)}
-        >
-          <span>Ninguno</span>
-        </div>
-        {ROUTINE_ICONS.map(({ name: iconName, icon: Icon }) => (
-          <div 
-            key={iconName}
-            className={`p-2 flex justify-center items-center cursor-pointer rounded border ${
-              icon === iconName ? 'border-primary bg-primary/10' : 'border-gray-200 dark:border-gray-700'
-            }`}
-            onClick={() => setIcon(iconName)}
-          >
-            <Icon className="h-5 w-5" />
-          </div>
-        ))}
-      </div>
-    );
+  // Función para obtener el componente de icono por su nombre
+  const getIconComponent = (iconName: string | null): LucideIcon | null => {
+    if (!iconName) return null;
+    return ROUTINE_ICONS.find(item => item.name === iconName)?.icon || null;
   };
 
   // Obtener el componente Icon para el icono seleccionado
@@ -363,10 +342,39 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
             </div>
             
             <div className="mb-4">
-              <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label htmlFor="routine-icon" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Icono (opcional)
               </Label>
-              {renderIconOptions()}
+              <Select 
+                value={icon || "none"} 
+                onValueChange={(val) => setIcon(val === "none" ? null : val)}
+              >
+                <SelectTrigger id="routine-icon" className="flex items-center">
+                  <SelectValue placeholder="Selecciona un ícono">
+                    {icon && getIconComponent(icon) ? (
+                      <div className="flex items-center">
+                        {React.createElement(getIconComponent(icon) as React.ElementType, { 
+                          className: "mr-2 h-4 w-4" 
+                        })}
+                        <span>{icon.charAt(0).toUpperCase() + icon.slice(1)}</span>
+                      </div>
+                    ) : (
+                      "Sin icono"
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none" className="flex items-center">
+                    Sin icono
+                  </SelectItem>
+                  {ROUTINE_ICONS.map(({ name: iconName, icon: Icon }) => (
+                    <SelectItem key={iconName} value={iconName} className="flex items-center">
+                      <Icon className="mr-2 h-4 w-4" />
+                      <span>{iconName.charAt(0).toUpperCase() + iconName.slice(1)}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="mb-4">
@@ -375,85 +383,78 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
               </Label>
               <div className="grid grid-cols-7 gap-1">
                 <Toggle 
-                  variant={selectedDays.sunday ? "selected" : "day"}
                   pressed={selectedDays.sunday}
                   onPressedChange={() => toggleDay("sunday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.sunday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   D
                 </Toggle>
                 <Toggle 
-                  variant={selectedDays.monday ? "selected" : "day"}
                   pressed={selectedDays.monday}
                   onPressedChange={() => toggleDay("monday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.monday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   L
                 </Toggle>
                 <Toggle 
-                  variant={selectedDays.tuesday ? "selected" : "day"}
                   pressed={selectedDays.tuesday}
                   onPressedChange={() => toggleDay("tuesday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.tuesday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   M
                 </Toggle>
                 <Toggle 
-                  variant={selectedDays.wednesday ? "selected" : "day"}
                   pressed={selectedDays.wednesday}
                   onPressedChange={() => toggleDay("wednesday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.wednesday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   X
                 </Toggle>
                 <Toggle 
-                  variant={selectedDays.thursday ? "selected" : "day"}
                   pressed={selectedDays.thursday}
                   onPressedChange={() => toggleDay("thursday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.thursday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   J
                 </Toggle>
                 <Toggle 
-                  variant={selectedDays.friday ? "selected" : "day"}
                   pressed={selectedDays.friday}
                   onPressedChange={() => toggleDay("friday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.friday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   V
                 </Toggle>
                 <Toggle 
-                  variant={selectedDays.saturday ? "selected" : "day"}
                   pressed={selectedDays.saturday}
                   onPressedChange={() => toggleDay("saturday")}
-                  className={`text-xs font-medium text-center ${
+                  className={`text-sm font-medium text-center border ${
                     selectedDays.saturday 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   S

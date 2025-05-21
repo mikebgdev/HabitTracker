@@ -295,14 +295,37 @@ export default function ProgressPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Número fijo para mostrar 75% */}
-            <div className={`text-3xl font-bold ${getColorClass(75)}`}>
-              75%
-            </div>
-            <ProgressBar value={75} className="mt-2 h-2" />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              3 de 4 rutinas completadas
-            </p>
+            {/* Cálculo dinámico de porcentaje */}
+            {(() => {
+              // Calcular las rutinas completadas hoy
+              const todayFormatted = format(new Date(), 'yyyy-MM-dd');
+              const uniqueCompletedIds = new Set();
+              
+              // Encontrar IDs únicos de rutinas completadas hoy
+              completionStats.forEach((completion: any) => {
+                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === todayFormatted) {
+                  uniqueCompletedIds.add(completion.routineId);
+                }
+              });
+              
+              const totalCount = userRoutines.length || 0;
+              const completedCount = uniqueCompletedIds.size;
+              const percentage = totalCount > 0 
+                ? Math.min(Math.round((completedCount / totalCount) * 100), 100) 
+                : 0;
+                
+              return (
+                <>
+                  <div className={`text-3xl font-bold ${getColorClass(percentage)}`}>
+                    {percentage}%
+                  </div>
+                  <ProgressBar value={percentage} className="mt-2 h-2" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {completedCount} de {totalCount} rutinas completadas
+                  </p>
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
         

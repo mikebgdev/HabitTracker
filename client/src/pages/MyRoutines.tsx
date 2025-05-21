@@ -314,7 +314,10 @@ export default function MyRoutines() {
                   <div className="flex gap-3 items-start">
                     {/* Icono de la rutina */}
                     <div className="w-10 h-10 flex items-center justify-center bg-primary-100 dark:bg-primary-800/30 rounded-full text-primary-700 dark:text-primary-300">
-                      {renderRoutineIcon(routine.icon || 'activity')}
+                      {routine.icon && iconMap[routine.icon] ? 
+                        React.createElement(iconMap[routine.icon], { className: "w-5 h-5" }) : 
+                        <Activity className="w-5 h-5" />
+                      }
                     </div>
                     
                     <div>
@@ -339,9 +342,9 @@ export default function MyRoutines() {
                     </div>
                   </div>
                   
-                  <Badge variant={getPriorityBadgeVariant(routine.priority)} className="flex items-center">
+                  <Badge variant={getPriorityBadgeVariant(routine.priority)} className="flex items-center gap-1">
                     {priorityIcons[routine.priority as keyof typeof priorityIcons]}
-                    {priorityLabels[routine.priority as keyof typeof priorityLabels]}
+                    <span>{priorityLabels[routine.priority as keyof typeof priorityLabels]}</span>
                   </Badge>
                 </div>
               </CardHeader>

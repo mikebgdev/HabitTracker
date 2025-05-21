@@ -27,12 +27,14 @@ import type { Routine, Group } from "@shared/schema";
 export default function MyRoutines() {
   const { toast } = useToast();
   const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
+  const [isEditRoutineModalOpen, setIsEditRoutineModalOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
   
   // Estado para el diálogo de confirmación de eliminación
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [routineToDelete, setRoutineToDelete] = useState<Routine | null>(null);
+  const [routineToEdit, setRoutineToEdit] = useState<Routine | null>(null);
   
   // Fetch all routines
   const { data: routines = [], isLoading, refetch: refetchRoutines } = useQuery<Routine[]>({

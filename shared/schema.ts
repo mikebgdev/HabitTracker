@@ -29,6 +29,7 @@ export const routines = pgTable("routines", {
   name: text("name").notNull(),
   expectedTime: text("expected_time").notNull(), // HH:MM format
   priority: priorityEnum("priority").notNull(),
+  icon: text("icon"),
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

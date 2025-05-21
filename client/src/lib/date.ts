@@ -18,19 +18,42 @@ export const formatDate = (date: Date | string, formatStr?: string): string => {
  * @returns Time in 12-hour format with AM/PM
  */
 export const formatTime = (timeString: string): string => {
-  // If input is a full ISO date string, extract just the time part
-  if (timeString.includes('T')) {
-    const date = new Date(timeString);
-    return format(date, 'h:mm a', { locale: es });
+  if (!timeString) {
+    return 'Hora no disponible';
   }
-  
-  // Otherwise parse as HH:MM
-  const [hours, minutes] = timeString.split(':').map(Number);
-  const date = new Date();
-  date.setHours(hours);
-  date.setMinutes(minutes);
-  
-  return format(date, 'h:mm a', { locale: es });
+
+  try {
+    // If input is a full ISO date string, extract just the time part
+    if (timeString.includes('T')) {
+      const date = new Date(timeString);
+      if (isNaN(date.getTime())) {
+        return 'Formato inválido';
+      }
+      return format(date, 'h:mm a', { locale: es });
+    }
+    
+    // Otherwise parse as HH:MM
+    const parts = timeString.split(':');
+    if (parts.length < 2) {
+      return 'Formato inválido';
+    }
+    
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    
+    if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return 'Formato inválido';
+    }
+    
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    
+    return format(date, 'h:mm a', { locale: es });
+  } catch (error) {
+    console.error('Error al formatear la hora:', error, timeString);
+    return 'Error de formato';
+  }
 };
 
 /**

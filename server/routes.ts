@@ -744,6 +744,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para obtener las completaciones por fecha
+  app.get("/api/completions/:date?", authenticate, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default a hoy
+      
+      // Obtener todas las completaciones para el usuario en la fecha específica
+      const completions = await storage.getCompletionStats(userId, date, date);
+      
+      res.json(completions);
+    } catch (error) {
+      console.error("Error fetching completions:", error);
+      res.status(500).json({ message: "Failed to fetch completions" });
+    }
+  });
+
   // Endpoint específico para asignar/desasignar un grupo a una rutina
   app.post("/api/routines/:id/assign-group", authenticate, async (req, res) => {
     try {

@@ -112,28 +112,28 @@ export default function Dashboard() {
   const dateParam = format(selectedDate, 'yyyy-MM-dd');
   
   // Consultar grupos del usuario
-  const { data: userGroups = [] } = useQuery({
+  const { data: userGroups = [] } = useQuery<any[]>({
     queryKey: ['/api/groups'],
   });
   
   // Consultar rutinas del usuario
-  const { data: userRoutines = [] } = useQuery({
+  const { data: userRoutines = [] } = useQuery<any[]>({
     queryKey: ['/api/routines'],
   });
   
   // Consultar programación semanal para todas las rutinas
-  const { data: weekdaySchedules = [] } = useQuery({
+  const { data: weekdaySchedules = [] } = useQuery<any[]>({
     queryKey: ['/api/routines/weekday-schedule'],
   });
   
   // Consultar las completadas para la fecha seleccionada
-  const { data: completions = [] } = useQuery({
+  const { data: completions = [] } = useQuery<any[]>({
     queryKey: ['/api/completions', dateParam],
     enabled: !!dateParam,
   });
   
   // Consultar relaciones grupo-rutina
-  const { data: groupRoutines = [] } = useQuery({
+  const { data: groupRoutines = [] } = useQuery<any[]>({
     queryKey: ['/api/group-routines'],
   });
   

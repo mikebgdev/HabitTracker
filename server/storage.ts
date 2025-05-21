@@ -899,11 +899,9 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAllGroupRoutines(): Promise<GroupRoutine[]> {
-    const allGroupRoutines = await db
+    return await db
       .select()
       .from(groupRoutines);
-    
-    return allGroupRoutines;
   }
 
   async getRoutinesByGroupId(groupId: number): Promise<Routine[]> {

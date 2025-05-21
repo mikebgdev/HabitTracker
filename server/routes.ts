@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { hashPassword, verifyPassword, generateToken, verifyToken } from "./auth";
-import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema, completions } from "@shared/schema";
+import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema, completions, weekdaySchedules, routines } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
 import express from "express";
@@ -260,22 +260,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req as any).user.id;
       
-      // Obtener todas las rutinas del usuario
+      // Get all user routines first
       const userRoutines = await storage.getRoutinesByUserId(userId);
       
-      // Recolectar todas las programaciones de días de la semana
+      // Create a list to hold all schedules
       const schedules = [];
       
+      // For each routine, get its weekday schedule or create a default one
       for (const routine of userRoutines) {
         try {
-          const schedule = await storage.getWeekdayScheduleByRoutineId(routine.id);
+          // Try to get existing schedule
+          const existingSchedule = await db
+            .select()
+            .from(weekdaySchedules)
+            .where(eq(weekdaySchedules.routineId, routine.id));
           
-          if (schedule) {
-            schedules.push(schedule);
+          if (existingSchedule && existingSchedule.length > 0) {
+            schedules.push(existingSchedule[0]);
           } else {
-            // Si no hay programación, crear uno predeterminado
+            // Create a default schedule if none exists
             schedules.push({
-              id: 0, // ID temporal
+              id: 0,
               routineId: routine.id,
               monday: false,
               tuesday: false,
@@ -286,10 +291,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sunday: false
             });
           }
-        } catch (routineError) {
-          console.error(`Error obteniendo programación para rutina ${routine.id}:`, routineError);
-          // Continuamos con la siguiente rutina sin interrumpir el proceso
-          continue;
+        } catch (err) {
+          // If there's an error for this routine, just create a default schedule
+          schedules.push({
+            id: 0,
+            routineId: routine.id,
+            monday: false,
+            tuesday: false,
+            wednesday: false,
+            thursday: false,
+            friday: false,
+            saturday: false,
+            sunday: false
+          });
         }
       }
       

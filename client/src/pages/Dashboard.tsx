@@ -358,6 +358,7 @@ export default function Dashboard() {
             key={group.id} 
             group={group}
             onToggleCompletion={handleToggleCompletion}
+            isEditable={isToday}
           />
         ))
       ) : (

@@ -17,13 +17,41 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash } from "lucide-react";
+import { 
+  Plus, 
+  Edit, 
+  Trash,
+  Clock, 
+  Flame,
+  BatteryMedium,
+  Timer,
+  FolderOpen,
+  Activity,
+  Bike,
+  Book,
+  BrainCircuit,
+  Coffee,
+  Dumbbell,
+  Footprints,
+  HandPlatter,
+  Heart,
+  Laptop,
+  Microscope,
+  Music,
+  Palette,
+  Pen,
+  Smartphone,
+  Sparkles,
+  Utensils,
+  Waves,
+  LucideIcon
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteRoutineDialog } from "@/components/dialogs/DeleteRoutineDialog";
-import type { Routine, Group } from "@shared/schema";
+import type { Routine, Group, GroupRoutine } from "@shared/schema";
 
 export default function MyRoutines() {
   const { toast } = useToast();
@@ -97,25 +125,98 @@ export default function MyRoutines() {
     return true;
   });
   
+  // Obtener información de los grupos y rutinas
+  const { data: groupRoutines = [] } = useQuery({
+    queryKey: ['/api/group-routines'],
+  });
+  
+  // Función para obtener el grupo al que pertenece una rutina
+  const getRoutineGroup = (routineId: number) => {
+    if (!Array.isArray(groupRoutines)) return null;
+    
+    const routineGroup = groupRoutines.find((gr: any) => gr.routineId === routineId);
+    if (!routineGroup) return null;
+    
+    const group = Array.isArray(groups) 
+      ? groups.find(g => g.id === routineGroup.groupId) 
+      : null;
+      
+    return group;
+  };
+  
+  // Iconos de prioridad
+  const priorityIcons = {
+    high: <Flame className="w-4 h-4 mr-1" />,
+    medium: <BatteryMedium className="w-4 h-4 mr-1" />,
+    low: <Timer className="w-4 h-4 mr-1" />
+  };
+  
+  // Etiquetas de prioridad
+  const priorityLabels = {
+    high: 'Alta',
+    medium: 'Media',
+    low: 'Baja'
+  };
+  
+  // Mapa de nombres de iconos a componentes de Lucide
+  const iconMap: Record<string, LucideIcon> = {
+    activity: Activity,
+    bike: Bike,
+    book: Book,
+    brain: BrainCircuit,
+    coffee: Coffee,
+    dumbbell: Dumbbell,
+    footprints: Footprints,
+    food: HandPlatter,
+    heart: Heart,
+    laptop: Laptop,
+    microscope: Microscope,
+    music: Music,
+    palette: Palette,
+    pen: Pen,
+    phone: Smartphone,
+    sparkles: Sparkles,
+    utensils: Utensils,
+    waves: Waves
+  };
+  
+  // Función para renderizar el icono personalizado de la rutina
+  const renderRoutineIcon = (iconName: string | null) => {
+    if (!iconName) return null;
+    
+    const IconComponent = iconMap[iconName];
+    if (!IconComponent) return null;
+    
+    return <IconComponent className="w-5 h-5 mr-2 text-primary" />;
+  };
+  
   const getPriorityBadgeVariant = (priority: string) => {
     switch (priority) {
       case "high":
-        return "high";
+        return "destructive";
       case "medium":
-        return "medium";
+        return "default"; // Usamos default en lugar de warning ya que warning no está definido
       case "low":
-        return "low";
+        return "secondary";
       default:
         return "default";
     }
   };
   
   const formatTime = (timeString: string) => {
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
+    if (!timeString) return '';
+    
+    // Manejar formato HH:MM
+    if (timeString.includes(':')) {
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes || '00'} ${ampm}`;
+    }
+    
+    // Manejar formato de solo horas con AM/PM
+    return timeString;
   };
 
   return (
@@ -188,32 +289,52 @@ export default function MyRoutines() {
             <Card key={routine.id} className="overflow-hidden">
               <CardHeader className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg font-semibold">
+                  <CardTitle className="text-lg font-semibold flex items-center">
+                    {routine.icon && renderRoutineIcon(routine.icon)}
                     {routine.name}
                   </CardTitle>
-                  <Badge variant={getPriorityBadgeVariant(routine.priority)}>
-                    {routine.priority.charAt(0).toUpperCase() + routine.priority.slice(1)}
+                  
+                  <Badge variant={getPriorityBadgeVariant(routine.priority)} className="flex items-center">
+                    {priorityIcons[routine.priority as keyof typeof priorityIcons]}
+                    {priorityLabels[routine.priority as keyof typeof priorityLabels]}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-4">
+                {/* Grupo */}
+                {getRoutineGroup(routine.id) && (
+                  <div className="mb-4">
+                    <div className="flex items-center">
+                      <Badge variant="secondary" className="flex items-center text-xs">
+                        <FolderOpen className="w-3 h-3 mr-1" />
+                        <span>{getRoutineGroup(routine.id)?.name}</span>
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Tiempo esperado */}
                 <div className="mb-4">
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Expected Time</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center">
+                    <Clock className="w-4 h-4 mr-1 text-gray-400" />
+                    Tiempo estimado
+                  </div>
                   <div className="text-gray-900 dark:text-white font-medium">
                     {formatTime(routine.expectedTime)}
                   </div>
                 </div>
                 
+                {/* Programación semanal */}
                 <div className="mb-4">
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Schedule</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Días de la semana</div>
                   <div className="flex flex-wrap gap-1">
+                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">L</span>
                     <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">M</span>
-                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">T</span>
-                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">W</span>
-                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">T</span>
-                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">F</span>
+                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">X</span>
+                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">J</span>
+                    <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded">V</span>
                     <span className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded">S</span>
-                    <span className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded">S</span>
+                    <span className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded">D</span>
                   </div>
                 </div>
                 
@@ -228,7 +349,7 @@ export default function MyRoutines() {
                       setIsEditRoutineModalOpen(true);
                     }}
                   >
-                    <Edit className="h-4 w-4 mr-1" /> Edit
+                    <Edit className="h-4 w-4 mr-1" /> Editar
                   </Button>
                   <Button
                     variant="outline"
@@ -236,7 +357,7 @@ export default function MyRoutines() {
                     className="text-red-600 dark:text-red-400"
                     onClick={() => confirmDeleteRoutine(routine)}
                   >
-                    <Trash className="h-4 w-4 mr-1" /> Delete
+                    <Trash className="h-4 w-4 mr-1" /> Eliminar
                   </Button>
                 </div>
               </CardContent>

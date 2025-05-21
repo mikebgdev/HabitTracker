@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { MobileNavbar } from "@/components/MobileNavbar";
+import Layout from "@/components/Layout";
 import {
   Card,
   CardContent,
@@ -109,195 +108,188 @@ export default function ProgressPage() {
   const stats = calculateOverallStats();
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <Sidebar />
-      <MobileNavbar />
-      
-      <main className="flex-1 overflow-y-auto pb-mobile-nav md:pb-0">
-        <div className="p-4 md:p-6 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progress & Analytics</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Track your routine completion over time
-              </p>
-            </div>
-            
-            <div className="mt-4 md:mt-0 w-full md:w-48">
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select time range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="week">Last 7 Days</SelectItem>
-                  <SelectItem value="month">Last 30 Days</SelectItem>
-                  <SelectItem value="year">Last 365 Days</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          {/* Overall stats */}
-          <div className="grid gap-6 mb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Completion Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-3xl font-bold ${getColorClass(stats.completionRate)}`}>
-                  {stats.completionRate}%
-                </div>
-                <ProgressBar value={stats.completionRate} className="mt-2 h-2" />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {stats.completedRoutines} of {stats.totalRoutines} routines completed
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Current Streak
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {stats.streak} days
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Keep it up! You're doing great.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Most Completed
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">
-                  {stats.mostCompletedRoutine}
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Completed 29 out of 30 days
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Needs Improvement
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">
-                  {stats.leastCompletedRoutine}
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Completed only 12 out of 30 days
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Daily Completion Chart */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Daily Completion Rate</CardTitle>
-              <CardDescription>
-                Percentage of routines completed each day
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                    <Tooltip formatter={(value) => [`${value}%`, "Completion Rate"]} />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="percentage" 
-                      name="Completion Rate" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2} 
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Priority Completion Chart */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Completion by Priority</CardTitle>
-              <CardDescription>
-                How well you're completing routines based on priority level
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={priorityData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis tickFormatter={(value) => `${value}%`} />
-                    <Tooltip formatter={(value) => [`${value}%`, "Completion Rate"]} />
-                    <Legend />
-                    <Bar 
-                      dataKey="completed" 
-                      name="Completion Rate" 
-                      fill="hsl(var(--primary))"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Streak Calendar (simplified) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Streak Calendar</CardTitle>
-              <CardDescription>
-                Your daily routine completion over the last {timeRange === "week" ? "7" : timeRange === "month" ? "30" : "365"} days
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-7 gap-2">
-                {dailyData.map((day, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                      {day.date}
-                    </div>
-                    <div 
-                      className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
-                        day.percentage >= 80 
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
-                          : day.percentage >= 50 
-                            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
-                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                      }`}
-                    >
-                      {day.percentage}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+    <Layout>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progress & Analytics</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Track your routine completion over time
+          </p>
         </div>
-      </main>
-    </div>
+        
+        <div className="mt-4 md:mt-0 w-full md:w-48">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select time range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">Last 7 Days</SelectItem>
+              <SelectItem value="month">Last 30 Days</SelectItem>
+              <SelectItem value="year">Last 365 Days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      {/* Overall stats */}
+      <div className="grid gap-6 mb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Completion Rate
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-3xl font-bold ${getColorClass(stats.completionRate)}`}>
+              {stats.completionRate}%
+            </div>
+            <ProgressBar value={stats.completionRate} className="mt-2 h-2" />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              {stats.completedRoutines} of {stats.totalRoutines} routines completed
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Current Streak
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              {stats.streak} days
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Keep it up! You're doing great.
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Most Completed
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">
+              {stats.mostCompletedRoutine}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Completed 29 out of 30 days
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Needs Improvement
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">
+              {stats.leastCompletedRoutine}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Completed only 12 out of 30 days
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Daily Completion Chart */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Daily Completion Rate</CardTitle>
+          <CardDescription>
+            Percentage of routines completed each day
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dailyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
+                <Tooltip formatter={(value) => [`${value}%`, "Completion Rate"]} />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="percentage" 
+                  name="Completion Rate" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2} 
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Priority Completion Chart */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Completion by Priority</CardTitle>
+          <CardDescription>
+            How well you're completing routines based on priority level
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={priorityData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis tickFormatter={(value) => `${value}%`} />
+                <Tooltip formatter={(value) => [`${value}%`, "Completion Rate"]} />
+                <Legend />
+                <Bar 
+                  dataKey="completed" 
+                  name="Completion Rate" 
+                  fill="hsl(var(--primary))"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Streak Calendar (simplified) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Streak Calendar</CardTitle>
+          <CardDescription>
+            Your daily routine completion over the last {timeRange === "week" ? "7" : timeRange === "month" ? "30" : "365"} days
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-7 gap-2">
+            {dailyData.map((day, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  {day.date}
+                </div>
+                <div 
+                  className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
+                    day.percentage >= 80 
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
+                      : day.percentage >= 50 
+                        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
+                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                  }`}
+                >
+                  {day.percentage}%
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </Layout>
   );
 }

@@ -20,31 +20,60 @@ import { Plus, Edit, Trash } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { DeleteRoutineDialog } from "@/components/dialogs/DeleteRoutineDialog";
 import type { Routine, Group } from "@shared/schema";
 
 export default function MyRoutines() {
+  const { toast } = useToast();
   const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
   
+  // Estado para el diálogo de confirmación de eliminación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [routineToDelete, setRoutineToDelete] = useState<Routine | null>(null);
+  
   // Fetch all routines
-  const { data: routines = [], isLoading } = useQuery<Routine[]>({
+  const { data: routines = [], isLoading, refetch: refetchRoutines } = useQuery<Routine[]>({
     queryKey: ['/api/routines'],
   });
   
   // Fetch all groups
-  const { data: groups = [] } = useQuery<Group[]>({
+  const { data: groups = [], refetch: refetchGroups } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
   
-  const handleDeleteRoutine = async (routineId: number) => {
-    if (!confirm("Are you sure you want to delete this routine?")) return;
-
+  // Mostrar diálogo de confirmación antes de eliminar
+  const confirmDeleteRoutine = (routine: Routine) => {
+    setRoutineToDelete(routine);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Proceder con la eliminación después de confirmar
+  const handleDeleteRoutine = async () => {
+    if (!routineToDelete) return;
+    
     try {
-      await apiRequest("DELETE", `/api/routines/${routineId}`, {});
-      await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
+      await apiRequest("DELETE", `/api/routines/${routineToDelete.id}`, {});
+      
+      // Actualizar consultas para asegurar que la UI se actualice
+      await refetchRoutines();
+      await refetchGroups();
+      
+      toast({
+        title: "Rutina eliminada",
+        description: "La rutina ha sido eliminada correctamente"
+      });
     } catch (error) {
       console.error("Failed to delete routine:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la rutina. Inténtalo de nuevo."
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setRoutineToDelete(null);
     }
   };
   
@@ -202,7 +231,7 @@ export default function MyRoutines() {
                     variant="outline"
                     size="sm"
                     className="text-red-600 dark:text-red-400"
-                    onClick={() => handleDeleteRoutine(routine.id)}
+                    onClick={() => confirmDeleteRoutine(routine)}
                   >
                     <Trash className="h-4 w-4 mr-1" /> Delete
                   </Button>
@@ -245,6 +274,14 @@ export default function MyRoutines() {
       <AddRoutineModal 
         isOpen={isAddRoutineModalOpen}
         onClose={() => setIsAddRoutineModalOpen(false)}
+      />
+      
+      {/* Diálogo de confirmación para eliminar rutina */}
+      <DeleteRoutineDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteRoutine}
+        routineName={routineToDelete?.name}
       />
     </Layout>
   );

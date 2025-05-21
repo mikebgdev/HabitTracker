@@ -277,6 +277,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateWeekdaySchedule(routineId, req.body.weekdays);
       }
       
+      // If groupId is provided, update group association
+      if (req.body.groupId !== undefined) {
+        // Primero eliminamos cualquier asociación existente de grupo
+        const groupRoutines = await storage.getAllGroupRoutines();
+        const existingRelation = groupRoutines.find((gr) => gr.routineId === routineId);
+        
+        if (existingRelation) {
+          await storage.removeRoutineFromGroup(routineId, existingRelation.groupId);
+        }
+        
+        // Si se proporcionó un groupId (no es null), crear la nueva relación
+        if (req.body.groupId !== null) {
+          await storage.addRoutineToGroup(routineId, req.body.groupId);
+        }
+      }
+      
       res.json(updatedRoutine);
     } catch (error) {
       console.error("Error updating routine:", error);

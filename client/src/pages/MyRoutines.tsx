@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { AddRoutineModal } from "@/components/AddRoutineModal";
+import { EditRoutineModal } from "@/components/EditRoutineModal";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -222,9 +223,9 @@ export default function MyRoutines() {
                     size="sm"
                     className="text-gray-700 dark:text-gray-300"
                     onClick={() => {
-                      // In a real app, this would open an edit modal
-                      // For this demo, we'll reuse the AddRoutineModal
-                      setIsAddRoutineModalOpen(true);
+                      // Abrir el modal de edición y establecer la rutina a editar
+                      setRoutineToEdit(routine);
+                      setIsEditRoutineModalOpen(true);
                     }}
                   >
                     <Edit className="h-4 w-4 mr-1" /> Edit
@@ -288,6 +289,20 @@ export default function MyRoutines() {
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteRoutine}
         routineName={routineToDelete?.name}
+      />
+      
+      {/* Modal de edición de rutina */}
+      <EditRoutineModal
+        isOpen={isEditRoutineModalOpen}
+        onClose={() => {
+          setIsEditRoutineModalOpen(false);
+          setRoutineToEdit(null);
+        }}
+        routine={routineToEdit || undefined}
+        onRoutineUpdated={async () => {
+          await refetchRoutines();
+          await refetchGroups();
+        }}
       />
     </Layout>
   );

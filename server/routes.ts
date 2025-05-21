@@ -253,6 +253,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta para obtener todas las programaciones de día de la semana del usuario
+  app.get("/api/routines/weekday-schedule", authenticate, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      // Obtener todas las rutinas del usuario
+      const userRoutines = await storage.getRoutinesByUserId(userId);
+      
+      // Recolectar todas las programaciones de días de la semana
+      const schedules = [];
+      
+      for (const routine of userRoutines) {
+        const schedule = await storage.getWeekdayScheduleByRoutineId(routine.id);
+        
+        if (schedule) {
+          schedules.push(schedule);
+        } else {
+          // Si no hay programación, crear uno predeterminado
+          schedules.push({
+            id: 0, // ID temporal
+            routineId: routine.id,
+            monday: false,
+            tuesday: false,
+            wednesday: false,
+            thursday: false,
+            friday: false,
+            saturday: false,
+            sunday: false
+          });
+        }
+      }
+      
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error fetching all weekday schedules:", error);
+      res.status(500).json({ message: "Failed to fetch weekday schedules" });
+    }
+  });
+
   app.patch("/api/routines/:id", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);

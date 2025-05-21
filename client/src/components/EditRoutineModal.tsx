@@ -398,12 +398,15 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none" className="flex items-center">
-                    Sin icono
+                  <SelectItem value="none" className="flex items-center gap-2">
+                    <div className="w-4 h-4 mr-2"></div>
+                    <span>Sin icono</span>
                   </SelectItem>
                   {ROUTINE_ICONS.map(({ name: iconName, icon: Icon }) => (
-                    <SelectItem key={iconName} value={iconName} className="flex items-center">
-                      <Icon className="mr-2 h-4 w-4" />
+                    <SelectItem key={iconName} value={iconName} className="flex items-center gap-2">
+                      <div className="w-4 h-4 flex items-center justify-center mr-2">
+                        <Icon className="h-4 w-4" />
+                      </div>
                       <span>{iconName.charAt(0).toUpperCase() + iconName.slice(1)}</span>
                     </SelectItem>
                   ))}
@@ -416,17 +419,6 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                 Repetir
               </Label>
               <div className="grid grid-cols-7 gap-1">
-                <Toggle 
-                  pressed={selectedDays.sunday}
-                  onPressedChange={() => toggleDay("sunday")}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.sunday 
-                      ? 'bg-primary text-white border-primary shadow-sm' 
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  D
-                </Toggle>
                 <Toggle 
                   pressed={selectedDays.monday}
                   onPressedChange={() => toggleDay("monday")}
@@ -492,6 +484,17 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                   }`}
                 >
                   S
+                </Toggle>
+                <Toggle 
+                  pressed={selectedDays.sunday}
+                  onPressedChange={() => toggleDay("sunday")}
+                  className={`text-sm font-medium text-center border ${
+                    selectedDays.sunday 
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                  }`}
+                >
+                  D
                 </Toggle>
               </div>
             </div>

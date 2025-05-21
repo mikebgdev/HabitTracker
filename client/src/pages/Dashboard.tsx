@@ -111,38 +111,107 @@ export default function Dashboard() {
   const formattedDate = format(selectedDate, 'EEEE, MMMM d, yyyy');
   const dateParam = format(selectedDate, 'yyyy-MM-dd');
   
-  // Get daily routines
+  // Consultar grupos del usuario
+  const { data: userGroups = [] } = useQuery({
+    queryKey: ['/api/groups'],
+  });
+  
+  // Consultar rutinas del usuario
+  const { data: userRoutines = [] } = useQuery({
+    queryKey: ['/api/routines'],
+  });
+  
+  // Consultar programación semanal para todas las rutinas
+  const { data: weekdaySchedules = [] } = useQuery({
+    queryKey: ['/api/routines/weekday-schedule'],
+  });
+  
+  // Consultar las completadas para la fecha seleccionada
+  const { data: completions = [] } = useQuery({
+    queryKey: ['/api/completions', dateParam],
+    enabled: !!dateParam,
+  });
+  
+  // Consultar relaciones grupo-rutina
+  const { data: groupRoutines = [] } = useQuery({
+    queryKey: ['/api/group-routines'],
+  });
+  
+  // Obtener y procesar datos para mostrar en el dashboard
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['/api/routines/daily', dateParam],
+    queryKey: ['/api/routines/daily', dateParam, userGroups, userRoutines, weekdaySchedules, completions, groupRoutines],
     queryFn: async () => {
       try {
-        // En un entorno real, aquí consultaríamos la API con la fecha específica
-        // const res = await apiRequest("GET", `/api/routines/daily/${dateParam}`);
-        // return await res.json();
+        // Obtener el día de la semana actual (0 = domingo, 1 = lunes, ..., 6 = sábado)
+        const currentDayIndex = selectedDate.getDay();
+        // Convertir a nombre de propiedad para weekdaySchedules (domingo = 'sunday', lunes = 'monday', etc.)
+        const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const currentDay = weekdayMap[currentDayIndex];
         
-        // Intentar cargar las rutinas completadas guardadas para esta fecha
-        const completionsKey = `completions_${dateParam}`;
-        const savedCompletions = JSON.parse(localStorage.getItem(completionsKey) || '[]');
+        // Filtrar rutinas que deben mostrarse en el día seleccionado
+        const routinesForToday = userRoutines.filter(routine => {
+          // Buscar la programación semanal para esta rutina
+          const schedule = weekdaySchedules.find((schedule: any) => 
+            schedule.routineId === routine.id
+          );
+          
+          // Verificar si la rutina está programada para el día actual
+          return schedule && schedule[currentDay];
+        });
         
-        // Aplicar las rutinas completadas a los datos
-        return mockData.groups.map(group => ({
-          ...group,
-          // Si no es hoy, mostramos la fecha en el nombre del grupo para claridad
-          name: dateParam !== format(new Date(), 'yyyy-MM-dd') 
-            ? `${group.name} (${dateParam})` 
-            : group.name,
-          routines: group.routines.map(routine => ({
+        // Verificar si las rutinas están completadas
+        const routinesWithCompletionStatus = routinesForToday.map(routine => {
+          const isCompleted = completions.some((completion: any) => 
+            completion.routineId === routine.id && 
+            format(new Date(completion.completedAt), 'yyyy-MM-dd') === dateParam
+          );
+          
+          return {
             ...routine,
-            // Marcar como completada si está en las guardadas
-            completed: savedCompletions.includes(routine.id),
-            // Agregar timestamp de completado si está completada
-            completedAt: savedCompletions.includes(routine.id) 
-              ? new Date().toISOString() 
-              : undefined
-          }))
-        }));
+            completed: isCompleted,
+            completedAt: isCompleted ? 
+              completions.find((c: any) => c.routineId === routine.id)?.completedAt : 
+              undefined
+          };
+        });
+        
+        // Agrupar rutinas por grupo
+        const groupedRoutines = userGroups.map(group => {
+          // Encontrar rutinas que pertenecen a este grupo
+          const routinesInThisGroup = routinesWithCompletionStatus.filter(routine => {
+            return groupRoutines.some((gr: any) => 
+              gr.routineId === routine.id && gr.groupId === group.id
+            );
+          });
+          
+          return {
+            id: group.id,
+            name: group.name,
+            icon: group.icon,
+            timeRange: group.timeRange || "",
+            routines: routinesInThisGroup
+          };
+        });
+        
+        // Añadir un grupo "Sin grupo" para rutinas sin asignación
+        const ungroupedRoutines = routinesWithCompletionStatus.filter(routine => {
+          return !groupRoutines.some((gr: any) => gr.routineId === routine.id);
+        });
+        
+        if (ungroupedRoutines.length > 0) {
+          groupedRoutines.push({
+            id: 0,
+            name: "Sin grupo",
+            icon: "folder",
+            timeRange: "",
+            routines: ungroupedRoutines
+          });
+        }
+        
+        // Filtrar grupos que no tienen rutinas para el día seleccionado
+        return groupedRoutines.filter(group => group.routines.length > 0);
       } catch (error) {
-        console.error("Error fetching routines:", error);
+        console.error("Error procesando rutinas para el dashboard:", error);
         throw error;
       }
     }

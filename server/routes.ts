@@ -265,23 +265,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schedules = [];
       
       for (const routine of userRoutines) {
-        const schedule = await storage.getWeekdayScheduleByRoutineId(routine.id);
-        
-        if (schedule) {
-          schedules.push(schedule);
-        } else {
-          // Si no hay programación, crear uno predeterminado
-          schedules.push({
-            id: 0, // ID temporal
-            routineId: routine.id,
-            monday: false,
-            tuesday: false,
-            wednesday: false,
-            thursday: false,
-            friday: false,
-            saturday: false,
-            sunday: false
-          });
+        try {
+          const schedule = await storage.getWeekdayScheduleByRoutineId(routine.id);
+          
+          if (schedule) {
+            schedules.push(schedule);
+          } else {
+            // Si no hay programación, crear uno predeterminado
+            schedules.push({
+              id: 0, // ID temporal
+              routineId: routine.id,
+              monday: false,
+              tuesday: false,
+              wednesday: false,
+              thursday: false,
+              friday: false,
+              saturday: false,
+              sunday: false
+            });
+          }
+        } catch (routineError) {
+          console.error(`Error obteniendo programación para rutina ${routine.id}:`, routineError);
+          // Continuamos con la siguiente rutina sin interrumpir el proceso
+          continue;
         }
       }
       

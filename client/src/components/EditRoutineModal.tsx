@@ -428,10 +428,10 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
                       </div>
                       {category.icons.map(({ name: iconName, icon: Icon, label }) => (
                         <SelectItem key={iconName} value={iconName} className="flex items-center gap-2">
-                          <div className="w-5 h-5 flex items-center justify-center mr-2 bg-gray-100 dark:bg-gray-700 rounded-full">
-                            <Icon className="h-3.5 w-3.5" />
+                          <div className="flex items-center">
+                            <Icon className="h-4 w-4 mr-2" />
+                            <span>{label}</span>
                           </div>
-                          <span>{label}</span>
                         </SelectItem>
                       ))}
                     </React.Fragment>

@@ -73,15 +73,20 @@ export default function Groups() {
   
   // Calculate routine counts for each group
   useEffect(() => {
-    if (groupRoutines.length > 0) {
+    if (Array.isArray(groupRoutines) && groupRoutines.length > 0) {
       const counts: Record<number, number> = {};
       
-      // The API now returns objects with groupId and count
+      // Contar manualmente las rutinas por grupo
       groupRoutines.forEach((gr: any) => {
-        counts[gr.groupId] = gr.count;
+        if (!counts[gr.groupId]) {
+          counts[gr.groupId] = 0;
+        }
+        counts[gr.groupId]++;
       });
       
       setRoutineCountByGroup(counts);
+    } else {
+      setRoutineCountByGroup({});
     }
   }, [groupRoutines]);
   

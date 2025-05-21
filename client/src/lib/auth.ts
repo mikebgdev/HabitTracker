@@ -33,3 +33,21 @@ export const removeToken = (): void => {
 export const getToken = (): string | null => {
   return localStorage.getItem('token');
 };
+
+/**
+ * Add authentication header to fetch options
+ * @param options Fetch options object
+ * @returns Updated fetch options with auth header
+ */
+export const addAuthHeader = (options: RequestInit = {}): RequestInit => {
+  const token = getToken();
+  if (!token) return options;
+  
+  return {
+    ...options,
+    headers: {
+      ...options.headers as Record<string, string>,
+      'Authorization': `Bearer ${token}`
+    }
+  };
+};

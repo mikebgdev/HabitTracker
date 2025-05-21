@@ -151,9 +151,17 @@ export default function ProgressPage() {
   
   // Calculate overall stats based on actual data
   const calculateOverallStats = () => {
-    // Cálculo directo basado en datos reales
-    const totalRoutines = userRoutines.length;
-    const completedRoutines = todayCompletions.length;
+    // Cálculo directo basado en datos reales y actuales (hoy)
+    const totalRoutines = userRoutines.length || 0;
+    
+    // Obtenemos las completadas para hoy directamente 
+    // Filtramos para asegurarnos que son sólo de hoy
+    const todayFormatted = format(new Date(), 'yyyy-MM-dd');
+    const todayCompletionsCount = completionStats.filter((c: any) => 
+      format(new Date(c.completedAt), 'yyyy-MM-dd') === todayFormatted
+    ).length;
+    
+    const completedRoutines = todayCompletionsCount;
     const completionRate = totalRoutines > 0 ? Math.round((completedRoutines / totalRoutines) * 100) : 0;
     
     // Calculate streak

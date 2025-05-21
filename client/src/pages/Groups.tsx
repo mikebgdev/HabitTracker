@@ -67,7 +67,7 @@ export default function Groups() {
   });
   
   // Fetch group-routine relationships to count routines per group
-  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>({
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<any[]>({
     queryKey: ['/api/group-routines'],
   });
   
@@ -177,10 +177,6 @@ export default function Groups() {
     }
   };
 
-  // Estado para el diálogo de confirmación de eliminación
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
-
   // Mostrar diálogo de confirmación antes de eliminar
   const confirmDeleteGroup = (groupId: number) => {
     setGroupToDelete(groupId);
@@ -198,13 +194,13 @@ export default function Groups() {
       await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/group-routines'] });
       
-      setToast({
+      toast({
         title: "Grupo eliminado",
         description: "El grupo ha sido eliminado correctamente"
       });
     } catch (error) {
       console.error("Failed to delete group:", error);
-      setToast({
+      toast({
         title: "Error",
         description: "No se pudo eliminar el grupo. Inténtalo de nuevo."
       });
@@ -241,10 +237,9 @@ export default function Groups() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Routine Groups</h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Organize your routines by creating groups
+            Organize your routines into logical groups
           </p>
         </div>
-        
         <div className="mt-4 md:mt-0">
           <Button 
             onClick={() => handleOpenEditGroupModal()}
@@ -482,6 +477,28 @@ export default function Groups() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialog for Delete */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente este grupo.
+              Las rutinas asociadas no se eliminarán, pero ya no estarán vinculadas a este grupo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteGroup}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }

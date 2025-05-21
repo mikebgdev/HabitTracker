@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { MobileNavbar } from "@/components/MobileNavbar";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -123,112 +122,105 @@ export default function Groups() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <Sidebar />
-      <MobileNavbar />
-      
-      <main className="flex-1 overflow-y-auto pb-mobile-nav md:pb-0">
-        <div className="p-4 md:p-6 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Routine Groups</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Organize your routines by creating groups
-              </p>
-            </div>
-            
-            <div className="mt-4 md:mt-0">
-              <Button 
-                onClick={() => handleOpenEditGroupModal()}
-                className="flex items-center"
-              >
-                <Plus className="mr-2 h-4 w-4" /> Add Group
-              </Button>
-            </div>
-          </div>
-          
-          {isLoading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">Loading groups...</p>
-            </div>
-          ) : groups.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {groups.map((group) => (
-                <Card key={group.id} className="overflow-hidden">
-                  <CardHeader className="p-4">
-                    <div className="flex items-center mb-2">
-                      <div className="mr-3 text-xl">
-                        <i className={getIconClass(group.icon)}></i>
-                      </div>
-                      <CardTitle className="text-lg font-semibold">
-                        {group.name}
-                      </CardTitle>
-                    </div>
-                    {group.timeRange && (
-                      <CardDescription>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <i className="fas fa-clock mr-1"></i>
-                          <span>{group.timeRange}</span>
-                        </div>
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      Routines in this group:
-                    </div>
-                    <div className="text-gray-900 dark:text-white">
-                      {/* In a real implementation, we would show the count of routines in this group */}
-                      <span className="font-medium">5 routines</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-end space-x-2 p-4 border-t border-gray-200 dark:border-gray-700">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-gray-700 dark:text-gray-300"
-                      onClick={() => handleOpenEditGroupModal(group)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" /> Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 dark:text-red-400"
-                      onClick={() => handleDeleteGroup(group.id)}
-                    >
-                      <Trash className="h-4 w-4 mr-1" /> Delete
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No groups found</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                You haven't created any groups yet. Groups help you organize your routines.
-              </p>
-              <Button 
-                onClick={() => handleOpenEditGroupModal()}
-              >
-                Create Your First Group
-              </Button>
-            </div>
-          )}
-          
-          {/* Add new group button (mobile only) */}
-          <div className="fixed bottom-20 right-4 md:hidden">
-            <Button 
-              onClick={() => handleOpenEditGroupModal()}
-              className="rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-              size="icon"
-            >
-              <Plus size={24} />
-            </Button>
-          </div>
+    <Layout>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Routine Groups</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Organize your routines by creating groups
+          </p>
         </div>
-      </main>
+        
+        <div className="mt-4 md:mt-0">
+          <Button 
+            onClick={() => handleOpenEditGroupModal()}
+            className="flex items-center"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Group
+          </Button>
+        </div>
+      </div>
+      
+      {isLoading ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500 dark:text-gray-400">Loading groups...</p>
+        </div>
+      ) : groups.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {groups.map((group) => (
+            <Card key={group.id} className="overflow-hidden">
+              <CardHeader className="p-4">
+                <div className="flex items-center mb-2">
+                  <div className="mr-3 text-xl">
+                    <i className={getIconClass(group.icon)}></i>
+                  </div>
+                  <CardTitle className="text-lg font-semibold">
+                    {group.name}
+                  </CardTitle>
+                </div>
+                {group.timeRange && (
+                  <CardDescription>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <i className="fas fa-clock mr-1"></i>
+                      <span>{group.timeRange}</span>
+                    </div>
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  Routines in this group:
+                </div>
+                <div className="text-gray-900 dark:text-white">
+                  {/* In a real implementation, we would show the count of routines in this group */}
+                  <span className="font-medium">5 routines</span>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end space-x-2 p-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-700 dark:text-gray-300"
+                  onClick={() => handleOpenEditGroupModal(group)}
+                >
+                  <Edit className="h-4 w-4 mr-1" /> Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 dark:text-red-400"
+                  onClick={() => handleDeleteGroup(group.id)}
+                >
+                  <Trash className="h-4 w-4 mr-1" /> Delete
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No groups found</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            You haven't created any groups yet. Groups help you organize your routines.
+          </p>
+          <Button 
+            onClick={() => handleOpenEditGroupModal()}
+          >
+            Create Your First Group
+          </Button>
+        </div>
+      )}
+      
+      {/* Add new group button (mobile only) */}
+      <div className="fixed bottom-20 right-4 md:hidden">
+        <Button 
+          onClick={() => handleOpenEditGroupModal()}
+          className="rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
+          size="icon"
+        >
+          <Plus size={24} />
+        </Button>
+      </div>
       
       {/* Edit Group Modal */}
       <Dialog open={isEditGroupModalOpen} onOpenChange={setIsEditGroupModalOpen}>
@@ -345,6 +337,6 @@ export default function Groups() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </Layout>
   );
 }

@@ -168,7 +168,7 @@ export default function Dashboard() {
         });
         
         // Verificar si las rutinas están completadas
-        const routinesWithCompletionStatus = routinesForToday.map(routine => {
+        let routinesWithCompletionStatus = routinesForToday.map(routine => {
           const isCompleted = completions.some((completion: any) => 
             completion.routineId === routine.id && 
             format(new Date(completion.completedAt), 'yyyy-MM-dd') === dateParam
@@ -181,6 +181,29 @@ export default function Dashboard() {
               completions.find((c: any) => c.routineId === routine.id)?.completedAt : 
               undefined
           };
+        });
+        
+        // Ordenar rutinas por prioridad (alta > media > baja) y luego por tiempo estimado
+        routinesWithCompletionStatus.sort((a, b) => {
+          // Primero ordenar por prioridad
+          const priorityOrder = { high: 1, medium: 2, low: 3 };
+          const priorityComparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          
+          if (priorityComparison !== 0) {
+            return priorityComparison;
+          }
+          
+          // Si tienen la misma prioridad, ordenar por tiempo estimado (menor primero)
+          const getMinutes = (timeString: string) => {
+            // Convertir "HH:MM" a minutos
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return (hours * 60) + minutes;
+          };
+          
+          const aMinutes = getMinutes(a.expectedTime);
+          const bMinutes = getMinutes(b.expectedTime);
+          
+          return aMinutes - bMinutes;
         });
         
         // Agrupar rutinas por grupo
@@ -231,45 +254,28 @@ export default function Dashboard() {
       // Guardamos la fecha actual en una variable para asegurar consistencia
       const currentDate = dateParam;
       
-      // Simulamos la API para evitar errores 404 con los datos de prueba
-      // En una implementación real, esto se conectaría a la API
-      
       if (completed) {
         try {
-          // En un entorno real, este sería el punto de conexión con la API
-          // await apiRequest("POST", '/api/completions', { 
-          //   routineId, 
-          //   completedAt: new Date(selectedDate).toISOString(),
-          //   date: currentDate
-          // });
-          
-          // Almacenamos los datos en localStorage para simular persistencia
-          const completionsKey = `completions_${currentDate}`;
-          const savedCompletions = JSON.parse(localStorage.getItem(completionsKey) || '[]');
-          
-          if (!savedCompletions.includes(routineId)) {
-            savedCompletions.push(routineId);
-            localStorage.setItem(completionsKey, JSON.stringify(savedCompletions));
-          }
+          // Usar el endpoint real para marcar como completada
+          await apiRequest("POST", '/api/completions', { 
+            routineId,
+            completedAt: new Date().toISOString()
+          });
           
           console.log('Completing routine:', routineId, 'for date:', currentDate);
         } catch (error) {
           console.error('Error completing routine:', error);
+          throw error;
         }
       } else {
         try {
-          // En un entorno real:
-          // await apiRequest("DELETE", `/api/completions/${routineId}?date=${currentDate}`);
-          
-          // Simulación con localStorage
-          const completionsKey = `completions_${currentDate}`;
-          const savedCompletions = JSON.parse(localStorage.getItem(completionsKey) || '[]');
-          const updatedCompletions = savedCompletions.filter((id: number) => id !== routineId);
-          localStorage.setItem(completionsKey, JSON.stringify(updatedCompletions));
+          // Usar el endpoint real para desmarcar como completada
+          await apiRequest("DELETE", `/api/completions/${routineId}/${dateParam}`);
           
           console.log('Uncompleting routine:', routineId, 'for date:', currentDate);
         } catch (error) {
           console.error('Error uncompleting routine:', error);
+          throw error;
         }
       }
       
@@ -277,7 +283,9 @@ export default function Dashboard() {
     },
     onSuccess: () => {
       // Recargar los datos para actualizar el UI después de la mutación
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['/api/routines/daily', dateParam] });
+      queryClient.invalidateQueries({ queryKey: ['/api/completions', dateParam] });
+      queryClient.invalidateQueries({ queryKey: ['/api/completions/stats'] });
     }
   });
   

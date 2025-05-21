@@ -116,12 +116,13 @@ export default function Dashboard() {
     queryKey: ['/api/routines/daily', dateParam],
     queryFn: async () => {
       try {
-        // If API is ready:
-        // const res = await apiRequest("GET", `/api/routines/daily/${dateParam}`);
-        // return await res.json();
-        
-        // Using mock data for now
-        return mockData.groups;
+        // Por ahora vamos a volver a usar los datos de mockup para poder probar la funcionalidad
+        // pero con la fecha seleccionada
+        return mockData.groups.map(group => ({
+          ...group,
+          // Añadir la fecha seleccionada para simular datos diferentes según el día
+          name: `${group.name} (${dateParam})`
+        }));
       } catch (error) {
         console.error("Error fetching routines:", error);
         throw error;

@@ -31,7 +31,10 @@ export const removeToken = (): void => {
  * @returns JWT token or null if not found
  */
 export const getToken = (): string | null => {
-  return localStorage.getItem('token');
+  // Intentar obtener el token de localStorage o sessionStorage
+  return localStorage.getItem('auth_token') || 
+         sessionStorage.getItem('auth_token') || 
+         localStorage.getItem('token') || null;
 };
 
 /**

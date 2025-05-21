@@ -48,20 +48,44 @@ export default function ProgressPage() {
   const dateRange = getDateRange();
   
   // Fetch completion data for the selected date range
-  const { data: completions = [], isLoading } = useQuery<Completion[]>({
-    queryKey: ['/api/completions/stats', dateRange.start.toISOString(), dateRange.end.toISOString()],
+  const { data: completionStats = [], isLoading } = useQuery<any[]>({
+    queryKey: ['/api/completions/stats', format(dateRange.start, 'yyyy-MM-dd'), format(dateRange.end, 'yyyy-MM-dd')],
   });
   
-  // Generate some sample data for the charts
-  // In a real implementation, this would be calculated from the actual completion data
+  // Fetch all user routines to calculate totals
+  const { data: userRoutines = [] } = useQuery<Routine[]>({
+    queryKey: ['/api/routines'],
+  });
+  
+  // Fetch weekday schedules to know which routines should be completed on which days
+  const { data: weekdaySchedules = [] } = useQuery<any[]>({
+    queryKey: ['/api/routines/weekday-schedule'],
+  });
+  
+  // Generate real data for the charts based on actual completions
   const generateDailyCompletionData = () => {
     const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
     
     return days.map(day => {
       const dayStr = format(day, "yyyy-MM-dd");
-      const completed = Math.floor(Math.random() * 12) + 3; // 3-15 random completions
-      const total = Math.floor(Math.random() * 5) + 15; // 15-20 random total routines
-      const percentage = Math.round((completed / total) * 100);
+      const dayOfWeek = day.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const currentDay = weekdayMap[dayOfWeek];
+      
+      // Find routines scheduled for this day
+      const scheduledRoutines = userRoutines.filter(routine => {
+        const schedule = weekdaySchedules.find((s: any) => s.routineId === routine.id);
+        return schedule && schedule[currentDay];
+      });
+      
+      // Find completions for this day
+      const dayCompletions = completionStats.filter((completion: any) => 
+        format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr
+      );
+      
+      const total = scheduledRoutines.length;
+      const completed = dayCompletions.length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
       
       return {
         date: format(day, "MMM dd"),
@@ -74,34 +98,113 @@ export default function ProgressPage() {
   
   const dailyData = generateDailyCompletionData();
   
-  // Generate data for each priority level
+  // Generate data for each priority level based on actual routines and completions
   const generatePriorityData = () => {
-    return [
-      { name: "High", completed: 85, expected: 100 },
-      { name: "Medium", completed: 72, expected: 100 },
-      { name: "Low", completed: 93, expected: 100 }
+    // Group routines by priority
+    const routinesByPriority: Record<string, Routine[]> = {
+      high: userRoutines.filter(r => r.priority === 'high'),
+      medium: userRoutines.filter(r => r.priority === 'medium'),
+      low: userRoutines.filter(r => r.priority === 'low')
+    };
+    
+    // Count completions for each priority
+    const result = [
+      { 
+        name: "High", 
+        completed: completionStats.filter(c => 
+          routinesByPriority.high.some(r => r.id === c.routineId)
+        ).length,
+        expected: routinesByPriority.high.length * dailyData.length || 1 // Avoid division by zero
+      },
+      { 
+        name: "Medium", 
+        completed: completionStats.filter(c => 
+          routinesByPriority.medium.some(r => r.id === c.routineId)
+        ).length,
+        expected: routinesByPriority.medium.length * dailyData.length || 1
+      },
+      { 
+        name: "Low", 
+        completed: completionStats.filter(c => 
+          routinesByPriority.low.some(r => r.id === c.routineId)
+        ).length,
+        expected: routinesByPriority.low.length * dailyData.length || 1
+      }
     ];
+    
+    // Convert to percentages
+    return result.map(item => ({
+      ...item,
+      completed: Math.round((item.completed / item.expected) * 100)
+    }));
   };
   
   const priorityData = generatePriorityData();
   
-  // Calculate overall stats
+  // Calculate overall stats based on actual data
   const calculateOverallStats = () => {
-    // In a real implementation, these would be calculated from the actual completion data
     const totalRoutines = dailyData.reduce((sum, day) => sum + day.total, 0);
     const completedRoutines = dailyData.reduce((sum, day) => sum + day.completed, 0);
-    const completionRate = Math.round((completedRoutines / totalRoutines) * 100);
-    const streak = 7; // Current streak in days
-    const mostCompletedRoutine = "Morning Meditation";
-    const leastCompletedRoutine = "Evening Reading";
+    const completionRate = totalRoutines > 0 ? Math.round((completedRoutines / totalRoutines) * 100) : 0;
+    
+    // Calculate streak
+    let currentStreak = 0;
+    // Sort days in reverse order (newest first)
+    const sortedDays = [...dailyData].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    // Count consecutive days with at least one completion
+    for (const day of sortedDays) {
+      if (day.completed > 0) {
+        currentStreak++;
+      } else if (day.total > 0) { // Only break streak if there were routines to complete
+        break;
+      }
+    }
+    
+    // Find most and least completed routines
+    const routineCompletionCounts: Record<string, { completed: number, total: number, name: string }> = {};
+    
+    // Initialize counts
+    userRoutines.forEach(routine => {
+      routineCompletionCounts[routine.id] = {
+        completed: 0,
+        total: dailyData.length, // Maximum possible completions
+        name: routine.name
+      };
+    });
+    
+    // Count completions per routine
+    completionStats.forEach(completion => {
+      if (routineCompletionCounts[completion.routineId]) {
+        routineCompletionCounts[completion.routineId].completed++;
+      }
+    });
+    
+    // Find most and least completed
+    let mostCompletedRoutine = { name: "Ninguna", rate: 0 };
+    let leastCompletedRoutine = { name: "Ninguna", rate: 100 };
+    
+    Object.values(routineCompletionCounts).forEach(({ completed, total, name }) => {
+      if (total > 0) {
+        const rate = (completed / total) * 100;
+        if (rate > mostCompletedRoutine.rate) {
+          mostCompletedRoutine = { name, rate };
+        }
+        if (rate < leastCompletedRoutine.rate && total > 0) {
+          leastCompletedRoutine = { name, rate };
+        }
+      }
+    });
     
     return {
       totalRoutines,
       completedRoutines,
       completionRate,
-      streak,
-      mostCompletedRoutine,
-      leastCompletedRoutine
+      streak: currentStreak,
+      mostCompletedRoutine: mostCompletedRoutine.name,
+      leastCompletedRoutine: leastCompletedRoutine.name
     };
   };
   

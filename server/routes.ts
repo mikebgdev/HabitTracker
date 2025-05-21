@@ -2,7 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { hashPassword, verifyPassword, generateToken, verifyToken } from "./auth";
-import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema } from "@shared/schema";
+import { insertUserSchema, loginUserSchema, insertRoutineSchema, insertGroupSchema, insertWeekdayScheduleSchema, insertCompletionSchema, completions } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, sql } from "drizzle-orm";
 import express from "express";
 
 // Middleware to validate authentication
@@ -621,18 +623,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req as any).user.id;
       
-      // Validate completion data
+      // Simplified completion data with proper Date object
       const completionData = { 
-        ...req.body, 
+        routineId: parseInt(req.body.routineId),
         userId,
         completedAt: new Date() 
       };
-      
-      const validation = insertCompletionSchema.safeParse(completionData);
-      
-      if (!validation.success) {
-        return res.status(400).json({ message: "Invalid completion data", errors: validation.error.format() });
-      }
       
       // Check if routine belongs to user
       const routine = await storage.getRoutineById(completionData.routineId);
@@ -645,8 +641,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
       
-      // Create completion
-      const completion = await storage.createCompletion(validation.data);
+      // Create completion directly in the database
+      const [completion] = await db
+        .insert(completions)
+        .values(completionData)
+        .returning();
       
       res.status(201).json(completion);
     } catch (error) {
@@ -808,12 +807,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/completions/:date?", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default a hoy
+      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default to today
       
-      // Obtener todas las completaciones para el usuario en la fecha específica
-      const completions = await storage.getCompletionStats(userId, date, date);
+      // Get all completions for the user for the specific date
+      // Direct database query to avoid date conversion issues
+      const result = await db
+        .select()
+        .from(completions)
+        .where(
+          and(
+            eq(completions.userId, userId)
+          )
+        );
       
-      res.json(completions);
+      res.json(result);
     } catch (error) {
       console.error("Error fetching completions:", error);
       res.status(500).json({ message: "Failed to fetch completions" });

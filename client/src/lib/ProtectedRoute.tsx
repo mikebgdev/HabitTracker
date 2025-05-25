@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Redirect } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/lib/AuthContext";
+import { useI18n } from "@/lib/i18n";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -8,13 +9,14 @@ interface ProtectedRouteProps {
 
 // Protected route component that redirects to login if user is not authenticated
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
+  const { t } = useI18n();
 
   // If still checking auth status, show loading
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
       </div>
     );
   }

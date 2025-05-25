@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { useI18n, Language } from '@/lib/i18n';
-import { Layout } from '@/components/Layout';
+import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Trash2, Globe, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export function Account() {
+export default function Account() {
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useI18n();
   const { toast } = useToast();
@@ -34,7 +34,6 @@ export function Account() {
       toast({
         title: t('common.error'),
         description: 'Failed to sign out',
-        variant: 'destructive',
       });
     }
   };
@@ -68,7 +67,6 @@ export function Account() {
       toast({
         title: t('common.error'),
         description: 'Failed to delete account',
-        variant: 'destructive',
       });
     } finally {
       setIsDeleting(false);

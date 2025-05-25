@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Sun, Moon, Menu, X, User, Home, Calendar, BarChart2, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 
 interface NavItemProps {
   to: string;
@@ -35,6 +36,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
+  const { t } = useI18n();
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem('theme') === 'dark' || 
     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)

@@ -33,6 +33,8 @@ export const routines = pgTable("routines", {
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  archived: boolean("archived").default(false).notNull(),
+  archivedAt: timestamp("archived_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

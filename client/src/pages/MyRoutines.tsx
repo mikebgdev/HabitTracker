@@ -379,6 +379,14 @@ export default function MyRoutines() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                    onClick={() => handleArchiveRoutine(routine.id)}
+                  >
+                    <Archive className="h-4 w-4 mr-1" /> Archivar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-red-600 dark:text-red-400"
                     onClick={() => confirmDeleteRoutine(routine)}
                   >

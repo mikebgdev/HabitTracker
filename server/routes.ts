@@ -397,6 +397,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unarchive routine
+  app.patch("/api/routines/:id/unarchive", authenticate, async (req, res) => {
+    try {
+      const routineId = parseInt(req.params.id);
+      const userId = (req as any).user.id;
+      
+      const routine = await storage.getRoutineById(routineId);
+      
+      if (!routine) {
+        return res.status(404).json({ message: "Routine not found" });
+      }
+      
+      if (routine.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Unarchive the routine
+      const updatedRoutine = await storage.updateRoutine(routineId, {
+        archived: false,
+        archivedAt: null,
+      });
+      
+      res.json({ message: "Routine unarchived successfully", routine: updatedRoutine });
+    } catch (error) {
+      console.error("Error unarchiving routine:", error);
+      res.status(500).json({ message: "Failed to unarchive routine" });
+    }
+  });
+
   app.patch("/api/routines/:id", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);

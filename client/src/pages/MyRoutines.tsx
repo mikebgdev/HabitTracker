@@ -64,6 +64,7 @@ export default function MyRoutines() {
   const [isAssignGroupModalOpen, setIsAssignGroupModalOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   
   // Estado para el diálogo de confirmación de eliminación
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -169,8 +170,16 @@ export default function MyRoutines() {
     };
   };
   
-  // Filter routines based on current filters
+  // Filter routines based on current filters and view mode
   const filteredRoutines = routines.filter(routine => {
+    // Filter by view mode (active vs archived)
+    if (viewMode === "active" && routine.archived) {
+      return false;
+    }
+    if (viewMode === "archived" && !routine.archived) {
+      return false;
+    }
+    
     // Filter by priority
     if (filter !== "all" && routine.priority !== filter) {
       return false;
@@ -283,6 +292,32 @@ export default function MyRoutines() {
         </div>
       </div>
       
+      {/* View Mode Tabs */}
+      <div className="mb-6">
+        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setViewMode("active")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === "active"
+                ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            Active Routines
+          </button>
+          <button
+            onClick={() => setViewMode("archived")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === "archived"
+                ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            Archived Routines
+          </button>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4 md:items-center">
           <div className="w-full md:w-1/3">

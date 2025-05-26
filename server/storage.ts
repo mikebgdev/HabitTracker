@@ -221,6 +221,14 @@ export class MemStorage implements IStorage {
     const result: (Routine & { completedAt?: string })[] = [];
     
     for (const routine of userRoutines) {
+      // Skip archived routines for current and future dates
+      if (routine.archived && routine.archivedAt) {
+        const archivedDate = new Date(routine.archivedAt).toISOString().substring(0, 10);
+        if (date >= archivedDate) {
+          continue; // Skip this routine for dates from archival onwards
+        }
+      }
+      
       // Check weekday schedule
       const weekdaySchedule = await this.getWeekdayScheduleByRoutineId(routine.id);
       
@@ -689,13 +697,25 @@ export class DatabaseStorage implements IStorage {
       completionsForDay.map(c => [c.routineId, c.completedAt.toISOString()])
     );
     
-    return routinesForDay.map(r => {
-      const routine = r.routines;
-      return {
-        ...routine,
-        completedAt: completionsByRoutineId.get(routine.id)
-      };
-    });
+    // Filter and map routines, excluding archived ones for dates from archival onwards
+    return routinesForDay
+      .map(r => {
+        const routine = r.routines;
+        return {
+          ...routine,
+          completedAt: completionsByRoutineId.get(routine.id)
+        };
+      })
+      .filter(routine => {
+        // Skip archived routines for current and future dates
+        if (routine.archived && routine.archivedAt) {
+          const archivedDate = new Date(routine.archivedAt).toISOString().substring(0, 10);
+          if (date >= archivedDate) {
+            return false; // Skip this routine for dates from archival onwards
+          }
+        }
+        return true;
+      });
   }
 
   async getDailyRoutinesByGroup(userId: number, date: string): Promise<Group[]> {

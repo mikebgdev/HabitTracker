@@ -1,119 +1,40 @@
-import { useState } from "react";
-import { Link } from "wouter";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/lib/AuthContext';
+import { useI18n } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { LogIn } from 'lucide-react';
 
 export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
-  const { login, isLoading, error } = useAuth();
-  const { toast } = useToast();
+  const { signIn } = useAuth();
+  const { t } = useI18n();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSignIn = async () => {
     try {
-      await login(username, password, rememberMe);
-    } catch (err) {
-      toast({
-        title: "Login failed",
-        description: error || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      await signIn();
+    } catch (error) {
+      console.error('Failed to sign in:', error);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-2">
-            <div className="text-primary text-3xl">
-              <i className="fas fa-check-circle"></i>
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-center">HabitMaster</CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access your account
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">{t('auth.welcome')}</CardTitle>
+          <CardDescription>
+            {t('auth.login')} to continue to your routine tracker
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input 
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password">
-                  <a className="text-sm text-primary hover:underline">
-                    Forgot password?
-                  </a>
-                </Link>
-              </div>
-              <Input 
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-              />
-              <Label htmlFor="rememberMe" className="text-sm font-normal">Remember me</Label>
-            </div>
-            {error && (
-              <div className="text-sm text-red-500">
-                {error}
-              </div>
-            )}
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
+          <Button 
+            onClick={handleSignIn}
+            className="w-full flex items-center gap-2"
+            size="lg"
+          >
+            <LogIn className="w-5 h-5" />
+            {t('auth.loginWithGoogle')}
+          </Button>
         </CardContent>
-        <CardFooter className="justify-center border-t pt-5">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{" "}
-            <Link href="/register">
-              <a className="text-primary font-medium hover:underline">
-                Sign up
-              </a>
-            </Link>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );

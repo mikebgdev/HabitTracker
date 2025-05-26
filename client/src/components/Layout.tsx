@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Sun, Moon, Menu, X, User, Home, Calendar, BarChart2, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 
 interface NavItemProps {
   to: string;
@@ -35,6 +36,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
+  const { t } = useI18n();
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem('theme') === 'dark' || 
     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -83,14 +85,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="ml-4 flex items-center"
-            >
-              <User size={16} className="mr-2" />
-              <span>Profile</span>
-            </Button>
+            <Link href="/account">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="ml-4 flex items-center"
+              >
+                <User size={16} className="mr-2" />
+                <span>Profile</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -100,27 +104,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <aside className="hidden md:block w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
           <nav className="space-y-2">
             <NavItem 
-              to="/" 
+              to="/dashboard" 
               icon={<Home size={20} />} 
-              label="Dashboard" 
-              isActive={location === '/'} 
+              label={t('nav.dashboard')} 
+              isActive={location === '/dashboard' || location === '/'} 
             />
             <NavItem 
               to="/routines" 
               icon={<Calendar size={20} />} 
-              label="My Routines" 
+              label={t('nav.routines')} 
               isActive={location === '/routines'} 
             />
             <NavItem 
               to="/groups" 
               icon={<Layers size={20} />} 
-              label="Groups" 
+              label={t('nav.groups')} 
               isActive={location === '/groups'} 
             />
             <NavItem 
               to="/progress" 
               icon={<BarChart2 size={20} />} 
-              label="Progress" 
+              label={t('nav.progress')} 
               isActive={location === '/progress'} 
             />
           </nav>

@@ -28,6 +28,8 @@ import {
   Timer,
   FolderOpen,
   FolderX,
+  Archive,
+  RotateCcw,
   Activity,
   Bike,
   Book,
@@ -63,6 +65,7 @@ export default function MyRoutines() {
   const [isAssignGroupModalOpen, setIsAssignGroupModalOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   
   // Estado para el diálogo de confirmación de eliminación
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -85,6 +88,48 @@ export default function MyRoutines() {
     setIsDeleteDialogOpen(true);
   };
   
+  // Archivar rutina
+  const handleArchiveRoutine = async (routineId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/routines/${routineId}/archive`, {});
+      
+      // Actualizar consultas para reflejar el cambio
+      await refetchRoutines();
+      
+      toast({
+        title: "Rutina archivada",
+        description: "La rutina ha sido archivada correctamente y ya no aparecerá en rutinas futuras"
+      });
+    } catch (error) {
+      console.error("Failed to archive routine:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo archivar la rutina. Inténtalo de nuevo."
+      });
+    }
+  }
+
+  // Desarchivar rutina
+  const handleUnarchiveRoutine = async (routineId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/routines/${routineId}/unarchive`, {});
+      
+      // Actualizar consultas para reflejar el cambio
+      await refetchRoutines();
+      
+      toast({
+        title: "Rutina desarchivada",
+        description: "La rutina ha sido restaurada y volverá a aparecer en rutinas activas"
+      });
+    } catch (error) {
+      console.error("Failed to unarchive routine:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo desarchivar la rutina. Inténtalo de nuevo."
+      });
+    }
+  };
+
   // Proceder con la eliminación después de confirmar
   const handleDeleteRoutine = async () => {
     if (!routineToDelete) return;
@@ -147,8 +192,16 @@ export default function MyRoutines() {
     };
   };
   
-  // Filter routines based on current filters
+  // Filter routines based on current filters and view mode
   const filteredRoutines = routines.filter(routine => {
+    // Filter by view mode (active vs archived)
+    if (viewMode === "active" && routine.archived) {
+      return false;
+    }
+    if (viewMode === "archived" && !routine.archived) {
+      return false;
+    }
+    
     // Filter by priority
     if (filter !== "all" && routine.priority !== filter) {
       return false;
@@ -261,6 +314,32 @@ export default function MyRoutines() {
         </div>
       </div>
       
+      {/* View Mode Tabs */}
+      <div className="mb-6">
+        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setViewMode("active")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === "active"
+                ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            Active Routines
+          </button>
+          <button
+            onClick={() => setViewMode("archived")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === "archived"
+                ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            Archived Routines
+          </button>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4 md:items-center">
           <div className="w-full md:w-1/3">
@@ -376,6 +455,27 @@ export default function MyRoutines() {
                   >
                     <Edit className="h-4 w-4 mr-1" /> Editar
                   </Button>
+                  
+                  {viewMode === "active" ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                      onClick={() => handleArchiveRoutine(routine.id)}
+                    >
+                      <Archive className="h-4 w-4 mr-1" /> Archivar
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      onClick={() => handleUnarchiveRoutine(routine.id)}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" /> Desarchivar
+                    </Button>
+                  )}
+                  
                   <Button
                     variant="outline"
                     size="sm"

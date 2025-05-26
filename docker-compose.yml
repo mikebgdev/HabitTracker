@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: habittracker
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    image: node:18-alpine
+    working_dir: /app
+    env_file:
+      - ./.env
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./:/app:delegated
+    depends_on:
+      - db
+
+volumes:
+  db_data:

@@ -73,6 +73,16 @@ npm run dev
 
 The server runs on port 5000 and serves the React client. Open http://localhost:5000 in your browser.
 
+### Development with Docker Compose
+
+Alternatively, you can launch the application using Docker Compose:
+
+```bash
+docker-compose up
+```
+
+This will start a PostgreSQL database and the Node.js/Vite application. The server will be available at http://localhost:5000. Use `docker-compose down` to stop the services.
+
 ## Production Build
 
 Build client and server for production:
@@ -115,6 +125,6 @@ HabitMaster/
 
 This project is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for details.
 
-## Author
+## Contact
 
-- Mike B – [https://github.com/mikeb](https://github.com/mikeb)
+For inquiries and collaborations, feel free to reach out to me through the contact form on the portfolio or via email at [mike@mikebgdev.com](mailto:mike@mikebgdev.com).

@@ -17,7 +17,11 @@ function App() {
       <AuthProvider>
         <Toaster />
         <Switch>
-          <Route path="/" component={Login} />
+          <Route path="/">
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </Route>
           <Route path="/login" component={Login} />
           
           <Route path="/dashboard">

@@ -21,8 +21,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      
+      // If user is authenticated but we don't have a token, get one
+      if (user && !localStorage.getItem('authToken')) {
+        try {
+          const response = await fetch('/api/auth/google-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: user.email,
+              displayName: user.displayName,
+              uid: user.uid,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.token) {
+              localStorage.setItem('authToken', data.token);
+              console.log('Token saved for existing user session');
+            }
+          }
+        } catch (error) {
+          console.error('Error getting token for existing user:', error);
+        }
+      }
+      
       setLoading(false);
     });
 

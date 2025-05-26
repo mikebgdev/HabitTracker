@@ -85,14 +85,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="ml-4 flex items-center"
-            >
-              <User size={16} className="mr-2" />
-              <span>Profile</span>
-            </Button>
+            <Link href="/account">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="ml-4 flex items-center"
+              >
+                <User size={16} className="mr-2" />
+                <span>Profile</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </header>

@@ -1,0 +1,80 @@
+name: react-project-build
+kind: pipeline
+type: docker
+
+trigger:
+  event:
+    - push
+    - pull_request
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  disable: true
+
+steps:
+  - name: clone
+    image: alpine/git
+    commands:
+      - git clone https://$GITHUB_TOKEN@github.com/$DRONE_REPO ./$PROJECT_NAME
+      - cd ./$PROJECT_NAME
+      - git checkout $DRONE_COMMIT
+
+  - name: install-dependencies
+    image: node:18
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm install
+
+  - name: lint
+    image: node:18
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm run lint
+
+  - name: run-tests
+    image: node:18
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm test
+
+  - name: build
+    image: node:18
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm run build
+
+---
+name: react-project-deploy
+kind: pipeline
+type: docker
+
+trigger:
+  event:
+    - promote
+
+steps:
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: docker_host
+      username:
+        from_secret: username_ssh
+      password:
+        from_secret: password_ssh
+      script:
+        - |
+          if [ ! -d "/var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}" ]; then
+            git clone https://${GITHUB_TOKEN}@github.com/${DRONE_REPO} /var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}
+          fi
+        - cd /var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}
+        - git fetch
+        - git reset --hard origin/${DRONE_BRANCH}
+        - git checkout ${DRONE_BRANCH}
+        - git pull origin ${DRONE_BRANCH}
+        - docker compose build
+        - docker compose down
+        - docker compose up -d --force-recreate

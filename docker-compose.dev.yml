@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  react:
+    image: node:18
+    container_name: react-${PROJECT_NAME}-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm start"
+    ports:
+      - ${HTTP_PORT_DEV}:3000
+    networks:
+      - reactapp
+
+networks:
+  reactapp:
+    name: reactapp-${PROJECT_NAME}-dev
+

@@ -16,14 +16,14 @@ HabitMaster is a full-stack application for tracking and managing daily habits. 
 ## Tech Stack
 
 - **Client**: React, TypeScript, Vite, TailwindCSS, React Query, Firebase Auth
-- **Server**: Node.js, TypeScript, Express, Drizzle ORM, MySQL, JWT
+- **Server**: Node.js, TypeScript, Express, Drizzle ORM, PostgreSQL, JWT
 - **Architecture**: Hexagonal Architecture (Ports & Adapters), Domain-Driven Design, SOLID principles
 
 ## Prerequisites
 
 - Node.js v14 or higher
 - npm v6 or higher
-- MySQL database (remote)
+- PostgreSQL database (remote)
 - Firebase project (to obtain API credentials)
 
 ## Environment Variables
@@ -31,9 +31,9 @@ HabitMaster is a full-stack application for tracking and managing daily habits. 
 Create a `.env` file in the project root (and optionally a `.env.local` for sensitive values). If a `.env.local` file is present, its variables will override those in `.env`.
 Add the following variables to your environment file(s):
 
+# Server: PostgreSQL connection URL
 ```dotenv
-# Server: MySQL connection URL
-DATABASE_URL="mysql://username:password@host:3306/database?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
+DATABASE_URL="postgresql://username:password@host:5432/database"
 
 # Server: JWT settings
 JWT_SECRET=your_jwt_secret_here
@@ -58,7 +58,7 @@ npm install
 
 ## Database Migrations
 
-Apply database schema changes (MySQL):
+Apply database schema changes (PostgreSQL):
 
 ```bash
 npm run db:push
@@ -76,7 +76,7 @@ The server runs on port 5000 and serves the React client. Open http://localhost:
 
 ### Development with Docker Compose
 
-Alternatively, you can launch the application using Docker Compose (connects to your remote MySQL):
+Alternatively, you can launch the application using Docker Compose (connects to your remote PostgreSQL):
 
 ```bash
 docker-compose up

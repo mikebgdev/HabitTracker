@@ -1,12 +1,16 @@
-import mysql from 'mysql2/promise';
-import { drizzle } from 'drizzle-orm/mysql2';
-import * as schema from '@shared/schema';
+import { Kysely, PostgresDialect } from 'kysely';
+import { Pool } from 'pg';
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to configure your MySQL connection?",
+    "DATABASE_URL must be set. Did you forget to configure your PostgreSQL connection?",
   );
 }
 
-const pool = mysql.createPool(process.env.DATABASE_URL);
-export const db = drizzle(pool, { schema });
+export const db = new Kysely({
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      connectionString: process.env.DATABASE_URL,
+    }),
+  }),
+});

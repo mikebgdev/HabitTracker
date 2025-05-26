@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,14 +13,9 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Function to sign in with Google
+// Function to sign in with Google using popup instead of redirect
 export const signInWithGoogle = () => {
-  return signInWithRedirect(auth, googleProvider);
-};
-
-// Function to handle redirect result
-export const handleRedirectResult = () => {
-  return getRedirectResult(auth);
+  return signInWithPopup(auth, googleProvider);
 };
 
 // Function to sign out

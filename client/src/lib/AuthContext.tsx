@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, signInWithGoogle, signOutUser, handleRedirectResult } from './firebase';
+import { auth, signInWithGoogle, signOutUser } from './firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -20,70 +20,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for redirect result when component mounts
-    handleRedirectResult()
-      .then(async (result) => {
-        if (result?.user) {
-          console.log('Successfully signed in via redirect:', result.user);
-          
-          // Create user in our database
-          try {
-            const response = await fetch('/api/auth/google-user', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                email: result.user.email,
-                displayName: result.user.displayName,
-                uid: result.user.uid,
-              }),
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              console.log('User saved to database:', data);
-              // Redirect to dashboard after successful login
-              window.location.href = '/dashboard';
-            } else {
-              console.error('Failed to save user to database');
-            }
-          } catch (error) {
-            console.error('Error saving user to database:', error);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error('Error handling redirect result:', error);
-      });
-
     // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
-      
-      // If user is authenticated and on login page, create/sync user and redirect
-      if (user && (window.location.pathname === '/' || window.location.pathname === '/login')) {
-        try {
-          const response = await fetch('/api/auth/google-user', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: user.email,
-              displayName: user.displayName,
-              uid: user.uid,
-            }),
-          });
-
-          if (response.ok) {
-            window.location.href = '/dashboard';
-          }
-        } catch (error) {
-          console.error('Error syncing user:', error);
-        }
-      }
     });
 
     return unsubscribe;
@@ -91,7 +31,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      
+      if (result?.user) {
+        console.log('Successfully signed in with popup:', result.user);
+        
+        // Create user in our database
+        try {
+          const response = await fetch('/api/auth/google-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: result.user.email,
+              displayName: result.user.displayName,
+              uid: result.user.uid,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('User saved to database:', data);
+            // Redirect to dashboard after successful login
+            window.location.href = '/dashboard';
+          } else {
+            console.error('Failed to save user to database');
+          }
+        } catch (error) {
+          console.error('Error saving user to database:', error);
+        }
+      }
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;

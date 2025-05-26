@@ -29,6 +29,7 @@ import {
   FolderOpen,
   FolderX,
   Archive,
+  RotateCcw,
   Activity,
   Bike,
   Book,
@@ -104,6 +105,27 @@ export default function MyRoutines() {
       toast({
         title: "Error",
         description: "No se pudo archivar la rutina. Inténtalo de nuevo."
+      });
+    }
+  }
+
+  // Desarchivar rutina
+  const handleUnarchiveRoutine = async (routineId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/routines/${routineId}/unarchive`, {});
+      
+      // Actualizar consultas para reflejar el cambio
+      await refetchRoutines();
+      
+      toast({
+        title: "Rutina desarchivada",
+        description: "La rutina ha sido restaurada y volverá a aparecer en rutinas activas"
+      });
+    } catch (error) {
+      console.error("Failed to unarchive routine:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo desarchivar la rutina. Inténtalo de nuevo."
       });
     }
   };
@@ -433,14 +455,27 @@ export default function MyRoutines() {
                   >
                     <Edit className="h-4 w-4 mr-1" /> Editar
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-                    onClick={() => handleArchiveRoutine(routine.id)}
-                  >
-                    <Archive className="h-4 w-4 mr-1" /> Archivar
-                  </Button>
+                  
+                  {viewMode === "active" ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                      onClick={() => handleArchiveRoutine(routine.id)}
+                    >
+                      <Archive className="h-4 w-4 mr-1" /> Archivar
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      onClick={() => handleUnarchiveRoutine(routine.id)}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" /> Desarchivar
+                    </Button>
+                  )}
+                  
                   <Button
                     variant="outline"
                     size="sm"

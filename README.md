@@ -16,23 +16,24 @@ HabitMaster is a full-stack application for tracking and managing daily habits. 
 ## Tech Stack
 
 - **Client**: React, TypeScript, Vite, TailwindCSS, React Query, Firebase Auth
-- **Server**: Node.js, TypeScript, Express, Drizzle ORM, PostgreSQL, JWT
+- **Server**: Node.js, TypeScript, Express, Drizzle ORM, MySQL, JWT
 - **Architecture**: Hexagonal Architecture (Ports & Adapters), Domain-Driven Design, SOLID principles
 
 ## Prerequisites
 
 - Node.js v14 or higher
 - npm v6 or higher
-- PostgreSQL database
+- MySQL database (remote)
 - Firebase project (to obtain API credentials)
 
 ## Environment Variables
 
-Create a `.env` file in the project root and add the following variables:
+Create a `.env` file in the project root (and optionally a `.env.local` for sensitive values). If a `.env.local` file is present, its variables will override those in `.env`.
+Add the following variables to your environment file(s):
 
 ```dotenv
-# Server: PostgreSQL connection URL
-DATABASE_URL=postgresql://username:password@localhost:5432/habittracker
+# Server: MySQL connection URL
+DATABASE_URL="mysql://username:password@host:3306/database?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
 
 # Server: JWT settings
 JWT_SECRET=your_jwt_secret_here
@@ -57,7 +58,7 @@ npm install
 
 ## Database Migrations
 
-Apply database schema changes:
+Apply database schema changes (MySQL):
 
 ```bash
 npm run db:push
@@ -75,13 +76,13 @@ The server runs on port 5000 and serves the React client. Open http://localhost:
 
 ### Development with Docker Compose
 
-Alternatively, you can launch the application using Docker Compose:
+Alternatively, you can launch the application using Docker Compose (connects to your remote MySQL):
 
 ```bash
 docker-compose up
 ```
 
-This will start a PostgreSQL database and the Node.js/Vite application. The server will be available at http://localhost:5000. Use `docker-compose down` to stop the services.
+This will start the Node.js/Vite application. The server will be available at http://localhost:5000. Use `docker-compose down` to stop the service.
 
 ## Production Build
 

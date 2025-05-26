@@ -106,25 +106,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <NavItem 
               to="/dashboard" 
               icon={<Home size={20} />} 
-              label="Dashboard" 
+              label={t('nav.dashboard')} 
               isActive={location === '/dashboard' || location === '/'} 
             />
             <NavItem 
               to="/routines" 
               icon={<Calendar size={20} />} 
-              label="My Routines" 
+              label={t('nav.routines')} 
               isActive={location === '/routines'} 
             />
             <NavItem 
               to="/groups" 
               icon={<Layers size={20} />} 
-              label="Groups" 
+              label={t('nav.groups')} 
               isActive={location === '/groups'} 
             />
             <NavItem 
               to="/progress" 
               icon={<BarChart2 size={20} />} 
-              label="Progress" 
+              label={t('nav.progress')} 
               isActive={location === '/progress'} 
             />
           </nav>

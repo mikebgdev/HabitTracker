@@ -53,6 +53,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.ok) {
             const data = await response.json();
             console.log('User saved to database:', data);
+            
+            // Save the JWT token to localStorage
+            if (data.token) {
+              localStorage.setItem('authToken', data.token);
+            }
+            
             // Redirect to dashboard after successful login
             window.location.href = '/dashboard';
           } else {
@@ -71,6 +77,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     try {
       await signOutUser();
+      // Clear the JWT token from localStorage
+      localStorage.removeItem('authToken');
+      // Redirect to login page after logout
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;

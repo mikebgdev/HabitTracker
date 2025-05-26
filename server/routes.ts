@@ -62,24 +62,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           password: uid, // Use Firebase UID as password placeholder
         });
         
+        // Generate JWT token for the new user
+        const token = generateToken({ userId: newUser.id });
+        
         return res.status(201).json({ 
           message: "User created successfully", 
           user: { 
             id: newUser.id, 
             email: newUser.email, 
             username: newUser.username 
-          } 
+          },
+          token 
         });
       }
       
-      // User exists, return user info
+      // User exists, generate token and return user info
+      const token = generateToken({ userId: user.id });
+      
       return res.status(200).json({ 
         message: "User logged in successfully", 
         user: { 
           id: user.id, 
           email: user.email, 
           username: user.username 
-        } 
+        },
+        token 
       });
     } catch (error) {
       console.error("Google user authentication error:", error);

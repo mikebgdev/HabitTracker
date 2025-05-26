@@ -56,27 +56,22 @@ export default function Groups() {
   const [endTime, setEndTime] = useState("09:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [routineCountByGroup, setRoutineCountByGroup] = useState<Record<number, number>>({});
-  
-  // Estado para el diálogo de confirmación de eliminación
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
-  
-  // Fetch all groups
+
   const { data: groups = [], isLoading: isLoadingGroups, refetch: refetchGroups } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
-  
-  // Fetch group-routine relationships to count routines per group
+
   const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines, refetch: refetchGroupRoutines } = useQuery<any[]>({
     queryKey: ['/api/group-routines'],
   });
-  
-  // Calculate routine counts for each group
+
   useEffect(() => {
     if (Array.isArray(groupRoutines) && groupRoutines.length > 0) {
       const counts: Record<number, number> = {};
-      
-      // Contar manualmente las rutinas por grupo
+
       groupRoutines.forEach((gr: any) => {
         if (!counts[gr.groupId]) {
           counts[gr.groupId] = 0;
@@ -98,12 +93,11 @@ export default function Groups() {
         icon: group.icon || "fa-layer-group",
         timeRange: group.timeRange || "",
       });
-      
-      // Parse timeRange if it exists to populate start and end time fields
+
       if (group.timeRange) {
         const timeParts = group.timeRange.split(" - ");
         if (timeParts.length === 2) {
-          // Convert from "8:00 AM" format to "08:00" format
+
           const convertToMilitaryTime = (time: string) => {
             const [timePart, ampm] = time.split(" ");
             let [hours, minutes] = timePart.split(":");
@@ -120,7 +114,7 @@ export default function Groups() {
           setEndTime(convertToMilitaryTime(timeParts[1]));
         }
       } else {
-        // Default times if no timeRange
+
         setStartTime("08:00");
         setEndTime("09:00");
       }
@@ -135,8 +129,7 @@ export default function Groups() {
     }
     setIsEditGroupModalOpen(true);
   };
-  
-  // Format the time from 24-hour format to 12-hour format with AM/PM
+
   const formatTimeFor12Hour = (time: string) => {
     const [hours, minutes] = time.split(":");
     const h = parseInt(hours);
@@ -149,7 +142,6 @@ export default function Groups() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Format start and end times into timeRange
     const formattedStartTime = formatTimeFor12Hour(startTime);
     const formattedEndTime = formatTimeFor12Hour(endTime);
     const timeRange = `${formattedStartTime} - ${formattedEndTime}`;
@@ -161,17 +153,16 @@ export default function Groups() {
       };
       
       if (editingGroup) {
-        // Update existing group
+
         await apiRequest("PATCH", `/api/groups/${editingGroup.id}`, dataToSend);
       } else {
-        // Create new group
+
         await apiRequest("POST", "/api/groups", {
           ...dataToSend,
-          userId: 1, // In a real app, this would come from auth context
+          userId: 1, 
         });
       }
 
-      // Refresh data
       await refetchGroups();
       await refetchGroupRoutines();
       setIsEditGroupModalOpen(false);
@@ -182,20 +173,17 @@ export default function Groups() {
     }
   };
 
-  // Mostrar diálogo de confirmación antes de eliminar
   const confirmDeleteGroup = (groupId: number) => {
     setGroupToDelete(groupId);
     setIsDeleteDialogOpen(true);
   };
 
-  // Proceder con la eliminación después de confirmar
   const handleDeleteGroup = async () => {
     if (!groupToDelete) return;
     
     try {
       await apiRequest("DELETE", `/api/groups/${groupToDelete}`, {});
-      
-      // Actualizar ambas consultas para asegurar que la UI se actualice
+
       await refetchGroups();
       await refetchGroupRoutines();
       
@@ -326,7 +314,7 @@ export default function Groups() {
         </div>
       )}
       
-      {/* Add new group button (mobile only) */}
+      
       <div className="fixed bottom-20 right-4 md:hidden">
         <Button 
           onClick={() => handleOpenEditGroupModal()}
@@ -337,7 +325,7 @@ export default function Groups() {
         </Button>
       </div>
       
-      {/* Edit Group Modal */}
+      
       <Dialog open={isEditGroupModalOpen} onOpenChange={setIsEditGroupModalOpen}>
         <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
           <DialogHeader>
@@ -483,7 +471,7 @@ export default function Groups() {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Dialog for Delete */}
+      
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

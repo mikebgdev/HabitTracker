@@ -24,11 +24,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [, setLocation] = useLocation();
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Intentar obtener el usuario desde localStorage o sessionStorage
+
         const storedUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
         const storedToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         
@@ -38,8 +37,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setIsLoading(false);
           return;
         }
-        
-        // Si no hay usuario en storage, verificar con el servidor
+
         const res = await fetch("/api/auth/me", {
           credentials: "include",
           headers: {
@@ -73,13 +71,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
       
       const userData = await res.json();
-      
-      // Guardar usuario en localStorage si remember me está activado
+
       if (rememberMe) {
         localStorage.setItem('auth_user', JSON.stringify(userData));
         localStorage.setItem('auth_token', userData.token);
       } else {
-        // O guardar en sessionStorage si no
+
         sessionStorage.setItem('auth_user', JSON.stringify(userData));
         sessionStorage.setItem('auth_token', userData.token);
       }
@@ -121,7 +118,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     try {
       await apiRequest("POST", "/api/auth/logout", {});
-      // Limpiar almacenamiento
+
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_token');
       sessionStorage.removeItem('auth_user');

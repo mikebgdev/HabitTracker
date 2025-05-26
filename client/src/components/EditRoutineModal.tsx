@@ -54,7 +54,6 @@ interface EditRoutineModalProps {
   onRoutineUpdated?: () => Promise<void>;
 }
 
-// Categorías de iconos para mejor organización
 const ICON_CATEGORIES = [
   {
     name: "Actividades",
@@ -91,10 +90,8 @@ const ICON_CATEGORIES = [
   }
 ];
 
-// Lista plana de iconos para funciones que necesitan todos los iconos
 const ROUTINE_ICONS = ICON_CATEGORIES.flatMap(category => category.icons);
 
-// Mapa de iconos para cada nivel de prioridad
 const PRIORITY_ICONS = {
   high: { icon: Flame, color: "text-red-500" },
   medium: { icon: BatteryMedium, color: "text-yellow-500" },
@@ -120,25 +117,21 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [routineId, setRoutineId] = useState<number | null>(null);
 
-  // Cargar los grupos para el desplegable
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
-  
-  // Cargar los horarios semanales para la rutina si está siendo editada
+
   const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['/api/routines/weekday-schedule', routineId],
-    enabled: !!routineId && !isNaN(Number(routineId)), // Añadimos validación para evitar parámetros NaN
+    enabled: !!routineId && !isNaN(Number(routineId)), 
   });
-  
-  // Cargar la relación grupo-rutina para conocer el grupo actual
+
   const { data: groupRoutines = [] } = useQuery({
     queryKey: ['/api/group-routines'],
     enabled: !!routineId,
   });
 
-  // Inicializar datos al abrir el modal con una rutina para editar
-  // Efecto para datos básicos de la rutina - solo se ejecuta cuando cambia la rutina o isOpen
+
   useEffect(() => {
     if (routine) {
       setName(routine.name);
@@ -150,20 +143,14 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
       resetForm();
     }
   }, [routine, isOpen]);
-  
-  // Efecto separado para el grupo - solo se ejecuta cuando groupRoutines cambia
+
   useEffect(() => {
     if (routine && Array.isArray(groupRoutines) && groupRoutines.length > 0) {
-      console.log("Buscando grupo para la rutina:", routine.id);
-      console.log("Grupos disponibles:", groupRoutines);
-      
-      // Buscar rutina en cada grupo
+
       let foundGroup = false;
-      
-      // Iterar por cada relación de grupo para buscar la rutina
+
       for (const gr of groupRoutines) {
         if (gr.routineId === routine.id) {
-          console.log("Rutina encontrada en el grupo:", gr.groupId);
           setGroupId(gr.groupId);
           foundGroup = true;
           break;
@@ -171,16 +158,14 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
       }
       
       if (!foundGroup) {
-        console.log("No se encontró grupo asignado para la rutina", routine.id);
         setGroupId(null);
       }
     }
   }, [routine?.id, groupRoutines]);
-  
-  // Efecto separado para días de la semana - solo se ejecuta cuando weekdaySchedule cambia
+
   useEffect(() => {
     if (routine && weekdaySchedule && typeof weekdaySchedule === 'object') {
-      // Aseguramos valores por defecto en caso de que alguna propiedad sea undefined
+
       setSelectedDays({
         monday: !!weekdaySchedule.monday,
         tuesday: !!weekdaySchedule.tuesday,
@@ -223,7 +208,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
     setIsSubmitting(true);
 
     try {
-      // Construir los datos para actualizar
+
       const routineData: Partial<InsertRoutine> & { 
         groupId?: number;
         weekdays?: Record<string, boolean>;
@@ -242,7 +227,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
       routineData.weekdays = selectedDays;
 
       if (routineId) {
-        // Actualizar la rutina existente
+
         await apiRequest("PATCH", `/api/routines/${routineId}`, routineData);
         
         toast({
@@ -250,12 +235,11 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
           description: `La rutina "${name}" ha sido actualizada correctamente.`
         });
       } else {
-        // Crear una nueva rutina (este caso no debería ocurrir en este modal)
+
         console.error("Trying to create a routine in update modal");
         return;
       }
 
-      // Actualizar la interfaz
       if (onRoutineUpdated) {
         await onRoutineUpdated();
       }
@@ -272,19 +256,16 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
     }
   };
 
-  // Renderizar el icono para un nivel de prioridad
   const renderPriorityIcon = (priorityLevel: "high" | "medium" | "low") => {
     const { icon: Icon, color } = PRIORITY_ICONS[priorityLevel];
     return <Icon className={`mr-2 h-4 w-4 inline-flex ${color}`} />;
   };
 
-  // Función para obtener el componente de icono por su nombre
   const getIconComponent = (iconName: string | null): LucideIcon | null => {
     if (!iconName) return null;
     return ROUTINE_ICONS.find(item => item.name === iconName)?.icon || null;
   };
 
-  // Obtener el componente Icon para el icono seleccionado
   const getSelectedIcon = (): LucideIcon | null => {
     if (!icon) return null;
     const found = ROUTINE_ICONS.find(i => i.name === icon);

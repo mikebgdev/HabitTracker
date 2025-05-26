@@ -6,7 +6,7 @@ interface WeekdayScheduleDisplayProps {
 }
 
 export function WeekdayScheduleDisplay({ routineId }: WeekdayScheduleDisplayProps) {
-  // Query para obtener la programación de días de la semana
+
   const { data: weekdaySchedule } = useQuery({
     queryKey: [`/api/routines/weekday-schedule/${routineId}`],
     enabled: !!routineId,
@@ -27,7 +27,7 @@ export function WeekdayScheduleDisplay({ routineId }: WeekdayScheduleDisplayProp
       <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Días de la semana</div>
       <div className="flex flex-wrap gap-1">
         {days.map(day => {
-          // Verificamos que weekdaySchedule exista y tenga la propiedad correspondiente
+
           const isSelected = weekdaySchedule && 
                              typeof weekdaySchedule === 'object' && 
                              weekdaySchedule !== null &&

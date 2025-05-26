@@ -1,4 +1,4 @@
-// Simplified toast hook implementation
+
 interface Toast {
   id: string;
   title?: string;
@@ -6,7 +6,6 @@ interface Toast {
   action?: React.ReactNode;
 }
 
-// Simple state management for toasts
 let toasts: Toast[] = [];
 
 export function useToast() {

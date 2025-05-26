@@ -54,7 +54,7 @@ export function RoutineItem({
   onToggleCompletion, 
   isEditable = true 
 }: RoutineItemProps) {
-  // Obtener información del grupo al que pertenece la rutina, si existe
+
   const { data: groupRoutines = [] } = useQuery({
     queryKey: ['/api/group-routines'],
   });
@@ -62,8 +62,7 @@ export function RoutineItem({
   const { data: groups = [] } = useQuery({
     queryKey: ['/api/groups'],
   });
-  
-  // Buscar el grupo al que pertenece esta rutina (con comprobación de tipo)
+
   const routineGroup = Array.isArray(groupRoutines) 
     ? groupRoutines.find((gr: any) => gr.routineId === routine.id)
     : null;
@@ -89,8 +88,7 @@ export function RoutineItem({
     medium: <BatteryMedium className="w-4 h-4" />,
     low: <Timer className="w-4 h-4" />
   };
-  
-  // Mapa de nombres de iconos a componentes de Lucide
+
   const iconMap: Record<string, LucideIcon> = {
     activity: Activity,
     bike: Bike,
@@ -114,12 +112,11 @@ export function RoutineItem({
   
   const handleChange = () => {
     if (isEditable) {
-      // Llamamos al callback con el nuevo estado invertido
+
       onToggleCompletion(routine.id, !routine.completed);
     }
   };
-  
-  // Función para renderizar el icono personalizado de la rutina
+
   const renderRoutineIcon = () => {
     if (!routine.icon) return null;
     
@@ -144,9 +141,9 @@ export function RoutineItem({
         </div>
         
         <div className="flex-1">
-          {/* Primera fila: Nombre, prioridad y grupo */}
+          
           <div className="flex items-center flex-wrap gap-2">
-            {/* Icono + nombre */}
+            
             <div className="flex items-center mr-1">
               {renderRoutineIcon()}
               <h3 className={`font-medium ${routine.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
@@ -154,7 +151,7 @@ export function RoutineItem({
               </h3>
             </div>
             
-            {/* Indicador de prioridad */}
+            
             <Badge variant="outline" className={`flex items-center px-2 py-0.5 text-xs ${
               routine.priority === 'high' 
                 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800' 
@@ -168,7 +165,7 @@ export function RoutineItem({
               </span>
             </Badge>
             
-            {/* Información del grupo si está disponible */}
+            
             {group && (
               <Badge variant="secondary" className="flex items-center text-xs">
                 <FolderOpen className="w-3 h-3 mr-1" />
@@ -177,15 +174,15 @@ export function RoutineItem({
             )}
           </div>
           
-          {/* Segunda fila: Tiempo estimado y estado */}
+          
           <div className="flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400 gap-3">
-            {/* Tiempo estimado */}
+            
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
               <span>Tiempo: {formatTime(routine.expectedTime)}</span>
             </div>
             
-            {/* Estado de completado */}
+            
             {routine.completed ? (
               <div className="flex items-center text-green-600 dark:text-green-400">
                 <CircleCheckBig className="w-4 h-4 mr-1" />

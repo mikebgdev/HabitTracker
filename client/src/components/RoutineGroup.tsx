@@ -29,8 +29,7 @@ export function RoutineGroup({ group, onToggleCompletion, isEditable = true }: R
   
   const totalRoutines = group.routines.length;
   const completedRoutines = group.routines.filter(r => r.completed).length;
-  
-  // Calculate completion percentage
+
   const completionPercentage = totalRoutines > 0 
     ? Math.round((completedRoutines / totalRoutines) * 100) 
     : 0;
@@ -76,7 +75,7 @@ export function RoutineGroup({ group, onToggleCompletion, isEditable = true }: R
           </div>
         </div>
         
-        {/* Progress bar */}
+        
         <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-3">
           <div 
             className={`h-1.5 rounded-full ${

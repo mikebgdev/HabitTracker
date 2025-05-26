@@ -7,7 +7,6 @@ import { db } from "./db";
 import { eq, and, sql, inArray } from "drizzle-orm";
 import express from "express";
 
-// Middleware to validate authentication
 const authenticate = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
@@ -28,8 +27,7 @@ const authenticate = async (req: express.Request, res: express.Response, next: e
     if (!user) {
       return res.status(401).json({ message: "Unauthorized - User not found" });
     }
-    
-    // Attach user to request object
+
     (req as any).user = user;
     next();
   } catch (error) {
@@ -40,9 +38,8 @@ const authenticate = async (req: express.Request, res: express.Response, next: e
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
-  
-  // Authentication routes
-  // Create or get user from Google authentication
+
+
   app.post("/api/auth/google-user", async (req, res) => {
     try {
       const { email, displayName, uid } = req.body;
@@ -51,18 +48,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and UID are required" });
       }
 
-      // Check if user already exists
       let user = await storage.getUserByUsername(email);
       
       if (!user) {
-        // Create new user
+
         const newUser = await storage.createUser({
           username: email,
           email: email,
-          password: uid, // Use Firebase UID as password placeholder
+          password: uid, 
         });
-        
-        // Generate JWT token for the new user
+
         const token = generateToken({ userId: newUser.id });
         
         return res.status(201).json({ 
@@ -75,8 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           token 
         });
       }
-      
-      // User exists, generate token and return user info
+
       const token = generateToken({ userId: user.id });
       
       return res.status(200).json({ 
@@ -103,28 +97,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const { username, password, email } = validation.data;
-      
-      // Check if user already exists
+
       const existingUser = await storage.getUserByUsername(username);
       
       if (existingUser) {
         return res.status(409).json({ message: "Username already exists" });
       }
-      
-      // Hash password
+
       const hashedPassword = await hashPassword(password);
-      
-      // Create user
+
       const user = await storage.createUser({ 
         username, 
         password: hashedPassword,
         email 
       });
-      
-      // Generate token
+
       const token = generateToken({ userId: user.id });
-      
-      // Filter out password before sending response
+
       const { password: _, ...userWithoutPassword } = user;
       
       res.status(201).json({
@@ -146,25 +135,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const { username, password } = validation.data;
-      
-      // Find user
+
       const user = await storage.getUserByUsername(username);
       
       if (!user) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
-      
-      // Verify password
+
       const isPasswordValid = await verifyPassword(password, user.password);
       
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
-      
-      // Generate token
+
       const token = generateToken({ userId: user.id });
-      
-      // Filter out password before sending response
+
       const { password: _, ...userWithoutPassword } = user;
       
       res.json({
@@ -178,22 +163,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   app.get("/api/auth/me", authenticate, (req, res) => {
-    // User is already attached to request by the authenticate middleware
+
     const user = (req as any).user;
-    
-    // Filter out password before sending response
+
     const { password: _, ...userWithoutPassword } = user;
     
     res.json(userWithoutPassword);
   });
   
   app.post("/api/auth/logout", (req, res) => {
-    // In a real implementation, we would invalidate the token
-    // For this simple example, we'll just return a success response
+
+
     res.json({ message: "Logout successful" });
   });
-  
-  // Routines routes
+
   app.get("/api/routines", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
@@ -208,19 +191,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/routines", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      
-      // Validate routine data
+
       const routineData = { ...req.body, userId };
       const validation = insertRoutineSchema.safeParse(routineData);
       
       if (!validation.success) {
         return res.status(400).json({ message: "Invalid routine data", errors: validation.error.format() });
       }
-      
-      // Create routine
+
       const routine = await storage.createRoutine(validation.data);
-      
-      // If weekdays are provided, create weekday schedule
+
       if (req.body.weekdays) {
         const weekdaySchedule = {
           routineId: routine.id,
@@ -229,8 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await storage.createWeekdaySchedule(weekdaySchedule);
       }
-      
-      // If groupId is provided, add routine to group
+
       if (req.body.groupId) {
         await storage.addRoutineToGroup(routine.id, req.body.groupId);
       }
@@ -252,8 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!routine) {
         return res.status(404).json({ message: "Routine not found" });
       }
-      
-      // Check if routine belongs to user
+
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
@@ -264,8 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch routine" });
     }
   });
-  
-  // Ruta para obtener la programación de días de la semana de una rutina
+
   app.get("/api/routines/weekday-schedule/:routineId", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.routineId);
@@ -274,8 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = (req as any).user.id;
-      
-      // Verificar que la rutina pertenezca al usuario
+
       const routine = await storage.getRoutineById(routineId);
       if (!routine) {
         return res.status(404).json({ message: "Routine not found" });
@@ -284,11 +260,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Obtener la programación de días de la semana
+
       const weekdaySchedule = await storage.getWeekdayScheduleByRoutineId(routineId);
       if (!weekdaySchedule) {
-        // Si no hay programación, devolver un objeto con todos los días en false
+
         return res.json({
           monday: false,
           tuesday: false,
@@ -306,32 +281,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch weekday schedule" });
     }
   });
-  
-  // Ruta para obtener todas las programaciones de día de la semana del usuario
+
   app.get("/api/routines/weekday-schedule", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      
-      // Obtener todas las rutinas del usuario usando storage en lugar de db directo
+
       const userRoutines = await storage.getRoutinesByUserId(userId);
-      
-      // Array para almacenar todos los horarios (existentes o predeterminados)
+
       const schedules = [];
-      
-      // Para cada rutina, intentar obtener su horario o crear uno predeterminado
+
       for (const routine of userRoutines) {
         try {
-          // Buscar el horario existente en la base de datos directamente
+
           const existingSchedules = await db
             .select()
             .from(weekdaySchedules)
             .where(eq(weekdaySchedules.routineId, routine.id));
           
           if (existingSchedules && existingSchedules.length > 0) {
-            // Si existe, añadir el horario existente
+
             schedules.push(existingSchedules[0]);
           } else {
-            // Si no existe, crear un horario predeterminado
+
             schedules.push({
               id: 0,
               routineId: routine.id,
@@ -346,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } catch (err) {
           console.error(`Error al obtener horario para rutina ${routine.id}:`, err);
-          // En caso de error, crear un horario predeterminado
+
           schedules.push({
             id: 0,
             routineId: routine.id,
@@ -368,7 +339,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Archive routine
   app.patch("/api/routines/:id/archive", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);
@@ -383,8 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Unauthorized" });
       }
-      
-      // Archive the routine
+
       const updatedRoutine = await storage.updateRoutine(routineId, {
         archived: true,
         archivedAt: new Date(),
@@ -397,7 +366,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Unarchive routine
   app.patch("/api/routines/:id/unarchive", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);
@@ -412,8 +380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Unauthorized" });
       }
-      
-      // Unarchive the routine
+
       const updatedRoutine = await storage.updateRoutine(routineId, {
         archived: false,
         archivedAt: null,
@@ -430,8 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const routineId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      
-      // Check if routine exists and belongs to user
+
       const existingRoutine = await storage.getRoutineById(routineId);
       
       if (!existingRoutine) {
@@ -441,26 +407,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingRoutine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Update routine
+
       const updatedRoutine = await storage.updateRoutine(routineId, req.body);
-      
-      // If weekdays are provided, update weekday schedule
+
       if (req.body.weekdays) {
         await storage.updateWeekdaySchedule(routineId, req.body.weekdays);
       }
-      
-      // If groupId is provided, update group association
+
       if (req.body.groupId !== undefined) {
-        // Primero eliminamos cualquier asociación existente de grupo
+
         const groupRoutines = await storage.getAllGroupRoutines();
         const existingRelation = groupRoutines.find((gr) => gr.routineId === routineId);
         
         if (existingRelation) {
           await storage.removeRoutineFromGroup(routineId, existingRelation.groupId);
         }
-        
-        // Si se proporcionó un groupId (no es null), crear la nueva relación
+
         if (req.body.groupId !== null) {
           await storage.addRoutineToGroup(routineId, req.body.groupId);
         }
@@ -477,8 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const routineId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      
-      // Check if routine exists and belongs to user
+
       const existingRoutine = await storage.getRoutineById(routineId);
       
       if (!existingRoutine) {
@@ -488,8 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingRoutine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Delete routine
+
       await storage.deleteRoutine(routineId);
       
       res.json({ message: "Routine deleted successfully" });
@@ -498,12 +458,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete routine" });
     }
   });
-  
-  // Daily routines route
+
   app.get("/api/routines/daily/:date?", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default to today
+      const date = req.params.date || new Date().toISOString().split('T')[0]; 
       
       const routinesByGroup = await storage.getDailyRoutinesByGroup(userId, date);
       
@@ -517,7 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/routines/daily/flat/:date?", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default to today
+      const date = req.params.date || new Date().toISOString().split('T')[0]; 
       
       const routines = await storage.getDailyRoutines(userId, date);
       
@@ -527,8 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch daily routines" });
     }
   });
-  
-  // Groups routes
+
   app.get("/api/groups", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
@@ -543,16 +501,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/groups", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      
-      // Validate group data
+
       const groupData = { ...req.body, userId };
       const validation = insertGroupSchema.safeParse(groupData);
       
       if (!validation.success) {
         return res.status(400).json({ message: "Invalid group data", errors: validation.error.format() });
       }
-      
-      // Create group
+
       const group = await storage.createGroup(validation.data);
       
       res.status(201).json(group);
@@ -572,8 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!group) {
         return res.status(404).json({ message: "Group not found" });
       }
-      
-      // Check if group belongs to user
+
       if (group.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
       }
@@ -589,8 +544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const groupId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      
-      // Check if group exists and belongs to user
+
       const existingGroup = await storage.getGroupById(groupId);
       
       if (!existingGroup) {
@@ -600,8 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingGroup.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
       }
-      
-      // Update group
+
       const updatedGroup = await storage.updateGroup(groupId, req.body);
       
       res.json(updatedGroup);
@@ -615,8 +568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const groupId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      
-      // Check if group exists and belongs to user
+
       const existingGroup = await storage.getGroupById(groupId);
       
       if (!existingGroup) {
@@ -626,8 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingGroup.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
       }
-      
-      // Delete group
+
       await storage.deleteGroup(groupId);
       
       res.json({ message: "Group deleted successfully" });
@@ -641,8 +592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const groupId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      
-      // Check if group belongs to user
+
       const group = await storage.getGroupById(groupId);
       
       if (!group) {
@@ -652,8 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (group.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
       }
-      
-      // Get routines in this group
+
       const routines = await storage.getRoutinesByGroupId(groupId);
       
       res.json(routines);
@@ -662,22 +611,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch group routines" });
     }
   });
-  
-  // Get routine-group relationships with group names
+
   app.get("/api/group-routines", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      
-      // Get all groups for the user
+
       const userGroups = await storage.getGroupsByUserId(userId);
-      
-      // Array to store routine-group assignments
+
       const routineGroupAssignments = [];
-      
-      // Obtenemos todas las relaciones entre grupos y rutinas
+
       const allGroupRoutines = await storage.getAllGroupRoutines();
-      
-      // Para cada grupo del usuario, agregamos sus relaciones con rutinas
+
       for (const group of userGroups) {
         const groupRelations = allGroupRoutines.filter(gr => gr.groupId === group.id);
 
@@ -706,15 +650,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch routine-group relationships" });
     }
   });
-  
-  // Group routines for a specific date
+
   app.get("/api/groups/routines/:id/:date?", authenticate, async (req, res) => {
     try {
       const groupId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default to today
-      
-      // Check if group belongs to user
+      const date = req.params.date || new Date().toISOString().split('T')[0]; 
+
       const group = await storage.getGroupById(groupId);
       
       if (!group) {
@@ -724,8 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (group.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
       }
-      
-      // Get routines for this group and date
+
       const routines = await storage.getRoutinesByGroupIdAndDate(groupId, date);
       
       res.json(routines);
@@ -734,20 +675,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch group routines" });
     }
   });
-  
-  // Completions routes
+
   app.post("/api/completions", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      
-      // Simplified completion data with proper Date object
+
       const completionData = { 
         routineId: parseInt(req.body.routineId),
         userId,
         completedAt: new Date() 
       };
-      
-      // Check if routine belongs to user
+
       const routine = await storage.getRoutineById(completionData.routineId);
       
       if (!routine) {
@@ -757,8 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Create completion directly in the database
+
       const [completion] = await db
         .insert(completions)
         .values(completionData)
@@ -779,8 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!routineId || !date) {
         return res.status(400).json({ message: "routineId and date are required" });
       }
-      
-      // Check if routine belongs to user
+
       const routine = await storage.getRoutineById(routineId);
       
       if (!routine) {
@@ -790,8 +726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Delete completion
+
       await storage.deleteCompletion(routineId, date);
       
       res.json({ message: "Completion removed successfully" });
@@ -800,8 +735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to remove completion" });
     }
   });
-  
-  // New route to handle DELETE with URL parameters (to match frontend implementation)
+
   app.delete("/api/completions/:routineId/:date", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
@@ -811,8 +745,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(routineId) || !date) {
         return res.status(400).json({ message: "Valid routineId and date are required" });
       }
-      
-      // Check if routine belongs to user
+
       const routine = await storage.getRoutineById(routineId);
       
       if (!routine) {
@@ -822,8 +755,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Delete completion
+
       await storage.deleteCompletion(routineId, date);
       
       res.json({ message: "Completion removed successfully" });
@@ -841,8 +773,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!groupId || !date) {
         return res.status(400).json({ message: "groupId and date are required" });
       }
-      
-      // Check if group belongs to user
+
       const group = await storage.getGroupById(groupId);
       
       if (!group) {
@@ -852,14 +783,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (group.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
       }
-      
-      // Get all routines in the group that are scheduled for the given date
+
       const routines = await storage.getRoutinesByGroupIdAndDate(groupId, date);
-      
-      // Complete all routines
+
       const completions = [];
       for (const routine of routines) {
-        // Skip already completed routines
+
         if (routine.completedAt) continue;
         
         const completion = await storage.createCompletion({
@@ -882,13 +811,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req as any).user.id;
       const { startDate, endDate } = req.params;
-      
-      // Validate dates
+
       if (!startDate || !endDate) {
         return res.status(400).json({ message: "startDate and endDate are required" });
       }
-      
-      // Get completion statistics
+
       const stats = await storage.getCompletionStats(userId, startDate, endDate);
       
       res.json(stats);
@@ -898,15 +825,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
-  // Endpoint para obtener las completaciones por fecha
   app.get("/api/completions/:date?", authenticate, async (req, res) => {
     try {
       const userId = (req as any).user.id;
-      const date = req.params.date || new Date().toISOString().split('T')[0]; // Default to today
-      
-      // Get all completions for the user for the specific date
-      // Direct database query to avoid date conversion issues
+      const date = req.params.date || new Date().toISOString().split('T')[0]; 
+
+
       const result = await db
         .select()
         .from(completions)
@@ -923,14 +847,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint específico para asignar/desasignar un grupo a una rutina
   app.post("/api/routines/:id/assign-group", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);
       const userId = (req as any).user.id;
-      const { groupId } = req.body; // groupId puede ser null para desasignar
-      
-      // Verificar que la rutina existe y pertenece al usuario
+      const { groupId } = req.body; 
+
       const routine = await storage.getRoutineById(routineId);
       
       if (!routine) {
@@ -940,21 +862,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (routine.userId !== userId) {
         return res.status(403).json({ message: "Forbidden - You don't have access to this routine" });
       }
-      
-      // Obtener todas las asignaciones de grupo-rutina actuales
+
       const groupRoutines = await storage.getAllGroupRoutines();
-      
-      // Buscar si la rutina ya está asignada a un grupo
+
       const existingAssignment = groupRoutines.find(gr => gr.routineId === routineId);
-      
-      // Si hay una asignación existente, removerla
+
       if (existingAssignment) {
         await storage.removeRoutineFromGroup(routineId, existingAssignment.groupId);
       }
-      
-      // Si se proporcionó un nuevo groupId, crear la nueva asignación
+
       if (groupId !== null && groupId !== undefined) {
-        // Verificar que el grupo existe y pertenece al usuario
+
         const group = await storage.getGroupById(groupId);
         
         if (!group) {
@@ -964,8 +882,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (group.userId !== userId) {
           return res.status(403).json({ message: "Forbidden - You don't have access to this group" });
         }
-        
-        // Asignar la rutina al grupo
+
         await storage.addRoutineToGroup(routineId, groupId);
       }
       

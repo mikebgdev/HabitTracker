@@ -26,14 +26,12 @@ export const loginUserSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// Priority enum
 export const priorityEnum = pgEnum("priority", ["high", "medium", "low"]);
 
-// Routines table
 export const routines = pgTable("routines", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  expectedTime: text("expected_time").notNull(), // HH:MM format
+  expectedTime: text("expected_time").notNull(), 
   priority: priorityEnum("priority").notNull(),
   icon: text("icon"),
   userId: integer("user_id")
@@ -49,12 +47,11 @@ export const insertRoutineSchema = createInsertSchema(routines).omit({
   createdAt: true,
 });
 
-// Groups table
 export const groups = pgTable("groups", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  icon: text("icon"), // Font Awesome icon class
-  timeRange: text("time_range"), // e.g. "6:00 AM - 8:00 AM"
+  icon: text("icon"), 
+  timeRange: text("time_range"), 
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -66,7 +63,6 @@ export const insertGroupSchema = createInsertSchema(groups).omit({
   createdAt: true,
 });
 
-// Group-Routine relationship table
 export const groupRoutines = pgTable("group_routines", {
   id: serial("id").primaryKey(),
   groupId: integer("group_id")
@@ -75,14 +71,13 @@ export const groupRoutines = pgTable("group_routines", {
   routineId: integer("routine_id")
     .notNull()
     .references(() => routines.id, { onDelete: "cascade" }),
-  order: integer("order").notNull(), // For ordering routines within a group
+  order: integer("order").notNull(), 
 });
 
 export const insertGroupRoutineSchema = createInsertSchema(groupRoutines).omit({
   id: true,
 });
 
-// Scheduling by days of the week
 export const weekdaySchedules = pgTable("weekday_schedules", {
   id: serial("id").primaryKey(),
   routineId: integer("routine_id")
@@ -101,21 +96,19 @@ export const insertWeekdayScheduleSchema = createInsertSchema(weekdaySchedules).
   id: true,
 });
 
-// Scheduling by repetition pattern
 export const repetitionSchedules = pgTable("repetition_schedules", {
   id: serial("id").primaryKey(),
   routineId: integer("routine_id")
     .notNull()
     .references(() => routines.id, { onDelete: "cascade" }),
-  pattern: text("pattern").notNull(), // e.g. "every_2_days", "1_day_on_1_off"
-  startDate: timestamp("start_date").notNull(), // When this pattern starts
+  pattern: text("pattern").notNull(), 
+  startDate: timestamp("start_date").notNull(), 
 });
 
 export const insertRepetitionScheduleSchema = createInsertSchema(repetitionSchedules).omit({
   id: true,
 });
 
-// Completion records
 export const completions = pgTable("completions", {
   id: serial("id").primaryKey(),
   routineId: integer("routine_id")
@@ -131,7 +124,6 @@ export const insertCompletionSchema = createInsertSchema(completions).omit({
   id: true,
 });
 
-// Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginUser = z.infer<typeof loginUserSchema>;

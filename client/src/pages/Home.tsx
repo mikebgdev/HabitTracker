@@ -9,7 +9,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   
   useEffect(() => {
-    // Si el usuario ya está autenticado, redirigir al dashboard
+
     if (user && !isLoading) {
       setLocation('/dashboard');
     }

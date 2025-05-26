@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react';
 export type Language = 'en' | 'es';
 
 export interface TranslationKeys {
-  // Navigation
+
   'nav.dashboard': string;
   'nav.routines': string;
   'nav.groups': string;
@@ -11,13 +11,11 @@ export interface TranslationKeys {
   'nav.account': string;
   'nav.logout': string;
 
-  // Authentication
   'auth.login': string;
   'auth.loginWithGoogle': string;
   'auth.welcome': string;
   'auth.signOut': string;
 
-  // Dashboard
   'dashboard.title': string;
   'dashboard.todayRoutines': string;
   'dashboard.noRoutinesScheduled': string;
@@ -28,7 +26,6 @@ export interface TranslationKeys {
   'dashboard.editRoutine': string;
   'dashboard.deleteRoutine': string;
 
-  // Routines
   'routines.title': string;
   'routines.name': string;
   'routines.priority': string;
@@ -43,7 +40,6 @@ export interface TranslationKeys {
   'routines.cancel': string;
   'routines.assignToGroup': string;
 
-  // Groups
   'groups.title': string;
   'groups.name': string;
   'groups.icon': string;
@@ -54,7 +50,6 @@ export interface TranslationKeys {
   'groups.noGroups': string;
   'groups.createFirst': string;
 
-  // Progress
   'progress.title': string;
   'progress.analytics': string;
   'progress.overview': string;
@@ -69,7 +64,6 @@ export interface TranslationKeys {
   'progress.total': string;
   'progress.percentage': string;
 
-  // Account
   'account.title': string;
   'account.language': string;
   'account.selectLanguage': string;
@@ -80,7 +74,6 @@ export interface TranslationKeys {
   'account.deleteWarning': string;
   'account.confirmDeleteButton': string;
 
-  // Common
   'common.save': string;
   'common.cancel': string;
   'common.delete': string;
@@ -94,12 +87,10 @@ export interface TranslationKeys {
   'common.error': string;
   'common.success': string;
 
-  // Time
   'time.minutes': string;
   'time.hours': string;
   'time.days': string;
 
-  // Weekdays
   'weekdays.monday': string;
   'weekdays.tuesday': string;
   'weekdays.wednesday': string;
@@ -111,7 +102,7 @@ export interface TranslationKeys {
 
 const translations: Record<Language, TranslationKeys> = {
   en: {
-    // Navigation
+
     'nav.dashboard': 'Dashboard',
     'nav.routines': 'Routines',
     'nav.groups': 'Groups',
@@ -119,13 +110,11 @@ const translations: Record<Language, TranslationKeys> = {
     'nav.account': 'Account',
     'nav.logout': 'Logout',
 
-    // Authentication
     'auth.login': 'Login',
     'auth.loginWithGoogle': 'Sign in with Google',
     'auth.welcome': 'Welcome to HabitMaster',
     'auth.signOut': 'Sign Out',
 
-    // Dashboard
     'dashboard.title': 'Daily Routines',
     'dashboard.todayRoutines': "Today's Routines",
     'dashboard.noRoutinesScheduled': 'No routines scheduled for today',
@@ -136,7 +125,6 @@ const translations: Record<Language, TranslationKeys> = {
     'dashboard.editRoutine': 'Edit routine',
     'dashboard.deleteRoutine': 'Delete routine',
 
-    // Routines
     'routines.title': 'Routines',
     'routines.name': 'Name',
     'routines.priority': 'Priority',
@@ -151,7 +139,6 @@ const translations: Record<Language, TranslationKeys> = {
     'routines.cancel': 'Cancel',
     'routines.assignToGroup': 'Assign to Group',
 
-    // Groups
     'groups.title': 'Groups',
     'groups.name': 'Name',
     'groups.icon': 'Icon',
@@ -162,7 +149,6 @@ const translations: Record<Language, TranslationKeys> = {
     'groups.noGroups': 'No groups created yet',
     'groups.createFirst': 'Create your first group',
 
-    // Progress
     'progress.title': 'Progress & Analytics',
     'progress.analytics': 'Analytics',
     'progress.overview': 'Overview',
@@ -177,7 +163,6 @@ const translations: Record<Language, TranslationKeys> = {
     'progress.total': 'Total',
     'progress.percentage': 'Percentage',
 
-    // Account
     'account.title': 'Account Settings',
     'account.language': 'Language',
     'account.selectLanguage': 'Select Language',
@@ -188,7 +173,6 @@ const translations: Record<Language, TranslationKeys> = {
     'account.deleteWarning': 'This action cannot be undone. All your data will be permanently deleted.',
     'account.confirmDeleteButton': 'Delete My Account',
 
-    // Common
     'common.save': 'Save',
     'common.cancel': 'Cancel',
     'common.delete': 'Delete',
@@ -202,12 +186,10 @@ const translations: Record<Language, TranslationKeys> = {
     'common.error': 'Error',
     'common.success': 'Success',
 
-    // Time
     'time.minutes': 'minutes',
     'time.hours': 'hours',
     'time.days': 'days',
 
-    // Weekdays
     'weekdays.monday': 'Monday',
     'weekdays.tuesday': 'Tuesday',
     'weekdays.wednesday': 'Wednesday',
@@ -217,7 +199,7 @@ const translations: Record<Language, TranslationKeys> = {
     'weekdays.sunday': 'Sunday',
   },
   es: {
-    // Navigation
+
     'nav.dashboard': 'Panel',
     'nav.routines': 'Rutinas',
     'nav.groups': 'Grupos',
@@ -225,13 +207,11 @@ const translations: Record<Language, TranslationKeys> = {
     'nav.account': 'Cuenta',
     'nav.logout': 'Cerrar Sesión',
 
-    // Authentication
     'auth.login': 'Iniciar Sesión',
     'auth.loginWithGoogle': 'Iniciar sesión con Google',
     'auth.welcome': 'Bienvenido a HabitMaster',
     'auth.signOut': 'Cerrar Sesión',
 
-    // Dashboard
     'dashboard.title': 'Rutinas Diarias',
     'dashboard.todayRoutines': 'Rutinas de Hoy',
     'dashboard.noRoutinesScheduled': 'No hay rutinas programadas para hoy',
@@ -242,7 +222,6 @@ const translations: Record<Language, TranslationKeys> = {
     'dashboard.editRoutine': 'Editar rutina',
     'dashboard.deleteRoutine': 'Eliminar rutina',
 
-    // Routines
     'routines.title': 'Rutinas',
     'routines.name': 'Nombre',
     'routines.priority': 'Prioridad',
@@ -257,7 +236,6 @@ const translations: Record<Language, TranslationKeys> = {
     'routines.cancel': 'Cancelar',
     'routines.assignToGroup': 'Asignar a Grupo',
 
-    // Groups
     'groups.title': 'Grupos',
     'groups.name': 'Nombre',
     'groups.icon': 'Icono',
@@ -268,7 +246,6 @@ const translations: Record<Language, TranslationKeys> = {
     'groups.noGroups': 'No hay grupos creados aún',
     'groups.createFirst': 'Crea tu primer grupo',
 
-    // Progress
     'progress.title': 'Progreso y Análisis',
     'progress.analytics': 'Análisis',
     'progress.overview': 'Resumen',
@@ -283,7 +260,6 @@ const translations: Record<Language, TranslationKeys> = {
     'progress.total': 'Total',
     'progress.percentage': 'Porcentaje',
 
-    // Account
     'account.title': 'Configuración de Cuenta',
     'account.language': 'Idioma',
     'account.selectLanguage': 'Seleccionar Idioma',
@@ -294,7 +270,6 @@ const translations: Record<Language, TranslationKeys> = {
     'account.deleteWarning': 'Esta acción no se puede deshacer. Todos tus datos serán eliminados permanentemente.',
     'account.confirmDeleteButton': 'Eliminar Mi Cuenta',
 
-    // Common
     'common.save': 'Guardar',
     'common.cancel': 'Cancelar',
     'common.delete': 'Eliminar',
@@ -308,12 +283,10 @@ const translations: Record<Language, TranslationKeys> = {
     'common.error': 'Error',
     'common.success': 'Éxito',
 
-    // Time
     'time.minutes': 'minutos',
     'time.hours': 'horas',
     'time.days': 'días',
 
-    // Weekdays
     'weekdays.monday': 'Lunes',
     'weekdays.tuesday': 'Martes',
     'weekdays.wednesday': 'Miércoles',

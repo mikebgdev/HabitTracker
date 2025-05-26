@@ -66,34 +66,28 @@ export default function MyRoutines() {
   const [filter, setFilter] = useState<string>("all");
   const [groupFilter, setGroupFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"active" | "archived">("active");
-  
-  // Estado para el diálogo de confirmación de eliminación
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [routineToDelete, setRoutineToDelete] = useState<Routine | null>(null);
   const [routineToEdit, setRoutineToEdit] = useState<Routine | null>(null);
-  
-  // Fetch all routines
+
   const { data: routines = [], isLoading, refetch: refetchRoutines } = useQuery<Routine[]>({
     queryKey: ['/api/routines'],
   });
-  
-  // Fetch all groups
+
   const { data: groups = [], refetch: refetchGroups } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
-  
-  // Mostrar diálogo de confirmación antes de eliminar
+
   const confirmDeleteRoutine = (routine: Routine) => {
     setRoutineToDelete(routine);
     setIsDeleteDialogOpen(true);
   };
-  
-  // Archivar rutina
+
   const handleArchiveRoutine = async (routineId: number) => {
     try {
       await apiRequest("PATCH", `/api/routines/${routineId}/archive`, {});
-      
-      // Actualizar consultas para reflejar el cambio
+
       await refetchRoutines();
       
       toast({
@@ -109,12 +103,10 @@ export default function MyRoutines() {
     }
   }
 
-  // Desarchivar rutina
   const handleUnarchiveRoutine = async (routineId: number) => {
     try {
       await apiRequest("PATCH", `/api/routines/${routineId}/unarchive`, {});
-      
-      // Actualizar consultas para reflejar el cambio
+
       await refetchRoutines();
       
       toast({
@@ -130,14 +122,12 @@ export default function MyRoutines() {
     }
   };
 
-  // Proceder con la eliminación después de confirmar
   const handleDeleteRoutine = async () => {
     if (!routineToDelete) return;
     
     try {
       await apiRequest("DELETE", `/api/routines/${routineToDelete.id}`, {});
-      
-      // Actualizar consultas para asegurar que la UI se actualice
+
       await refetchRoutines();
       await refetchGroups();
       
@@ -156,60 +146,46 @@ export default function MyRoutines() {
       setRoutineToDelete(null);
     }
   };
-  
-  // Obtener información de grupos y asociaciones de rutinas con grupos
+
   const { data: groupRoutines = [] } = useQuery({
     queryKey: ['/api/group-routines']
   });
-  
-  // Función para obtener el grupo al que pertenece una rutina
+
   const getRoutineGroupInfo = (routineId: number) => {
-    // Verificar que tengamos datos válidos
+
     if (!Array.isArray(groupRoutines)) return null;
-    
-    // Imprimir los datos para depuración
-    console.log("Group Routines:", groupRoutines);
-    console.log("Looking for routine ID:", routineId);
-    
-    // Buscar la asignación de grupo para esta rutina
+
+
     const assignment = groupRoutines.find((gr: any) => {
-      console.log("Checking group routine:", gr);
       return gr.routineId === routineId;
     });
     
     if (!assignment) {
-      console.log("No group assignment found for routine:", routineId);
       return null;
     }
-    
-    console.log("Found group assignment:", assignment);
-    
-    // Devolver la información del grupo directamente desde la asignación
+
     return {
       id: assignment.groupId,
       name: assignment.groupName,
       icon: assignment.groupIcon
     };
   };
-  
-  // Filter routines based on current filters and view mode
+
   const filteredRoutines = routines.filter(routine => {
-    // Filter by view mode (active vs archived)
+
     if (viewMode === "active" && routine.archived) {
       return false;
     }
     if (viewMode === "archived" && !routine.archived) {
       return false;
     }
-    
-    // Filter by priority
+
     if (filter !== "all" && routine.priority !== filter) {
       return false;
     }
-    
-    // Filter by group
+
     if (groupFilter !== "all") {
-      // Verificar si la rutina pertenece al grupo seleccionado
+
       const groupInfo = getRoutineGroupInfo(routine.id);
       if (!groupInfo || groupInfo.id !== parseInt(groupFilter)) {
         return false;
@@ -218,22 +194,19 @@ export default function MyRoutines() {
     
     return true;
   });
-  
-  // Iconos de prioridad
+
   const priorityIcons = {
     high: <Flame className="w-4 h-4 mr-1" />,
     medium: <BatteryMedium className="w-4 h-4 mr-1" />,
     low: <Timer className="w-4 h-4 mr-1" />
   };
-  
-  // Etiquetas de prioridad
+
   const priorityLabels = {
     high: 'Alta',
     medium: 'Media',
     low: 'Baja'
   };
-  
-  // Mapa de nombres de iconos a componentes de Lucide
+
   const iconMap: Record<string, LucideIcon> = {
     activity: Activity,
     bike: Bike,
@@ -254,8 +227,7 @@ export default function MyRoutines() {
     utensils: Utensils,
     waves: Waves
   };
-  
-  // Función para renderizar el icono personalizado de la rutina
+
   const renderRoutineIcon = (iconName: string | null) => {
     if (!iconName) return null;
     
@@ -270,7 +242,7 @@ export default function MyRoutines() {
       case "high":
         return "destructive";
       case "medium":
-        return "default"; // Usamos default en lugar de warning ya que warning no está definido
+        return "default"; 
       case "low":
         return "secondary";
       default:
@@ -280,8 +252,7 @@ export default function MyRoutines() {
   
   const formatTime = (timeString: string) => {
     if (!timeString) return '';
-    
-    // Manejar formato HH:MM
+
     if (timeString.includes(':')) {
       const [hours, minutes] = timeString.split(':');
       const hour = parseInt(hours, 10);
@@ -289,8 +260,7 @@ export default function MyRoutines() {
       const hour12 = hour % 12 || 12;
       return `${hour12}:${minutes || '00'} ${ampm}`;
     }
-    
-    // Manejar formato de solo horas con AM/PM
+
     return timeString;
   };
 
@@ -314,7 +284,7 @@ export default function MyRoutines() {
         </div>
       </div>
       
-      {/* View Mode Tabs */}
+      
       <div className="mb-6">
         <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit">
           <button
@@ -391,7 +361,7 @@ export default function MyRoutines() {
               <CardHeader className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-start">
                   <div className="flex gap-3 items-start">
-                    {/* Icono de la rutina */}
+                    
                     <div className="w-10 h-10 flex items-center justify-center bg-primary-100 dark:bg-primary-800/30 rounded-full text-primary-700 dark:text-primary-300">
                       <Activity className="w-5 h-5" />
                     </div>
@@ -401,7 +371,7 @@ export default function MyRoutines() {
                         {routine.name}
                       </CardTitle>
                       
-                      {/* Grupo al que pertenece */}
+                      
                       <div className="mt-1">
                         {getRoutineGroupInfo(routine.id) ? (
                           <Badge variant="outline" className="flex items-center text-xs gap-1">
@@ -425,9 +395,9 @@ export default function MyRoutines() {
                 </div>
               </CardHeader>
               <CardContent className="p-4">
-                {/* Ya mostramos el grupo en el encabezado */}
                 
-                {/* Tiempo esperado */}
+                
+                
                 <div className="mb-4">
                   <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center">
                     <Clock className="w-4 h-4 mr-1 text-gray-400" />
@@ -438,7 +408,7 @@ export default function MyRoutines() {
                   </div>
                 </div>
                 
-                {/* Programación semanal */}
+                
                 <WeekdayScheduleDisplay routineId={routine.id} />
                 
                 
@@ -448,7 +418,7 @@ export default function MyRoutines() {
                     size="sm"
                     className="text-gray-700 dark:text-gray-300"
                     onClick={() => {
-                      // Abrir el modal de edición y establecer la rutina a editar
+
                       setRoutineToEdit(routine);
                       setIsEditRoutineModalOpen(true);
                     }}
@@ -509,7 +479,7 @@ export default function MyRoutines() {
         </div>
       )}
       
-      {/* Add new routine button (mobile only) */}
+      
       <div className="fixed bottom-20 right-4 md:hidden">
         <Button 
           onClick={() => setIsAddRoutineModalOpen(true)}
@@ -529,7 +499,7 @@ export default function MyRoutines() {
         }}
       />
       
-      {/* Diálogo de confirmación para eliminar rutina */}
+      
       <DeleteRoutineDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -537,7 +507,7 @@ export default function MyRoutines() {
         routineName={routineToDelete?.name}
       />
       
-      {/* Modal de edición de rutina */}
+      
       <EditRoutineModal
         isOpen={isEditRoutineModalOpen}
         onClose={() => {
@@ -551,7 +521,7 @@ export default function MyRoutines() {
         }}
       />
       
-      {/* Modal para asignar grupo a rutina */}
+      
       <AssignGroupToRoutine
         isOpen={isAssignGroupModalOpen}
         onClose={() => {
@@ -561,9 +531,9 @@ export default function MyRoutines() {
         routine={routineToEdit || undefined}
         onComplete={async () => {
           await refetchRoutines();
-          // Refrescar los datos de grupo
+
           await refetchGroups();
-          // Refrescar las asignaciones rutina-grupo
+
           await queryClient.invalidateQueries({ queryKey: ['/api/routines/group-assignments'] });
         }}
       />

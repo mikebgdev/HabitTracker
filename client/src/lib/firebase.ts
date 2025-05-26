@@ -13,12 +13,10 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Function to sign in with Google using popup instead of redirect
 export const signInWithGoogle = () => {
   return signInWithPopup(auth, googleProvider);
 };
 
-// Function to sign out
 export const signOutUser = () => {
   return signOut(auth);
 };

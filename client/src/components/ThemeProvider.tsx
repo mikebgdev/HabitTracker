@@ -29,8 +29,7 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    // Eliminar todas las clases de tema
+
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
@@ -43,11 +42,9 @@ export function ThemeProvider({
       return;
     }
 
-    // Aplicar el tema seleccionado inmediatamente
     root.classList.add(theme);
   }, [theme]);
-  
-  // Escuchar cambios en la preferencia del sistema
+
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     

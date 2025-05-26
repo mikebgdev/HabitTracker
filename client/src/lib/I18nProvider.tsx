@@ -7,12 +7,11 @@ interface I18nProviderProps {
 
 export function I18nProvider({ children }: I18nProviderProps) {
   const [language, setLanguage] = useState<Language>(() => {
-    // Get saved language from localStorage or default to English
+
     const saved = localStorage.getItem('language');
     return (saved as Language) || 'en';
   });
 
-  // Save language preference to localStorage
   useEffect(() => {
     localStorage.setItem('language', language);
   }, [language]);

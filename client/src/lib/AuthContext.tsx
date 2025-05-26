@@ -20,11 +20,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for auth state changes
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      
-      // If user is authenticated but we don't have a token, get one
+
       if (user && !localStorage.getItem('authToken')) {
         try {
           const response = await fetch('/api/auth/google-user', {
@@ -43,7 +42,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const data = await response.json();
             if (data.token) {
               localStorage.setItem('authToken', data.token);
-              console.log('Token saved for existing user session');
             }
           }
         } catch (error) {
@@ -62,9 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const result = await signInWithGoogle();
       
       if (result?.user) {
-        console.log('Successfully signed in with popup:', result.user);
-        
-        // Create user in our database
+
         try {
           const response = await fetch('/api/auth/google-user', {
             method: 'POST',
@@ -80,14 +76,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           if (response.ok) {
             const data = await response.json();
-            console.log('User saved to database:', data);
-            
-            // Save the JWT token to localStorage
+
             if (data.token) {
               localStorage.setItem('authToken', data.token);
             }
-            
-            // Redirect to dashboard after successful login
+
             window.location.href = '/dashboard';
           } else {
             console.error('Failed to save user to database');
@@ -105,9 +98,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     try {
       await signOutUser();
-      // Clear the JWT token from localStorage
+
       localStorage.removeItem('authToken');
-      // Redirect to login page after logout
+
       window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);

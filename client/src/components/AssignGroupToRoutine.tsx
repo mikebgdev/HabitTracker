@@ -33,18 +33,15 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }: A
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch groups
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
 
-  // Fetch current group-routine relationship
   const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery({
     queryKey: ['/api/routines/group-assignments'],
     enabled: !!routine?.id,
   });
 
-  // Update selectedGroupId when routine changes or group routines are loaded
   useEffect(() => {
     if (routine && groupRoutines.length > 0) {
       const routineGroup = groupRoutines.find((gr: any) => gr.routineId === routine.id);
@@ -72,8 +69,7 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }: A
           ? `La rutina ha sido asignada al grupo correctamente.` 
           : `La rutina ha sido removida del grupo.`
       });
-      
-      // Invalidate queries to refresh data
+
       queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
       queryClient.invalidateQueries({ queryKey: ['/api/routines/group-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['/api/groups'] });

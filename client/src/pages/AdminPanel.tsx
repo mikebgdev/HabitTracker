@@ -68,12 +68,10 @@ export default function AdminPanel() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch routines
   const { data: routines = [], isLoading: isLoadingRoutines } = useQuery<Routine[]>({
     queryKey: ['/api/routines'],
   });
 
-  // Fetch groups
   const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
@@ -87,8 +85,8 @@ export default function AdminPanel() {
         priority: routine.priority,
         userId: routine.userId,
       });
-      // Fetch weekday schedules and set them
-      // In a real implementation, we would also fetch the weekday schedule
+
+
     } else {
       setRoutineFormState({
         name: "",
@@ -133,17 +131,16 @@ export default function AdminPanel() {
 
     try {
       if (editingRoutine) {
-        // Update existing routine
+
         await apiRequest("PATCH", `/api/routines/${editingRoutine.id}`, routineFormState);
       } else {
-        // Create new routine
+
         await apiRequest("POST", "/api/routines", {
           ...routineFormState,
-          userId: 1, // In a real app, this would come from auth context
+          userId: 1, 
         });
       }
 
-      // Refresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
       setIsEditRoutineModalOpen(false);
     } catch (error) {
@@ -159,17 +156,16 @@ export default function AdminPanel() {
 
     try {
       if (editingGroup) {
-        // Update existing group
+
         await apiRequest("PATCH", `/api/groups/${editingGroup.id}`, groupFormState);
       } else {
-        // Create new group
+
         await apiRequest("POST", "/api/groups", {
           ...groupFormState,
-          userId: 1, // In a real app, this would come from auth context
+          userId: 1, 
         });
       }
 
-      // Refresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
       setIsEditGroupModalOpen(false);
     } catch (error) {
@@ -411,7 +407,7 @@ export default function AdminPanel() {
         </div>
       </main>
       
-      {/* Edit Routine Modal */}
+      
       <Dialog open={isEditRoutineModalOpen} onOpenChange={setIsEditRoutineModalOpen}>
         <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
           <DialogHeader>
@@ -559,7 +555,7 @@ export default function AdminPanel() {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Group Modal */}
+      
       <Dialog open={isEditGroupModalOpen} onOpenChange={setIsEditGroupModalOpen}>
         <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
           <DialogHeader>

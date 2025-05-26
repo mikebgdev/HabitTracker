@@ -46,7 +46,7 @@ export default function Account() {
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
-      // First delete user data from our database
+
       const response = await fetch('/api/auth/delete-account', {
         method: 'DELETE',
         headers: {
@@ -58,7 +58,6 @@ export default function Account() {
         throw new Error('Failed to delete account data');
       }
 
-      // Then delete the Firebase user
       if (user) {
         await user.delete();
       }
@@ -85,7 +84,7 @@ export default function Account() {
           <h1 className="text-3xl font-bold">{t('account.title')}</h1>
         </div>
 
-        {/* User Info */}
+        
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -116,7 +115,7 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Language Settings */}
+        
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -149,7 +148,7 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Actions */}
+        
         <Card>
           <CardHeader>
             <CardTitle>Account Actions</CardTitle>

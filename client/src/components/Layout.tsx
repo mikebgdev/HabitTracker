@@ -42,8 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
   );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Toggle theme
+
   const toggleTheme = () => {
     if (isDarkMode) {
       document.documentElement.classList.remove('dark');
@@ -61,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
-      {/* Header */}
+      
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
@@ -100,7 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </header>
       
       <div className="flex flex-1">
-        {/* Sidebar for desktop */}
+        
         <aside className="hidden md:block w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
           <nav className="space-y-2">
             <NavItem 
@@ -130,7 +129,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
         </aside>
         
-        {/* Mobile sidebar */}
+        
         {isMobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-75">
             <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 p-4">
@@ -178,7 +177,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         )}
         
-        {/* Main content */}
+        
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           {children}
         </main>

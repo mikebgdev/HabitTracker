@@ -49,7 +49,6 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch groups for dropdown
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ['/api/groups'],
   });
@@ -96,7 +95,6 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
     try {
       let finalGroupId = groupId;
 
-      // If creating a new group
       if (showNewGroupInput && newGroupName) {
         const response = await apiRequest("POST", "/api/groups", {
           name: newGroupName,
@@ -105,7 +103,6 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
         finalGroupId = newGroup.id;
       }
 
-      // Create routine
       const routineData: InsertRoutine & { 
         groupId?: number;
         weekdays?: Record<string, boolean>;
@@ -113,7 +110,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
         name,
         expectedTime,
         priority,
-        userId: 1, // This would come from auth context in a real app
+        userId: 1, 
       };
 
       if (finalGroupId) {
@@ -125,17 +122,15 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
       const response = await apiRequest("POST", "/api/routines", routineData);
       const newRoutine = await response.json();
 
-      // Mostrar notificación de éxito
       toast({
         title: "Rutina creada",
         description: `La rutina "${name}" ha sido creada correctamente.`
       });
 
-      // Actualizar los datos usando la función de refetch si está disponible
       if (onRoutineCreated) {
         await onRoutineCreated();
       } else {
-        // Fallback para actualizar mediante invalidación de consultas
+
         await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
         await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
         await queryClient.invalidateQueries({ queryKey: ['/api/routines/daily'] });

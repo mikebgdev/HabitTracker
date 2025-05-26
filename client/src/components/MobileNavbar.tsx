@@ -47,7 +47,7 @@ export function MobileNavbar() {
 
   return (
     <>
-      {/* Mobile header */}
+      
       <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center">
           <Button
@@ -81,7 +81,7 @@ export function MobileNavbar() {
         </div>
       </div>
 
-      {/* Mobile menu (hidden by default) */}
+      
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-20 bg-black bg-opacity-50">
           <div className="w-64 h-full bg-white dark:bg-gray-800 p-4 flex flex-col">
@@ -149,7 +149,7 @@ export function MobileNavbar() {
         </div>
       )}
 
-      {/* Mobile bottom navigation */}
+      
       <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-2 z-10">
         <div className="flex justify-around">
           {mobileNavItems.map((item) => (

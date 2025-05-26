@@ -10,16 +10,13 @@ export function ProgressOverview({ routines }: ProgressOverviewProps) {
   const totalRoutines = routines.length;
   const completedRoutines = routines.filter(r => r.completedAt).length;
   const completionRate = totalRoutines > 0 ? Math.round((completedRoutines / totalRoutines) * 100) : 0;
-  
-  // Calculate streak (this would come from API in a real implementation)
-  const streak = 7; // Placeholder value
 
-  // Calculate the count of completed high priority routines
+  const streak = 7; 
+
   const highPriorityRoutines = routines.filter(r => r.priority === "high");
   const completedHighPriority = highPriorityRoutines.filter(r => r.completedAt).length;
-  
-  // Group calculations
-  // In a real implementation, we'd get this from an API
+
+
   const totalGroups = 4;
   const completedGroups = 3;
 

@@ -22,11 +22,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     // Check for redirect result when component mounts
     handleRedirectResult()
-      .then((result) => {
+      .then(async (result) => {
         if (result?.user) {
           console.log('Successfully signed in via redirect:', result.user);
-          // Redirect to dashboard after successful login
-          window.location.href = '/dashboard';
+          
+          // Create user in our database
+          try {
+            const response = await fetch('/api/auth/google-user', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: result.user.email,
+                displayName: result.user.displayName,
+                uid: result.user.uid,
+              }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log('User saved to database:', data);
+              // Redirect to dashboard after successful login
+              window.location.href = '/dashboard';
+            } else {
+              console.error('Failed to save user to database');
+            }
+          } catch (error) {
+            console.error('Error saving user to database:', error);
+          }
         }
       })
       .catch((error) => {
@@ -34,13 +58,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
     // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       setLoading(false);
       
-      // If user is authenticated and on login page, redirect to dashboard
+      // If user is authenticated and on login page, create/sync user and redirect
       if (user && (window.location.pathname === '/' || window.location.pathname === '/login')) {
-        window.location.href = '/dashboard';
+        try {
+          const response = await fetch('/api/auth/google-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: user.email,
+              displayName: user.displayName,
+              uid: user.uid,
+            }),
+          });
+
+          if (response.ok) {
+            window.location.href = '/dashboard';
+          }
+        } catch (error) {
+          console.error('Error syncing user:', error);
+        }
       }
     });
 

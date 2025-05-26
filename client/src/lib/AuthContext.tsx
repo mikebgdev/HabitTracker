@@ -25,6 +25,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .then((result) => {
         if (result?.user) {
           console.log('Successfully signed in via redirect:', result.user);
+          // Redirect to dashboard after successful login
+          window.location.href = '/dashboard';
         }
       })
       .catch((error) => {
@@ -35,6 +37,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+      
+      // If user is authenticated and on login page, redirect to dashboard
+      if (user && (window.location.pathname === '/' || window.location.pathname === '/login')) {
+        window.location.href = '/dashboard';
+      }
     });
 
     return unsubscribe;

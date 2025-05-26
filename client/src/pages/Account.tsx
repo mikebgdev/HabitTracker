@@ -14,12 +14,17 @@ export default function Account() {
   const { t, language, setLanguage } = useI18n();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(language);
 
-  const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage);
+  const handleLanguageSelect = (newLanguage: Language) => {
+    setSelectedLanguage(newLanguage);
+  };
+
+  const handleSaveLanguage = () => {
+    setLanguage(selectedLanguage);
     toast({
       title: t('common.success'),
-      description: `Language changed to ${newLanguage === 'en' ? 'English' : 'Español'}`,
+      description: `Language changed to ${selectedLanguage === 'en' ? 'English' : 'Español'}`,
     });
   };
 
@@ -122,16 +127,25 @@ export default function Account() {
               {t('account.selectLanguage')}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Select value={language} onValueChange={handleLanguageChange}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">{t('account.english')}</SelectItem>
-                <SelectItem value="es">{t('account.spanish')}</SelectItem>
-              </SelectContent>
-            </Select>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Select value={selectedLanguage} onValueChange={handleLanguageSelect}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t('account.english')}</SelectItem>
+                  <SelectItem value="es">{t('account.spanish')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                onClick={handleSaveLanguage}
+                disabled={selectedLanguage === language}
+                size="sm"
+              >
+                Guardar
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

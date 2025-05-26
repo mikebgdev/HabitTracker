@@ -104,10 +104,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <aside className="hidden md:block w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4">
           <nav className="space-y-2">
             <NavItem 
-              to="/" 
+              to="/dashboard" 
               icon={<Home size={20} />} 
               label="Dashboard" 
-              isActive={location === '/'} 
+              isActive={location === '/dashboard' || location === '/'} 
             />
             <NavItem 
               to="/routines" 

@@ -183,14 +183,14 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
             
             <div className="mb-4">
               <Label htmlFor="routine-time" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Expected Time
+                Expected Time (Optional)
               </Label>
               <Input 
                 id="routine-time"
                 type="time"
                 value={expectedTime}
                 onChange={e => setExpectedTime(e.target.value)}
-                required
+                placeholder="Optional"
               />
             </div>
             

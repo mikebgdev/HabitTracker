@@ -28,6 +28,7 @@ import {
   Timer,
   FolderOpen,
   FolderX,
+  Archive,
   Activity,
   Bike,
   Book,
@@ -85,6 +86,27 @@ export default function MyRoutines() {
     setIsDeleteDialogOpen(true);
   };
   
+  // Archivar rutina
+  const handleArchiveRoutine = async (routineId: number) => {
+    try {
+      await apiRequest("PATCH", `/api/routines/${routineId}/archive`, {});
+      
+      // Actualizar consultas para reflejar el cambio
+      await refetchRoutines();
+      
+      toast({
+        title: "Rutina archivada",
+        description: "La rutina ha sido archivada correctamente y ya no aparecerá en rutinas futuras"
+      });
+    } catch (error) {
+      console.error("Failed to archive routine:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo archivar la rutina. Inténtalo de nuevo."
+      });
+    }
+  };
+
   // Proceder con la eliminación después de confirmar
   const handleDeleteRoutine = async () => {
     if (!routineToDelete) return;

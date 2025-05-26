@@ -368,6 +368,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Archive routine
+  app.patch("/api/routines/:id/archive", authenticate, async (req, res) => {
+    try {
+      const routineId = parseInt(req.params.id);
+      const userId = (req as any).user.id;
+      
+      const routine = await storage.getRoutineById(routineId);
+      
+      if (!routine) {
+        return res.status(404).json({ message: "Routine not found" });
+      }
+      
+      if (routine.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Archive the routine
+      const updatedRoutine = await storage.updateRoutine(routineId, {
+        archived: true,
+        archivedAt: new Date(),
+      });
+      
+      res.json({ message: "Routine archived successfully", routine: updatedRoutine });
+    } catch (error) {
+      console.error("Error archiving routine:", error);
+      res.status(500).json({ message: "Failed to archive routine" });
+    }
+  });
+
   app.patch("/api/routines/:id", authenticate, async (req, res) => {
     try {
       const routineId = parseInt(req.params.id);

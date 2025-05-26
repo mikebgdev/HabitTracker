@@ -250,7 +250,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.monday ? "selected" : "day"}
                   pressed={selectedDays.monday}
                   onPressedChange={() => toggleDay("monday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.monday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   L
                 </Toggle>
@@ -258,7 +262,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.tuesday ? "selected" : "day"}
                   pressed={selectedDays.tuesday}
                   onPressedChange={() => toggleDay("tuesday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.tuesday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   M
                 </Toggle>
@@ -266,7 +274,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.wednesday ? "selected" : "day"}
                   pressed={selectedDays.wednesday}
                   onPressedChange={() => toggleDay("wednesday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.wednesday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   X
                 </Toggle>
@@ -274,7 +286,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.thursday ? "selected" : "day"}
                   pressed={selectedDays.thursday}
                   onPressedChange={() => toggleDay("thursday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.thursday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   J
                 </Toggle>
@@ -282,7 +298,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.friday ? "selected" : "day"}
                   pressed={selectedDays.friday}
                   onPressedChange={() => toggleDay("friday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.friday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   V
                 </Toggle>
@@ -290,7 +310,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.saturday ? "selected" : "day"}
                   pressed={selectedDays.saturday}
                   onPressedChange={() => toggleDay("saturday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.saturday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   S
                 </Toggle>
@@ -298,7 +322,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   variant={selectedDays.sunday ? "selected" : "day"}
                   pressed={selectedDays.sunday}
                   onPressedChange={() => toggleDay("sunday")}
-                  className="text-xs font-medium text-center"
+                  className={`text-xs font-medium text-center ${
+                    selectedDays.sunday 
+                      ? "bg-blue-500 text-white dark:bg-blue-600" 
+                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                  }`}
                 >
                   D
                 </Toggle>

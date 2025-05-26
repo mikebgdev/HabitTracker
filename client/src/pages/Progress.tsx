@@ -468,46 +468,40 @@ export default function ProgressPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-2">
-            {dailyData.map((day, index) => {
-              // Determinar si es hoy para mostrar los datos actualizados
-              const isToday = day.date === format(new Date(), 'MMM dd');
+          <div className="grid grid-cols-7 gap-1">
+            {dailyData.slice(-35).map((day, index) => {
+              const completionRate = day.total > 0 ? (day.completed / day.total) * 100 : 0;
               
-              // Obtener rutinas completadas para este día específico
-              const dayStr = format(new Date(day.date), 'yyyy-MM-dd');
-              const uniqueCompletedIds = new Set();
+              // Color based on completion rate
+              let bgColor = "bg-gray-100 dark:bg-gray-800"; // No routines
+              if (day.total > 0) {
+                if (completionRate >= 80) bgColor = "bg-green-500";
+                else if (completionRate >= 60) bgColor = "bg-green-400";
+                else if (completionRate >= 40) bgColor = "bg-green-300";
+                else if (completionRate >= 20) bgColor = "bg-yellow-300";
+                else bgColor = "bg-gray-300 dark:bg-gray-600";
+              }
               
-              completionStats.forEach((completion: any) => {
-                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
-                  uniqueCompletedIds.add(completion.routineId);
-                }
-              });
-              
-              // Calcular porcentaje actualizado para el día
-              const total = userRoutines.length;
-              const completed = uniqueCompletedIds.size;
-              const percentage = total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
-              
-              // Usar el porcentaje calculado para determinar el color
               return (
-                <div key={index} className="flex flex-col items-center">
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    {day.date}
-                  </div>
-                  <div 
-                    className={`w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
-                      percentage >= 80 
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
-                        : percentage >= 50 
-                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" 
-                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                    }`}
-                  >
-                    {percentage}%
-                  </div>
+                <div
+                  key={index}
+                  className={`w-8 h-8 rounded-sm ${bgColor} flex items-center justify-center text-xs font-medium text-white`}
+                  title={`${day.date}: ${day.completed}/${day.total} completed (${Math.round(completionRate)}%)`}
+                >
+                  {format(new Date(day.date), 'd')}
                 </div>
               );
             })}
+          </div>
+          <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>Less</span>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
+              <div className="w-3 h-3 bg-green-300 rounded-sm"></div>
+              <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+            </div>
+            <span>More</span>
           </div>
         </CardContent>
       </Card>

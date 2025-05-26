@@ -569,15 +569,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Para cada grupo del usuario, agregamos sus relaciones con rutinas
       for (const group of userGroups) {
-        console.log(`Procesando grupo ${group.id} (${group.name})`);
-        
-        // Filtramos las relaciones para este grupo específico
         const groupRelations = allGroupRoutines.filter(gr => gr.groupId === group.id);
-        
+
         if (groupRelations.length > 0) {
-          // Si hay rutinas en este grupo, agregamos cada una con la información del grupo
           groupRelations.forEach(relation => {
-            console.log(`Agregando rutina ${relation.routineId} al grupo ${group.id}`);
             routineGroupAssignments.push({
               groupId: group.id,
               groupName: group.name,
@@ -586,8 +581,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           });
         } else {
-          // Si no hay rutinas en este grupo, agregamos solo la información del grupo
-          console.log(`No hay rutinas en el grupo ${group.id}, agregando registro vacío`);
           routineGroupAssignments.push({
             groupId: group.id,
             groupName: group.name,
@@ -596,9 +589,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
-      console.log(`Returning ${routineGroupAssignments.length} group-routine assignments`);
-      console.log(routineGroupAssignments);
+
       res.json(routineGroupAssignments);
     } catch (error) {
       console.error("Error fetching routine-group relationships:", error);
@@ -797,27 +788,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint para obtener todas las relaciones grupo-rutina
-  app.get("/api/group-routines", authenticate, async (req, res) => {
-    try {
-      const userId = (req as any).user.id;
-      
-      // Obtener todas las rutinas del usuario para verificar acceso
-      const userRoutines = await storage.getRoutinesByUserId(userId);
-      const userRoutineIds = userRoutines.map(routine => routine.id);
-      
-      // Obtener todas las relaciones grupo-rutina para las rutinas del usuario
-      const allGroupRoutines = await storage.getAllGroupRoutines();
-      const userGroupRoutines = allGroupRoutines.filter(gr => 
-        userRoutineIds.includes(gr.routineId)
-      );
-      
-      res.json(userGroupRoutines);
-    } catch (error) {
-      console.error("Error fetching group-routine relationships:", error);
-      res.status(500).json({ message: "Failed to fetch group-routine relationships" });
-    }
-  });
 
   // Endpoint para obtener las completaciones por fecha
   app.get("/api/completions/:date?", authenticate, async (req, res) => {

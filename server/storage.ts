@@ -772,7 +772,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         gte(completions.completedAt, dateStart),
         lte(completions.completedAt, dateEnd),
-        sql`${completions.routineId} IN (${routineIds.join(',')})`
+        inArray(completions.routineId, routineIds)
       ));
     
     // Map completions to routines
@@ -959,7 +959,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         gte(completions.completedAt, dateStart.toISOString()),
         lte(completions.completedAt, dateEnd.toISOString()),
-        sql`${completions.routineId} IN ${routineIds}`
+        inArray(completions.routineId, routineIds)
       ));
     
     // Map completions to routines
@@ -1085,7 +1085,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         gte(completions.completedAt, startDateObj.toISOString()),
         lte(completions.completedAt, endDateObj.toISOString()),
-        sql`${completions.routineId} IN ${routineIds}`
+        inArray(completions.routineId, routineIds)
       ));
     
     // Group by date

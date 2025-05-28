@@ -4,12 +4,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { Moon, Sun, Menu, X } from "lucide-react";
-import { useAuth } from "@/application/use-cases/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function MobileNavbar() {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
@@ -74,8 +74,8 @@ export function MobileNavbar() {
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </Button>
           <Avatar className="h-8 w-8">
-            <AvatarFallback>
-              {user?.username.substring(0, 2).toUpperCase()}
+              <AvatarFallback>
+              {user?.displayName?.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -123,13 +123,13 @@ export function MobileNavbar() {
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
                 <Avatar className="h-8 w-8 mr-3">
-                  <AvatarFallback>
-                    {user?.username.substring(0, 2).toUpperCase()}
+                <AvatarFallback>
+                    {user?.displayName?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user?.username}
+                    {user?.displayName}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {user?.email}
@@ -138,7 +138,7 @@ export function MobileNavbar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={logout}
+                  onClick={signOut}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 >
                   <i className="fas fa-sign-out-alt"></i>

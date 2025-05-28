@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, } from 'firebase/auth';
 import { getFirestore, collection, query, where, doc, getDocs, addDoc, updateDoc, deleteDoc, } from 'firebase/firestore';
-console.log(import.meta.env);
 // Firebase configuration initialized via VITE_FIREBASE_* environment variables
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -10,7 +9,6 @@ const firebaseConfig = {
     storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
-console.log(import.meta.env.VITE_FIREBASE_API_KEY);
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
@@ -33,7 +31,10 @@ export async function signOutUser() {
 export async function getUserGroups(userId) {
     const q = query(collection(db, 'groups'), where('userId', '==', userId));
     const snaps = await getDocs(q);
-    return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...d.data() }));
+    return snaps.docs.map((d) => {
+        const data = d.data();
+        return { id: parseInt(d.id, 10), ...data };
+    });
 }
 /**
  * Create a new group
@@ -61,7 +62,10 @@ export async function deleteGroup(id) {
 export async function getUserRoutines(userId) {
     const q = query(collection(db, 'routines'), where('userId', '==', userId));
     const snaps = await getDocs(q);
-    return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...d.data() }));
+    return snaps.docs.map((d) => {
+        const data = d.data();
+        return { id: parseInt(d.id, 10), ...data };
+    });
 }
 /**
  * Create a new routine
@@ -88,7 +92,10 @@ export async function deleteRoutine(id) {
  */
 export async function getGroupRoutines() {
     const snaps = await getDocs(collection(db, 'groupRoutines'));
-    return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...d.data() }));
+    return snaps.docs.map((d) => {
+        const data = d.data();
+        return { id: parseInt(d.id, 10), ...data };
+    });
 }
 /**
  * Assign a routine to a group
@@ -108,8 +115,9 @@ export async function removeGroupRoutine(id) {
  */
 export async function getWeekdaySchedule(routineId) {
     const snaps = await getDocs(query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)));
-    const data = snaps.docs[0]?.data();
-    return { id: parseInt(snaps.docs[0]?.id ?? '0', 10), ...data };
+    const docSnap = snaps.docs[0];
+    const data = docSnap?.data();
+    return { id: parseInt(docSnap?.id ?? '0', 10), ...data };
 }
 /**
  * Update or create a weekday schedule for a routine
@@ -129,7 +137,10 @@ export async function updateWeekdaySchedule(routineId, data) {
  */
 export async function getCompletionsByDate(userId, date) {
     const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', date), where('completedAt', '<', date + 'T23:59:59.999Z')));
-    return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...d.data() }));
+    return snaps.docs.map((d) => {
+        const data = d.data();
+        return { id: parseInt(d.id, 10), ...data };
+    });
 }
 /**
  * Add a completion record

@@ -40,15 +40,17 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }: A
 
   const { user } = useAuth();
   const client = useQueryClient();
-  const { data: groups = [] } = useQuery<Group[]>(['groups'],
-    () => getUserGroups(user?.uid || ''),
-    { enabled: !!user }
-  );
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ['groups'],
+    queryFn: () => getUserGroups(user?.uid || ''),
+    enabled: !!user,
+  });
 
-  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>(['groupRoutines'],
-    getGroupRoutines,
-    { enabled: !!routine }
-  );
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>({
+    queryKey: ['groupRoutines'],
+    queryFn: getGroupRoutines,
+    enabled: !!routine,
+  });
 
   useEffect(() => {
     if (routine && groupRoutines.length > 0) {
@@ -61,46 +63,44 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }: A
     }
   }, [routine?.id, groupRoutines]);
 
-  const assignMutation = useMutation(
-    async () => {
+  const assignMutation = useMutation({
+    mutationFn: async () => {
       if (!routine || !user) return;
       if (selectedGroupId) {
         await assignGroupToRoutine({
           routineId: routine.id,
           groupId: parseInt(selectedGroupId, 10),
+          order: 0,
         });
       } else {
-        // remove any existing assignment
         const existing = groupRoutines.find((gr) => gr.routineId === routine.id);
         if (existing) {
           await removeGroupRoutine(existing.id);
         }
       }
     },
-    {
-      onSuccess: () => {
-        toast({
-          title: "Grupo asignado",
-          description: selectedGroupId
-            ? `La rutina ha sido asignada al grupo correctamente.`
-            : `La rutina ha sido removida del grupo.`,
-        });
-        client.invalidateQueries(['routines']);
-        client.invalidateQueries(['groupRoutines']);
-        client.invalidateQueries(['groups']);
-        onComplete?.();
-        onClose();
-      },
-      onError: (error) => {
-        console.error("Error assigning group:", error);
-        toast({
-          title: "Error",
-          description:
-            "No se pudo asignar el grupo a la rutina. Inténtalo de nuevo.",
-        });
-      },
-    }
-  );
+    onSuccess: () => {
+      toast({
+        title: "Grupo asignado",
+        description: selectedGroupId
+          ? `La rutina ha sido asignada al grupo correctamente.`
+          : `La rutina ha sido removida del grupo.`,
+      });
+      client.invalidateQueries({ queryKey: ['routines'] });
+      client.invalidateQueries({ queryKey: ['groupRoutines'] });
+      client.invalidateQueries({ queryKey: ['groups'] });
+      onComplete?.();
+      onClose();
+    },
+    onError: (error: any) => {
+      console.error("Error assigning group:", error);
+      toast({
+        title: "Error",
+        description:
+          "No se pudo asignar el grupo a la rutina. Inténtalo de nuevo.",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

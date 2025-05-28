@@ -30,8 +30,15 @@ export default function Groups() {
     const [groupToDelete, setGroupToDelete] = useState(null);
     const { user } = useAuth();
     const client = useQueryClient();
-    const { data: groups = [], isLoading: isLoadingGroups } = useQuery(['groups'], () => getUserGroups(user?.uid || ''), { enabled: !!user });
-    const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery(['groupRoutines'], getGroupRoutines);
+    const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
+        enabled: !!user,
+    });
+    const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery({
+        queryKey: ['groupRoutines'],
+        queryFn: getGroupRoutines,
+    });
     useEffect(() => {
         if (Array.isArray(groupRoutines) && groupRoutines.length > 0) {
             const counts = {};
@@ -111,8 +118,8 @@ export default function Groups() {
             else if (user) {
                 await addGroup({ ...dataToSend, userId: user.uid });
             }
-            await client.invalidateQueries(['groups']);
-            await client.invalidateQueries(['groupRoutines']);
+            await client.invalidateQueries({ queryKey: ['groups'] });
+            await client.invalidateQueries({ queryKey: ['groupRoutines'] });
             setIsEditGroupModalOpen(false);
         }
         catch (error) {
@@ -131,8 +138,8 @@ export default function Groups() {
             return;
         try {
             await deleteGroup(groupToDelete);
-            await client.invalidateQueries(['groups']);
-            await client.invalidateQueries(['groupRoutines']);
+            await client.invalidateQueries({ queryKey: ['groups'] });
+            await client.invalidateQueries({ queryKey: ['groupRoutines'] });
             toast({
                 title: "Grupo eliminado",
                 description: "El grupo ha sido eliminado correctamente"

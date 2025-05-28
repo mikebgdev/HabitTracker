@@ -1,4 +1,4 @@
-import { Progress } from "@/components/ui/progress";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { motion } from "framer-motion";
 import type { Routine } from "@/lib/types";
 
@@ -43,7 +43,7 @@ export function ProgressOverview({ routines }: ProgressOverviewProps) {
         animate={{ width: `${completionRate}%` }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <Progress 
+        <ProgressBar 
           value={completionRate} 
           className="w-full h-4 mb-4" 
           variant={getProgressVariant(completionRate)}

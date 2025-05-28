@@ -9,107 +9,22 @@ import { format, addDays, subDays } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserGroups, getUserRoutines, getWeekdaySchedule, getGroupRoutines, getCompletionsByDate, addCompletion, removeCompletion, } from '@/lib/firebase';
-const mockData = {
-    date: new Date(),
-    groups: [
-        {
-            id: 1,
-            name: "Morning Routines",
-            icon: "sun",
-            timeRange: "6:00 AM - 8:00 AM",
-            routines: [
-                {
-                    id: 1,
-                    name: "Morning Meditation",
-                    priority: "high",
-                    expectedTime: "10 min",
-                    completed: true,
-                    completedAt: "2023-05-20T06:15:00Z"
-                },
-                {
-                    id: 2,
-                    name: "Breakfast",
-                    priority: "high",
-                    expectedTime: "20 min",
-                    completed: false
-                },
-                {
-                    id: 3,
-                    name: "Daily Planning",
-                    priority: "medium",
-                    expectedTime: "15 min",
-                    completed: false
-                }
-            ]
-        },
-        {
-            id: 2,
-            name: "Work Routines",
-            icon: "briefcase",
-            timeRange: "9:00 AM - 5:00 PM",
-            routines: [
-                {
-                    id: 4,
-                    name: "Check Emails",
-                    priority: "medium",
-                    expectedTime: "20 min",
-                    completed: false
-                },
-                {
-                    id: 5,
-                    name: "Team Meeting",
-                    priority: "high",
-                    expectedTime: "60 min",
-                    completed: false
-                },
-                {
-                    id: 6,
-                    name: "Project Work",
-                    priority: "high",
-                    expectedTime: "120 min",
-                    completed: false
-                }
-            ]
-        },
-        {
-            id: 3,
-            name: "Evening Routines",
-            icon: "moon",
-            timeRange: "6:00 PM - 10:00 PM",
-            routines: [
-                {
-                    id: 7,
-                    name: "Dinner",
-                    priority: "high",
-                    expectedTime: "45 min",
-                    completed: false
-                },
-                {
-                    id: 8,
-                    name: "Evening Workout",
-                    priority: "medium",
-                    expectedTime: "45 min",
-                    completed: false
-                },
-                {
-                    id: 9,
-                    name: "Reading",
-                    priority: "low",
-                    expectedTime: "30 min",
-                    completed: false
-                }
-            ]
-        }
-    ]
-};
 export default function Dashboard() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const queryClient = useQueryClient();
     const { user } = useAuth();
     const formattedDate = format(selectedDate, 'EEEE, MMMM d, yyyy');
     const dateParam = format(selectedDate, 'yyyy-MM-dd');
-    const { data: userGroups = [] } = useQuery(['groups'], () => getUserGroups(user?.uid || ''), { enabled: !!user });
-    const { data: userRoutines = [] } = useQuery(['routines'], () => getUserRoutines(user?.uid || ''), { enabled: !!user });
+    const { data: userGroups = [] } = useQuery({
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
+        enabled: !!user,
+    });
+    const { data: userRoutines = [] } = useQuery({
+        queryKey: ['routines'],
+        queryFn: () => getUserRoutines(user?.uid || ''),
+        enabled: !!user,
+    });
     const fetchSchedules = async () => {
         if (!userRoutines || userRoutines.length === 0) {
             return [];
@@ -128,9 +43,20 @@ export default function Dashboard() {
             };
         })));
     };
-    const { data: weekdaySchedules = [] } = useQuery(['weekdaySchedules', userRoutines], fetchSchedules, { enabled: userRoutines.length > 0 });
-    const { data: completions = [] } = useQuery(['completions', dateParam], () => getCompletionsByDate(user?.uid || '', dateParam), { enabled: !!user && !!dateParam });
-    const { data: groupRoutines = [] } = useQuery(['groupRoutines'], getGroupRoutines);
+    const { data: weekdaySchedules = [] } = useQuery({
+        queryKey: ['weekdaySchedules', userRoutines],
+        queryFn: fetchSchedules,
+        enabled: userRoutines.length > 0,
+    });
+    const { data: completions = [] } = useQuery({
+        queryKey: ['completions', dateParam],
+        queryFn: () => getCompletionsByDate(user?.uid || '', dateParam),
+        enabled: !!user && !!dateParam,
+    });
+    const { data: groupRoutines = [] } = useQuery({
+        queryKey: ['groupRoutines'],
+        queryFn: getGroupRoutines,
+    });
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['routines', 'daily', dateParam, userGroups, userRoutines, weekdaySchedules, completions, groupRoutines],
         queryFn: async () => {
@@ -219,10 +145,10 @@ export default function Dashboard() {
             return { success: true };
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['routines', 'daily', dateParam]);
-            queryClient.invalidateQueries(['completions', dateParam]);
-            queryClient.invalidateQueries(['completions', 'stats']);
-        }
+            queryClient.invalidateQueries({ queryKey: ['routines', 'daily', dateParam] });
+            queryClient.invalidateQueries({ queryKey: ['completions', dateParam] });
+            queryClient.invalidateQueries({ queryKey: ['completions', 'stats'] });
+        },
     });
     const isToday = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
     const handleToggleCompletion = (id, completed) => {

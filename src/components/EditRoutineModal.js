@@ -72,9 +72,21 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated })
     const [routineId, setRoutineId] = useState(null);
     const { user } = useAuth();
     const client = useQueryClient();
-    const { data: groups = [] } = useQuery(['groups'], () => getUserGroups(user?.uid || ''), { enabled: !!user });
-    const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery(['weekdaySchedule', routineId], () => getWeekdaySchedule(routineId), { enabled: !!routineId });
-    const { data: groupRoutines = [] } = useQuery(['groupRoutines'], getGroupRoutines, { enabled: !!routine });
+    const { data: groups = [] } = useQuery({
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
+        enabled: !!user,
+    });
+    const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery({
+        queryKey: ['weekdaySchedule', routineId],
+        queryFn: () => getWeekdaySchedule(routineId),
+        enabled: !!routineId,
+    });
+    const { data: groupRoutines = [] } = useQuery({
+        queryKey: ['groupRoutines'],
+        queryFn: getGroupRoutines,
+        enabled: !!routine,
+    });
     useEffect(() => {
         if (routine) {
             setName(routine.name);
@@ -146,7 +158,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated })
                 name,
                 expectedTime,
                 priority,
-                icon
+                ...(icon ? { icon } : {}),
             };
             if (groupId) {
                 routineData.groupId = groupId;

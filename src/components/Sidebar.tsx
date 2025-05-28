@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { Moon, Sun, LogOut } from "lucide-react";
-import { useAuth } from "@/application/use-cases/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SidebarProps {
   className?: string;
@@ -12,7 +12,7 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -57,13 +57,13 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center">
           <Avatar className="h-8 w-8 mr-3">
-            <AvatarFallback>
-              {user?.username.substring(0, 2).toUpperCase()}
+                <AvatarFallback>
+              {user?.displayName?.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900 dark:text-white">
-              {user?.username}
+              {user?.displayName}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {user?.email}
@@ -81,7 +81,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={logout}
+              onClick={signOut}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               <LogOut size={18} />

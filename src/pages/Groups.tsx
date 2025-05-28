@@ -68,16 +68,16 @@ export default function Groups() {
 
   const { user } = useAuth();
   const client = useQueryClient();
-  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>(
-    ['groups'],
-    () => getUserGroups(user?.uid || ''),
-    { enabled: !!user }
-  );
+  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>({
+    queryKey: ['groups'],
+    queryFn: () => getUserGroups(user?.uid || ''),
+    enabled: !!user,
+  });
 
-  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>(
-    ['groupRoutines'],
-    getGroupRoutines
-  );
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>({
+    queryKey: ['groupRoutines'],
+    queryFn: getGroupRoutines,
+  });
 
   useEffect(() => {
     if (Array.isArray(groupRoutines) && groupRoutines.length > 0) {
@@ -168,8 +168,8 @@ export default function Groups() {
       } else if (user) {
         await addGroup({ ...dataToSend, userId: user.uid });
       }
-      await client.invalidateQueries(['groups']);
-      await client.invalidateQueries(['groupRoutines']);
+      await client.invalidateQueries({ queryKey: ['groups'] });
+      await client.invalidateQueries({ queryKey: ['groupRoutines'] });
       setIsEditGroupModalOpen(false);
     } catch (error) {
       console.error("Failed to save group:", error);
@@ -188,8 +188,8 @@ export default function Groups() {
     
     try {
       await deleteGroup(groupToDelete);
-      await client.invalidateQueries(['groups']);
-      await client.invalidateQueries(['groupRoutines']);
+      await client.invalidateQueries({ queryKey: ['groups'] });
+      await client.invalidateQueries({ queryKey: ['groupRoutines'] });
       
       toast({
         title: "Grupo eliminado",

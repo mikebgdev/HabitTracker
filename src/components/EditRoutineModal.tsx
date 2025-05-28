@@ -28,7 +28,6 @@ import {
   updateRoutine,
   assignGroupToRoutine,
   removeGroupRoutine,
-  updateGroup,
 } from "@/lib/firebase";
 import { useToast } from "@/hooks/useToast";
 import { 
@@ -55,7 +54,7 @@ import {
   Utensils,
   Waves
 } from "lucide-react";
-import type { Group, Routine, InsertRoutine } from "@/lib/types";
+import type { Group, Routine, InsertRoutine, GroupRoutine, WeekdaySchedule, InsertWeekdaySchedule } from "@/lib/types";
 
 interface EditRoutineModalProps {
   isOpen: boolean;
@@ -129,21 +128,23 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
 
   const { user } = useAuth();
   const client = useQueryClient();
-  const { data: groups = [] } = useQuery<Group[]>(['groups'],
-    () => getUserGroups(user?.uid || ''),
-    { enabled: !!user }
-  );
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ['groups'],
+    queryFn: () => getUserGroups(user?.uid || ''),
+    enabled: !!user,
+  });
 
-  const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery<WeekdaySchedule>(
-    ['weekdaySchedule', routineId],
-    () => getWeekdaySchedule(routineId),
-    { enabled: !!routineId }
-  );
+  const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery<WeekdaySchedule>({
+    queryKey: ['weekdaySchedule', routineId],
+    queryFn: () => getWeekdaySchedule(routineId!),
+    enabled: !!routineId,
+  });
 
-  const { data: groupRoutines = [] } = useQuery<GroupRoutine[]>(['groupRoutines'],
-    getGroupRoutines,
-    { enabled: !!routine }
-  );
+  const { data: groupRoutines = [] } = useQuery<GroupRoutine[]>({
+    queryKey: ['groupRoutines'],
+    queryFn: getGroupRoutines,
+    enabled: !!routine,
+  });
 
 
   useEffect(() => {
@@ -226,12 +227,11 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
       const routineData: Partial<InsertRoutine> & { 
         groupId?: number;
         weekdays?: Record<string, boolean>;
-        icon?: string | null;
       } = {
         name,
         expectedTime,
         priority,
-        icon
+        ...(icon ? { icon } : {}),
       };
 
       if (groupId) {
@@ -242,7 +242,10 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
 
       if (routineId) {
         await updateRoutine(routineId, routineData);
-        await updateWeekdaySchedule(routineId, selectedDays);
+        await updateWeekdaySchedule(
+          routineId,
+          selectedDays as Omit<InsertWeekdaySchedule, 'id' | 'routineId'>
+        );
         toast({
           title: "Rutina actualizada",
           description: `La rutina "${name}" ha sido actualizada correctamente.`,

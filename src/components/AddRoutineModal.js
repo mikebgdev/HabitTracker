@@ -30,7 +30,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
     const client = useQueryClient();
-    const { data: groups = [] } = useQuery(['groups'], () => getUserGroups(user?.uid || ''), { enabled: !!user });
+    const { data: groups = [] } = useQuery({
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
+        enabled: !!user,
+    });
     const toggleDay = (day) => {
         setSelectedDays(prev => ({
             ...prev,
@@ -77,7 +81,6 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }) {
                 name,
                 expectedTime,
                 priority,
-                userId: 1,
             };
             if (finalGroupId) {
                 routineData.groupId = finalGroupId;
@@ -95,9 +98,9 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }) {
                 await onRoutineCreated();
             }
             else {
-                await client.invalidateQueries(['routines']);
-                await client.invalidateQueries(['groups']);
-                await client.invalidateQueries(['routines', 'daily']);
+                await client.invalidateQueries({ queryKey: ['routines'] });
+                await client.invalidateQueries({ queryKey: ['groups'] });
+                await client.invalidateQueries({ queryKey: ['routines', 'daily'] });
             }
             resetForm();
             onClose();

@@ -64,7 +64,10 @@ export async function signOutUser() {
 export async function getUserGroups(userId: string): Promise<Group[]> {
   const q = query(collection(db, 'groups'), where('userId', '==', userId));
   const snaps = await getDocs(q);
-  return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...(d.data() as Group) }));
+  return snaps.docs.map((d) => {
+    const data = d.data() as Omit<Group, 'id'>;
+    return { id: parseInt(d.id, 10), ...data };
+  });
 }
 
 /**
@@ -96,7 +99,10 @@ export async function deleteGroup(id: number): Promise<void> {
 export async function getUserRoutines(userId: string): Promise<Routine[]> {
   const q = query(collection(db, 'routines'), where('userId', '==', userId));
   const snaps = await getDocs(q);
-  return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...(d.data() as Routine) }));
+  return snaps.docs.map((d) => {
+    const data = d.data() as Omit<Routine, 'id'>;
+    return { id: parseInt(d.id, 10), ...data };
+  });
 }
 
 /**
@@ -129,7 +135,10 @@ export async function deleteRoutine(id: number): Promise<void> {
  */
 export async function getGroupRoutines(): Promise<GroupRoutine[]> {
   const snaps = await getDocs(collection(db, 'groupRoutines'));
-  return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...(d.data() as GroupRoutine) }));
+  return snaps.docs.map((d) => {
+    const data = d.data() as Omit<GroupRoutine, 'id'>;
+    return { id: parseInt(d.id, 10), ...data };
+  });
 }
 
 /**
@@ -158,8 +167,9 @@ export async function getWeekdaySchedule(
   const snaps = await getDocs(
     query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)),
   );
-  const data = snaps.docs[0]?.data() as WeekdaySchedule;
-  return { id: parseInt(snaps.docs[0]?.id ?? '0', 10), ...data };
+  const docSnap = snaps.docs[0];
+  const data = docSnap?.data() as Omit<WeekdaySchedule, 'id'>;
+  return { id: parseInt(docSnap?.id ?? '0', 10), ...data };
 }
 
 /**
@@ -195,7 +205,10 @@ export async function getCompletionsByDate(
       where('completedAt', '<', date + 'T23:59:59.999Z'),
     ),
   );
-  return snaps.docs.map((d) => ({ id: parseInt(d.id, 10), ...(d.data() as Completion) }));
+  return snaps.docs.map((d) => {
+    const data = d.data() as Omit<Completion, 'id'>;
+    return { id: parseInt(d.id, 10), ...data };
+  });
 }
 
 /**

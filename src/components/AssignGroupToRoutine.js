@@ -13,8 +13,16 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
     const client = useQueryClient();
-    const { data: groups = [] } = useQuery(['groups'], () => getUserGroups(user?.uid || ''), { enabled: !!user });
-    const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery(['groupRoutines'], getGroupRoutines, { enabled: !!routine });
+    const { data: groups = [] } = useQuery({
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
+        enabled: !!user,
+    });
+    const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery({
+        queryKey: ['groupRoutines'],
+        queryFn: getGroupRoutines,
+        enabled: !!routine,
+    });
     useEffect(() => {
         if (routine && groupRoutines.length > 0) {
             const routineGroup = groupRoutines.find((gr) => gr.routineId === routine.id);
@@ -26,23 +34,24 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }) {
             }
         }
     }, [routine?.id, groupRoutines]);
-    const assignMutation = useMutation(async () => {
-        if (!routine || !user)
-            return;
-        if (selectedGroupId) {
-            await assignGroupToRoutine({
-                routineId: routine.id,
-                groupId: parseInt(selectedGroupId, 10),
-            });
-        }
-        else {
-            // remove any existing assignment
-            const existing = groupRoutines.find((gr) => gr.routineId === routine.id);
-            if (existing) {
-                await removeGroupRoutine(existing.id);
+    const assignMutation = useMutation({
+        mutationFn: async () => {
+            if (!routine || !user)
+                return;
+            if (selectedGroupId) {
+                await assignGroupToRoutine({
+                    routineId: routine.id,
+                    groupId: parseInt(selectedGroupId, 10),
+                    order: 0,
+                });
             }
-        }
-    }, {
+            else {
+                const existing = groupRoutines.find((gr) => gr.routineId === routine.id);
+                if (existing) {
+                    await removeGroupRoutine(existing.id);
+                }
+            }
+        },
         onSuccess: () => {
             toast({
                 title: "Grupo asignado",
@@ -50,9 +59,9 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }) {
                     ? `La rutina ha sido asignada al grupo correctamente.`
                     : `La rutina ha sido removida del grupo.`,
             });
-            client.invalidateQueries(['routines']);
-            client.invalidateQueries(['groupRoutines']);
-            client.invalidateQueries(['groups']);
+            client.invalidateQueries({ queryKey: ['routines'] });
+            client.invalidateQueries({ queryKey: ['groupRoutines'] });
+            client.invalidateQueries({ queryKey: ['groups'] });
             onComplete?.();
             onClose();
         },

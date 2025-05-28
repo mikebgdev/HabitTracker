@@ -123,7 +123,7 @@ export default function Dashboard() {
       const schedules = await Promise.all(
         userRoutines.map(async (routine) => {
           try {
-            const response = await fetch(`/api/routines/weekday-schedule/${routine.id}`);
+            const response = await apiRequest('GET',`/api/routines/weekday-schedule/${routine.id}`);
             if (response.ok) {
               return await response.json();
             }

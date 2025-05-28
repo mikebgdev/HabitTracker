@@ -7,7 +7,6 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-import { getToken } from './auth';
 
 export async function apiRequest(
   method: string,
@@ -20,7 +19,7 @@ export async function apiRequest(
     headers["Content-Type"] = "application/json";
   }
   
-  const token = getToken();
+  const token = localStorage.getItem('authToken');
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -43,8 +42,8 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const headers: Record<string, string> = {};
-    const token = getToken();
-    
+      const token = localStorage.getItem('authToken');
+
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }

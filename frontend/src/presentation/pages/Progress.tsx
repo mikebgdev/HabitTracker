@@ -53,10 +53,6 @@ export default function ProgressPage() {
     queryKey: ['/api/routines'],
   });
 
-  const { data: weekdaySchedules = [] } = useQuery<any[]>({
-    queryKey: ['/api/routines/weekday-schedule'],
-  });
-
   const generateDailyCompletionData = () => {
     const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
     

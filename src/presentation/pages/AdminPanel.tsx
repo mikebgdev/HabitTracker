@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/presentation/components/Sidebar";
 import { MobileNavbar } from "@/presentation/components/MobileNavbar";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/presentation/components/ui/button";
 import {
   Card,
@@ -37,8 +37,17 @@ import {
 } from "@/presentation/components/ui/select";
 import { Toggle } from "@/presentation/components/ui/toggle";
 import { Edit, Plus, Trash } from "lucide-react";
-import { apiRequest } from "@/infrastructure/api/queryClient";
-import { queryClient } from "@/infrastructure/api/queryClient";
+import { useAuth } from "@/infrastructure/api/AuthContext";
+import {
+  getUserRoutines,
+  addRoutine,
+  updateRoutine,
+  deleteRoutine,
+  getUserGroups,
+  addGroup,
+  updateGroup,
+  deleteGroup,
+} from "@/lib/firebase";
 import type { Routine, Group, InsertRoutine, InsertGroup } from "@shared/schema";
 
 export default function AdminPanel() {
@@ -130,18 +139,15 @@ export default function AdminPanel() {
     setIsSubmitting(true);
 
     try {
-      if (editingRoutine) {
-
-        await apiRequest("PATCH", `/api/routines/${editingRoutine.id}`, routineFormState);
-      } else {
-
-        await apiRequest("POST", "/api/routines", {
+      if (editingRoutine && user) {
+        await updateRoutine(editingRoutine.id, routineFormState);
+      } else if (user) {
+        await addRoutine({
           ...routineFormState,
-          userId: 1, 
+          userId: user.uid,
         });
       }
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
+      await client.invalidateQueries(['routines']);
       setIsEditRoutineModalOpen(false);
     } catch (error) {
       console.error("Failed to save routine:", error);
@@ -155,18 +161,15 @@ export default function AdminPanel() {
     setIsSubmitting(true);
 
     try {
-      if (editingGroup) {
-
-        await apiRequest("PATCH", `/api/groups/${editingGroup.id}`, groupFormState);
-      } else {
-
-        await apiRequest("POST", "/api/groups", {
+      if (editingGroup && user) {
+        await updateGroup(editingGroup.id, groupFormState);
+      } else if (user) {
+        await addGroup({
           ...groupFormState,
-          userId: 1, 
+          userId: user.uid,
         });
       }
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+      await client.invalidateQueries(['groups']);
       setIsEditGroupModalOpen(false);
     } catch (error) {
       console.error("Failed to save group:", error);
@@ -179,8 +182,8 @@ export default function AdminPanel() {
     if (!confirm("Are you sure you want to delete this routine?")) return;
 
     try {
-      await apiRequest("DELETE", `/api/routines/${routineId}`, {});
-      await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
+      await deleteRoutine(routineId);
+      await client.invalidateQueries(['routines']);
     } catch (error) {
       console.error("Failed to delete routine:", error);
     }
@@ -190,8 +193,8 @@ export default function AdminPanel() {
     if (!confirm("Are you sure you want to delete this group? All associated routines will be unlinked.")) return;
 
     try {
-      await apiRequest("DELETE", `/api/groups/${groupId}`, {});
-      await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+      await deleteGroup(groupId);
+      await client.invalidateQueries(['groups']);
     } catch (error) {
       console.error("Failed to delete group:", error);
     }

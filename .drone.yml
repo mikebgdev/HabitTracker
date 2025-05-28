@@ -1,80 +1,33 @@
-name: react-project-build
 kind: pipeline
 type: docker
-
-trigger:
-  event:
-    - push
-    - pull_request
-
-platform:
-  os: linux
-  arch: amd64
-
-clone:
-  disable: true
+name: default
 
 steps:
-  - name: clone
-    image: alpine/git
+  - name: build-backend
+    image: node:20
+    environment:
+      DATABASE_URL:
+        from_secret: db_url
     commands:
-      - git clone https://$GITHUB_TOKEN@github.com/$DRONE_REPO ./$PROJECT_NAME
-      - cd ./$PROJECT_NAME
-      - git checkout $DRONE_COMMIT
-
-  - name: install-dependencies
-    image: node:18
-    commands:
-      - cd ./$PROJECT_NAME
-      - npm install
-
-  - name: lint
-    image: node:18
-    commands:
-      - cd ./$PROJECT_NAME
-      - npm run lint
-
-  - name: run-tests
-    image: node:18
-    commands:
-      - cd ./$PROJECT_NAME
-      - npm test
-
-  - name: build
-    image: node:18
-    commands:
-      - cd ./$PROJECT_NAME
+      - cd backend
+      - npm ci
       - npm run build
 
----
-name: react-project-deploy
-kind: pipeline
-type: docker
+  - name: build-frontend
+    image: node:20
+    commands:
+      - cd frontend
+      - npm ci
+      - npm run build
 
-trigger:
-  event:
-    - promote
-
-steps:
-  - name: deploy
-    image: appleboy/drone-ssh
+  - name: dockerize
+    image: plugins/docker
     settings:
-      host:
-        from_secret: docker_host
+      repo: your-dockerhub-username/habittracker
+      tags:
+        - latest
+        - ${DRONE_COMMIT_SHA}
       username:
-        from_secret: username_ssh
+        from_secret: docker_username
       password:
-        from_secret: password_ssh
-      script:
-        - |
-          if [ ! -d "/var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}" ]; then
-            git clone https://${GITHUB_TOKEN}@github.com/${DRONE_REPO} /var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}
-          fi
-        - cd /var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}
-        - git fetch
-        - git reset --hard origin/${DRONE_BRANCH}
-        - git checkout ${DRONE_BRANCH}
-        - git pull origin ${DRONE_BRANCH}
-        - docker compose build
-        - docker compose down
-        - docker compose up -d --force-recreate
+        from_secret: docker_password

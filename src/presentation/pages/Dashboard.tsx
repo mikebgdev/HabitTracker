@@ -6,7 +6,17 @@ import { Button } from '@/presentation/components/ui/button';
 import { Calendar, Plus, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addDays, subDays } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/infrastructure/api/queryClient';
+import { useAuth } from '@/infrastructure/api/AuthContext';
+import {
+  getUserGroups,
+  getUserRoutines,
+  getWeekdaySchedule,
+  getGroupRoutines,
+  getCompletionsByDate,
+  addCompletion,
+  removeCompletion,
+} from '@/lib/firebase';
+import type { Group, Routine, WeekdaySchedule, Completion, GroupRoutine } from '@shared/schema';
 
 const mockData = {
   date: new Date(),
@@ -105,75 +115,68 @@ const mockData = {
 export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const formattedDate = format(selectedDate, 'EEEE, MMMM d, yyyy');
   const dateParam = format(selectedDate, 'yyyy-MM-dd');
 
-  const { data: userGroups = [] } = useQuery<any[]>({
-    queryKey: ['/api/groups'],
-  });
+  const { data: userGroups = [] } = useQuery(
+    ['groups'],
+    () => getUserGroups(user?.uid || ''),
+    { enabled: !!user }
+  );
 
-  const { data: userRoutines = [] } = useQuery<any[]>({
-    queryKey: ['/api/routines'],
-  });
+  const { data: userRoutines = [] } = useQuery(
+    ['routines'],
+    () => getUserRoutines(user?.uid || ''),
+    { enabled: !!user }
+  );
 
-  const fetchSchedules = async () => {
-
-    if (userRoutines && userRoutines.length > 0) {
-      const schedules = await Promise.all(
-        userRoutines.map(async (routine) => {
-          try {
-            const response = await apiRequest('GET',`/api/routines/weekday-schedule/${routine.id}`);
-            if (response.ok) {
-              return await response.json();
-            }
-            return {
-              routineId: routine.id,
-              monday: true,
-              tuesday: true,
-              wednesday: true,
-              thursday: true,
-              friday: true,
-              saturday: true,
-              sunday: true
-            };
-          } catch (error) {
-            console.error(`Error al obtener programación para rutina ${routine.id}:`, error);
-            return {
-              routineId: routine.id,
-              monday: true,
-              tuesday: true,
-              wednesday: true,
-              thursday: true,
-              friday: true,
-              saturday: true,
-              sunday: true
-            };
-          }
-        })
-      );
-      return schedules;
+  const fetchSchedules = async (): Promise<WeekdaySchedule[]> => {
+    if (!userRoutines || userRoutines.length === 0) {
+      return [];
     }
-    return [];
+    return Promise.all(
+      userRoutines.map((routine) =>
+        getWeekdaySchedule(routine.id).catch((error) => {
+          console.error(
+            `Error al obtener programación para rutina ${routine.id}:`,
+            error
+          );
+          return {
+            routineId: routine.id,
+            monday: true,
+            tuesday: true,
+            wednesday: true,
+            thursday: true,
+            friday: true,
+            saturday: true,
+            sunday: true,
+          };
+        })
+      )
+    );
   };
 
-  const { data: weekdaySchedules = [] } = useQuery<any[]>({
-    queryKey: ['/api/routines/weekday-schedules', userRoutines],
-    queryFn: fetchSchedules,
-    enabled: userRoutines.length > 0,
-  });
+  const { data: weekdaySchedules = [] } = useQuery<WeekdaySchedule[]>(
+    ['weekdaySchedules', userRoutines],
+    fetchSchedules,
+    { enabled: userRoutines.length > 0 }
+  );
 
-  const { data: completions = [] } = useQuery<any[]>({
-    queryKey: ['/api/completions', dateParam],
-    enabled: !!dateParam,
-  });
+  const { data: completions = [] } = useQuery<Completion[]>(
+    ['completions', dateParam],
+    () => getCompletionsByDate(user?.uid || '', dateParam),
+    { enabled: !!user && !!dateParam }
+  );
 
-  const { data: groupRoutines = [] } = useQuery<any[]>({
-    queryKey: ['/api/group-routines'],
-  });
+  const { data: groupRoutines = [] } = useQuery<GroupRoutine[]>(
+    ['groupRoutines'],
+    getGroupRoutines
+  );
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['/api/routines/daily', dateParam, userGroups, userRoutines, weekdaySchedules, completions, groupRoutines],
+    queryKey: ['routines', 'daily', dateParam, userGroups, userRoutines, weekdaySchedules, completions, groupRoutines],
     queryFn: async () => {
       try {
 
@@ -273,39 +276,22 @@ export default function Dashboard() {
 
   const toggleCompletionMutation = useMutation({
     mutationFn: async ({ routineId, completed }: { routineId: number; completed: boolean }) => {
-
-      const currentDate = dateParam;
-      
+      if (!user) return;
       if (completed) {
-        try {
-
-          await apiRequest("POST", '/api/completions', { 
-            routineId,
-            completedAt: new Date().toISOString()
-          });
-          
-        } catch (error) {
-          console.error('Error completing routine:', error);
-          throw error;
-        }
+        await addCompletion({
+          userId: user.uid,
+          routineId,
+          completedAt: new Date().toISOString(),
+        });
       } else {
-        try {
-
-          await apiRequest("DELETE", `/api/completions/${routineId}/${dateParam}`);
-          
-        } catch (error) {
-          console.error('Error uncompleting routine:', error);
-          throw error;
-        }
+        await removeCompletion(user.uid, routineId, dateParam);
       }
-      
       return { success: true };
     },
     onSuccess: () => {
-
-      queryClient.invalidateQueries({ queryKey: ['/api/routines/daily', dateParam] });
-      queryClient.invalidateQueries({ queryKey: ['/api/completions', dateParam] });
-      queryClient.invalidateQueries({ queryKey: ['/api/completions/stats'] });
+      queryClient.invalidateQueries(['routines', 'daily', dateParam]);
+      queryClient.invalidateQueries(['completions', dateParam]);
+      queryClient.invalidateQueries(['completions', 'stats']);
     }
   });
 
@@ -324,7 +310,7 @@ export default function Dashboard() {
         )
       }));
 
-      queryClient.setQueryData(['/api/routines/daily', dateParam], updatedData);
+      queryClient.setQueryData(['routines', 'daily', dateParam], updatedData);
 
       toggleCompletionMutation.mutate({ routineId: id, completed });
     } else {

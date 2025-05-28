@@ -15,9 +15,14 @@ import {
   SelectValue 
 } from "@/presentation/components/ui/select";
 import { Button } from "@/presentation/components/ui/button";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/infrastructure/api/queryClient";
-import { queryClient } from "@/infrastructure/api/queryClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/infrastructure/api/AuthContext";
+import {
+  getUserGroups,
+  getGroupRoutines,
+  assignGroupToRoutine,
+  removeGroupRoutine,
+} from "@/lib/firebase";
 import { useToast } from "@/application/use-cases/use-toast";
 import type { Group, Routine } from "@shared/schema";
 
@@ -33,14 +38,17 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }: A
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: groups = [] } = useQuery<Group[]>({
-    queryKey: ['/api/groups'],
-  });
+  const { user } = useAuth();
+  const client = useQueryClient();
+  const { data: groups = [] } = useQuery<Group[]>(['groups'],
+    () => getUserGroups(user?.uid || ''),
+    { enabled: !!user }
+  );
 
-  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery({
-    queryKey: ['/api/routines/group-assignments'],
-    enabled: !!routine?.id,
-  });
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>(['groupRoutines'],
+    getGroupRoutines,
+    { enabled: !!routine }
+  );
 
   useEffect(() => {
     if (routine && groupRoutines.length > 0) {
@@ -53,41 +61,46 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }: A
     }
   }, [routine?.id, groupRoutines]);
 
-  const assignMutation = useMutation({
-    mutationFn: async () => {
-      if (!routine) return;
-
-      const endpoint = `/api/routines/${routine.id}/assign-group`;
-      const groupId = selectedGroupId ? parseInt(selectedGroupId) : null;
-      
-      await apiRequest("POST", endpoint, { groupId });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Grupo asignado",
-        description: selectedGroupId 
-          ? `La rutina ha sido asignada al grupo correctamente.` 
-          : `La rutina ha sido removida del grupo.`
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/routines/group-assignments'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-      
-      if (onComplete) {
-        onComplete();
+  const assignMutation = useMutation(
+    async () => {
+      if (!routine || !user) return;
+      if (selectedGroupId) {
+        await assignGroupToRoutine({
+          routineId: routine.id,
+          groupId: parseInt(selectedGroupId, 10),
+        });
+      } else {
+        // remove any existing assignment
+        const existing = groupRoutines.find((gr) => gr.routineId === routine.id);
+        if (existing) {
+          await removeGroupRoutine(existing.id);
+        }
       }
-      
-      onClose();
     },
-    onError: (error) => {
-      console.error("Error assigning group:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo asignar el grupo a la rutina. Inténtalo de nuevo."
-      });
+    {
+      onSuccess: () => {
+        toast({
+          title: "Grupo asignado",
+          description: selectedGroupId
+            ? `La rutina ha sido asignada al grupo correctamente.`
+            : `La rutina ha sido removida del grupo.`,
+        });
+        client.invalidateQueries(['routines']);
+        client.invalidateQueries(['groupRoutines']);
+        client.invalidateQueries(['groups']);
+        onComplete?.();
+        onClose();
+      },
+      onError: (error) => {
+        console.error("Error assigning group:", error);
+        toast({
+          title: "Error",
+          description:
+            "No se pudo asignar el grupo a la rutina. Inténtalo de nuevo.",
+        });
+      },
     }
-  });
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

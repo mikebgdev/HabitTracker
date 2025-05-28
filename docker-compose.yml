@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: habittracker-nginx
+    ports:
+      - "${HTTP_PORT_FRONT:-80}:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro

@@ -18,9 +18,9 @@ import {
   SelectValue 
 } from "@/presentation/components/ui/select";
 import { Toggle } from "@/presentation/components/ui/toggle";
-import { apiRequest } from "@/infrastructure/api/queryClient";
-import { queryClient } from "@/infrastructure/api/queryClient";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/infrastructure/api/AuthContext";
+import { getUserGroups, addGroup, addRoutine } from "@/lib/firebase";
 import { useToast } from "@/application/use-cases/use-toast";
 import type { Group, InsertRoutine } from "@shared/schema";
 
@@ -49,9 +49,12 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: groups = [] } = useQuery<Group[]>({
-    queryKey: ['/api/groups'],
-  });
+  const { user } = useAuth();
+  const client = useQueryClient();
+  const { data: groups = [] } = useQuery<Group[]>(['groups'],
+    () => getUserGroups(user?.uid || ''),
+    { enabled: !!user }
+  );
 
   const toggleDay = (day: string) => {
     setSelectedDays(prev => ({
@@ -95,12 +98,9 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
     try {
       let finalGroupId = groupId;
 
-      if (showNewGroupInput && newGroupName) {
-        const response = await apiRequest("POST", "/api/groups", {
-          name: newGroupName,
-        });
-        const newGroup = await response.json();
-        finalGroupId = newGroup.id;
+      if (showNewGroupInput && newGroupName && user) {
+        const newId = await addGroup({ name: newGroupName, userId: user.uid });
+        finalGroupId = parseInt(newId, 10);
       }
 
       const routineData: InsertRoutine & { 
@@ -119,8 +119,10 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
 
       routineData.weekdays = selectedDays;
 
-      const response = await apiRequest("POST", "/api/routines", routineData);
-      const newRoutine = await response.json();
+      if (user) {
+        const newId = await addRoutine({ ...routineData, userId: user.uid });
+        // newRoutine id: newId
+      }
 
       toast({
         title: "Rutina creada",
@@ -130,10 +132,9 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
       if (onRoutineCreated) {
         await onRoutineCreated();
       } else {
-
-        await queryClient.invalidateQueries({ queryKey: ['/api/routines'] });
-        await queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-        await queryClient.invalidateQueries({ queryKey: ['/api/routines/daily'] });
+        await client.invalidateQueries(['routines']);
+        await client.invalidateQueries(['groups']);
+        await client.invalidateQueries(['routines', 'daily']);
       }
 
       resetForm();

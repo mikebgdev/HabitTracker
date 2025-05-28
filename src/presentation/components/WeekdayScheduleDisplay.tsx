@@ -1,5 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getWeekdaySchedule } from "@/lib/firebase";
 
 interface WeekdayScheduleDisplayProps {
   routineId: number;
@@ -7,8 +8,10 @@ interface WeekdayScheduleDisplayProps {
 
 export function WeekdayScheduleDisplay({ routineId }: WeekdayScheduleDisplayProps) {
 
-  const { data: weekdaySchedule } = useQuery({
-    queryKey: [`/api/routines/weekday-schedule/${routineId}`],
+  const { data: weekdaySchedule } = useQuery([
+    'weekdaySchedule',
+    routineId,
+  ], () => getWeekdaySchedule(routineId), {
     enabled: !!routineId,
   });
   

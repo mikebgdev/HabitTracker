@@ -37,9 +37,15 @@ import {
   SelectValue,
 } from "@/presentation/components/ui/select";
 import { Plus, Edit, Trash, Clock } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/infrastructure/api/queryClient";
-import { queryClient } from "@/infrastructure/api/queryClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/infrastructure/api/AuthContext";
+import {
+  getUserGroups,
+  getGroupRoutines,
+  addGroup,
+  updateGroup,
+  deleteGroup,
+} from "@/lib/firebase";
 import { useToast } from "@/application/use-cases/use-toast";
 import type { Group, InsertGroup, GroupRoutine } from "@shared/schema";
 
@@ -60,13 +66,18 @@ export default function Groups() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
 
-  const { data: groups = [], isLoading: isLoadingGroups, refetch: refetchGroups } = useQuery<Group[]>({
-    queryKey: ['/api/groups'],
-  });
+  const { user } = useAuth();
+  const client = useQueryClient();
+  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>(
+    ['groups'],
+    () => getUserGroups(user?.uid || ''),
+    { enabled: !!user }
+  );
 
-  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines, refetch: refetchGroupRoutines } = useQuery<any[]>({
-    queryKey: ['/api/group-routines'],
-  });
+  const { data: groupRoutines = [], isLoading: isLoadingGroupRoutines } = useQuery<GroupRoutine[]>(
+    ['groupRoutines'],
+    getGroupRoutines
+  );
 
   useEffect(() => {
     if (Array.isArray(groupRoutines) && groupRoutines.length > 0) {
@@ -152,19 +163,13 @@ export default function Groups() {
         timeRange,
       };
       
-      if (editingGroup) {
-
-        await apiRequest("PATCH", `/api/groups/${editingGroup.id}`, dataToSend);
-      } else {
-
-        await apiRequest("POST", "/api/groups", {
-          ...dataToSend,
-          userId: 1, 
-        });
+      if (editingGroup && user) {
+        await updateGroup(editingGroup.id, dataToSend);
+      } else if (user) {
+        await addGroup({ ...dataToSend, userId: user.uid });
       }
-
-      await refetchGroups();
-      await refetchGroupRoutines();
+      await client.invalidateQueries(['groups']);
+      await client.invalidateQueries(['groupRoutines']);
       setIsEditGroupModalOpen(false);
     } catch (error) {
       console.error("Failed to save group:", error);
@@ -182,10 +187,9 @@ export default function Groups() {
     if (!groupToDelete) return;
     
     try {
-      await apiRequest("DELETE", `/api/groups/${groupToDelete}`, {});
-
-      await refetchGroups();
-      await refetchGroupRoutines();
+      await deleteGroup(groupToDelete);
+      await client.invalidateQueries(['groups']);
+      await client.invalidateQueries(['groupRoutines']);
       
       toast({
         title: "Grupo eliminado",

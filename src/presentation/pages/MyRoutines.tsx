@@ -51,8 +51,6 @@ import {
   LucideIcon
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/infrastructure/api/queryClient";
-import { queryClient } from "@/infrastructure/api/queryClient";
 import { useToast } from "@/application/use-cases/use-toast";
 import { DeleteRoutineDialog } from "@/presentation/components/dialogs/DeleteRoutineDialog";
 import { WeekdayScheduleDisplay } from "@/presentation/components/WeekdayScheduleDisplay";

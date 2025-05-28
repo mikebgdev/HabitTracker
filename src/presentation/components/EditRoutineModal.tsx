@@ -18,8 +18,18 @@ import {
   SelectValue 
 } from "@/presentation/components/ui/select";
 import { Toggle } from "@/presentation/components/ui/toggle";
-import { apiRequest } from "@/infrastructure/api/queryClient";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/infrastructure/api/AuthContext";
+import {
+  getUserGroups,
+  getGroupRoutines,
+  getWeekdaySchedule,
+  updateWeekdaySchedule,
+  updateRoutine,
+  assignGroupToRoutine,
+  removeGroupRoutine,
+  updateGroup,
+} from "@/lib/firebase";
 import { useToast } from "@/application/use-cases/use-toast";
 import { 
   Flame, 
@@ -117,19 +127,23 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [routineId, setRoutineId] = useState<number | null>(null);
 
-  const { data: groups = [] } = useQuery<Group[]>({
-    queryKey: ['/api/groups'],
-  });
+  const { user } = useAuth();
+  const client = useQueryClient();
+  const { data: groups = [] } = useQuery<Group[]>(['groups'],
+    () => getUserGroups(user?.uid || ''),
+    { enabled: !!user }
+  );
 
-  const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery({
-    queryKey: ['/api/routines/weekday-schedule', routineId],
-    enabled: !!routineId && !isNaN(Number(routineId)), 
-  });
+  const { data: weekdaySchedule, isLoading: isLoadingSchedule } = useQuery<WeekdaySchedule>(
+    ['weekdaySchedule', routineId],
+    () => getWeekdaySchedule(routineId),
+    { enabled: !!routineId }
+  );
 
-  const { data: groupRoutines = [] } = useQuery({
-    queryKey: ['/api/group-routines'],
-    enabled: !!routineId,
-  });
+  const { data: groupRoutines = [] } = useQuery<GroupRoutine[]>(['groupRoutines'],
+    getGroupRoutines,
+    { enabled: !!routine }
+  );
 
 
   useEffect(() => {
@@ -227,16 +241,14 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
       routineData.weekdays = selectedDays;
 
       if (routineId) {
-
-        await apiRequest("PATCH", `/api/routines/${routineId}`, routineData);
-        
+        await updateRoutine(routineId, routineData);
+        await updateWeekdaySchedule(routineId, selectedDays);
         toast({
           title: "Rutina actualizada",
-          description: `La rutina "${name}" ha sido actualizada correctamente.`
+          description: `La rutina "${name}" ha sido actualizada correctamente.`,
         });
       } else {
-
-        console.error("Trying to create a routine in update modal");
+        console.error("Trying to update routine without ID");
         return;
       }
 

@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Toggle } from "@/components/ui/toggle";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserGroups, addGroup, addRoutine } from "@/lib/firebase";
+import { addGroup, addRoutine, getUserGroups } from "@/lib/firebase";
 import { useToast } from "@/hooks/useToast";
 export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }) {
     const { toast } = useToast();
@@ -48,7 +48,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }) {
         }
         else {
             setShowNewGroupInput(false);
-            setGroupId(parseInt(value, 10));
+            setGroupId(value);
         }
     };
     const resetForm = () => {
@@ -74,8 +74,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }) {
         try {
             let finalGroupId = groupId;
             if (showNewGroupInput && newGroupName && user) {
-                const newId = await addGroup({ name: newGroupName, userId: user.uid });
-                finalGroupId = parseInt(newId, 10);
+                finalGroupId = await addGroup({ name: newGroupName, userId: user.uid });
             }
             const routineData = {
                 name,

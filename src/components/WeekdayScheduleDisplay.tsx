@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getWeekdaySchedule } from "@/lib/firebase";
 
 interface WeekdayScheduleDisplayProps {
-  routineId: number;
+  routineId: string;
 }
 
 export function WeekdayScheduleDisplay({ routineId }: WeekdayScheduleDisplayProps) {

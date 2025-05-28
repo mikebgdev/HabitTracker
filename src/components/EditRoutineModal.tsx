@@ -113,7 +113,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
   const [expectedTime, setExpectedTime] = useState("");
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
   const [icon, setIcon] = useState<string | null>(null);
-  const [groupId, setGroupId] = useState<number | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
   const [selectedDays, setSelectedDays] = useState<Record<string, boolean>>({
     monday: true,
     tuesday: true,
@@ -124,7 +124,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
     sunday: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [routineId, setRoutineId] = useState<number | null>(null);
+  const [routineId, setRoutineId] = useState<string | null>(null);
 
   const { user } = useAuth();
   const client = useQueryClient();
@@ -225,7 +225,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
     try {
 
       const routineData: Partial<InsertRoutine> & { 
-        groupId?: number;
+        groupId?: string;
         weekdays?: Record<string, boolean>;
       } = {
         name,
@@ -336,7 +336,7 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated }:
               </Label>
               <Select 
                 value={groupId?.toString() || "none"} 
-                onValueChange={(val) => setGroupId(val === "none" ? null : parseInt(val, 10))}
+                onValueChange={(val) => setGroupId(val === "none" ? null : val)}
               >
                 <SelectTrigger id="routine-group">
                   <SelectValue placeholder="Selecciona un grupo" />

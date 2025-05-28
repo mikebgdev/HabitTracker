@@ -34,7 +34,7 @@ export default function Dashboard() {
         return Promise.all(userRoutines.map((routine) => getWeekdaySchedule(routine.id).catch((error) => {
             console.error(`Error al obtener programación para rutina ${routine.id}:`, error);
             return {
-                id: 0,
+                id: '0',
                 routineId: routine.id,
                 monday: true,
                 tuesday: true,
@@ -119,7 +119,7 @@ export default function Dashboard() {
                 });
                 if (ungroupedRoutines.length > 0) {
                     groupedRoutines.push({
-                        id: 0,
+                        id: '0',
                         name: "Sin grupo",
                         icon: "folder",
                         timeRange: "",

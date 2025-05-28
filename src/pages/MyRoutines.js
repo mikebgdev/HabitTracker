@@ -134,7 +134,7 @@ export default function MyRoutines() {
         }
         if (groupFilter !== "all") {
             const groupInfo = getRoutineGroupInfo(routine.id);
-            if (!groupInfo || groupInfo.id !== parseInt(groupFilter)) {
+            if (!groupInfo || groupInfo.id !== groupFilter) {
                 return false;
             }
         }

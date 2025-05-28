@@ -61,10 +61,10 @@ export default function Groups() {
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("09:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [routineCountByGroup, setRoutineCountByGroup] = useState<Record<number, number>>({});
+  const [routineCountByGroup, setRoutineCountByGroup] = useState<Record<string, number>>({});
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState<number | null>(null);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
 
   const { user } = useAuth();
   const client = useQueryClient();
@@ -179,7 +179,7 @@ export default function Groups() {
     }
   };
 
-  const confirmDeleteGroup = (groupId: number) => {
+  const confirmDeleteGroup = (groupId: string) => {
     setGroupToDelete(groupId);
     setIsDeleteDialogOpen(true);
   };

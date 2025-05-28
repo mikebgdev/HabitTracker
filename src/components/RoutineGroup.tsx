@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
 
 interface Routine {
-  id: number;
+  id: string;
   name: string;
   priority: 'high' | 'medium' | 'low';
   expectedTime: string;
@@ -14,13 +14,13 @@ interface Routine {
 
 interface RoutineGroupProps {
   group: {
-    id: number;
+    id: string;
     name: string;
     icon?: string;
     timeRange?: string;
     routines: Routine[];
   };
-  onToggleCompletion: (id: number, completed: boolean) => void;
+  onToggleCompletion: (id: string, completed: boolean) => void;
   isEditable?: boolean;
 }
 

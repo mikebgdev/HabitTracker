@@ -52,7 +52,7 @@ export default function Dashboard() {
             error
           );
           return {
-            id: 0,
+            id: '0',
             routineId: routine.id,
             monday: true,
             tuesday: true,
@@ -169,7 +169,7 @@ export default function Dashboard() {
         
         if (ungroupedRoutines.length > 0) {
           groupedRoutines.push({
-            id: 0,
+            id: '0',
             name: "Sin grupo",
             icon: "folder",
             timeRange: "",
@@ -186,7 +186,7 @@ export default function Dashboard() {
   });
 
   const toggleCompletionMutation = useMutation({
-    mutationFn: async ({ routineId, completed }: { routineId: number; completed: boolean }) => {
+    mutationFn: async ({ routineId, completed }: { routineId: string; completed: boolean }) => {
       if (!user) return;
       if (completed) {
         await addCompletion({
@@ -208,7 +208,7 @@ export default function Dashboard() {
 
   const isToday = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
   
-  const handleToggleCompletion = (id: number, completed: boolean) => {
+  const handleToggleCompletion = (id: string, completed: boolean) => {
 
     if (isToday) {
 

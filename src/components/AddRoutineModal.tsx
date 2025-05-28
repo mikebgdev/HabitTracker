@@ -1,28 +1,22 @@
-import { useState } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {useState} from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
   DialogFooter,
-  DialogDescription
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserGroups, addGroup, addRoutine } from "@/lib/firebase";
-import { useToast } from "@/hooks/useToast";
-import type { Group, InsertRoutine } from "@/lib/types";
+import {Button} from "@/components/ui/button";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Toggle} from "@/components/ui/toggle";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {useAuth} from "@/contexts/AuthContext";
+import {addGroup, addRoutine, getUserGroups} from "@/lib/firebase";
+import {useToast} from "@/hooks/useToast";
+import type {Group, InsertRoutine} from "@/lib/types";
 
 interface AddRoutineModalProps {
   isOpen: boolean;
@@ -35,7 +29,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
   const [name, setName] = useState("");
   const [expectedTime, setExpectedTime] = useState("");
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
-  const [groupId, setGroupId] = useState<number | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [showNewGroupInput, setShowNewGroupInput] = useState(false);
   const [selectedDays, setSelectedDays] = useState<Record<string, boolean>>({
@@ -70,7 +64,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
       setGroupId(null);
     } else {
       setShowNewGroupInput(false);
-      setGroupId(parseInt(value, 10));
+      setGroupId(value);
     }
   };
 
@@ -100,12 +94,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
       let finalGroupId = groupId;
 
       if (showNewGroupInput && newGroupName && user) {
-        const newId = await addGroup({ name: newGroupName, userId: user.uid });
-        finalGroupId = parseInt(newId, 10);
+        finalGroupId = await addGroup({name: newGroupName, userId: user.uid});
       }
 
       const routineData: Omit<InsertRoutine, 'userId'> & {
-        groupId?: number;
+        groupId?: string;
         weekdays?: Record<string, boolean>;
       } = {
         name,

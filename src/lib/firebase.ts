@@ -66,7 +66,7 @@ export async function getUserGroups(userId: string): Promise<Group[]> {
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => {
     const dataDoc = d.data() as Omit<Group, 'id'>;
-    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+    return Object.assign({ id: d.id }, dataDoc);
   });
 }
 
@@ -81,7 +81,7 @@ export async function addGroup(data: Omit<InsertGroup, 'id' | 'createdAt'> & { u
 /**
  * Update an existing group
  */
-export async function updateGroup(id: number, data: Partial<InsertGroup>): Promise<void> {
+export async function updateGroup(id: string, data: Partial<InsertGroup>): Promise<void> {
   const ref = doc(db, 'groups', id.toString());
   await updateDoc(ref, data);
 }
@@ -89,7 +89,7 @@ export async function updateGroup(id: number, data: Partial<InsertGroup>): Promi
 /**
  * Delete a group
  */
-export async function deleteGroup(id: number): Promise<void> {
+export async function deleteGroup(id: string): Promise<void> {
   await deleteDoc(doc(db, 'groups', id.toString()));
 }
 
@@ -101,7 +101,7 @@ export async function getUserRoutines(userId: string): Promise<Routine[]> {
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => {
     const dataDoc = d.data() as Omit<Routine, 'id'>;
-    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+    return Object.assign({ id: d.id }, dataDoc);
   });
 }
 
@@ -118,7 +118,7 @@ export async function addRoutine(
 /**
  * Update an existing routine
  */
-export async function updateRoutine(id: number, data: Partial<InsertRoutine>): Promise<void> {
+export async function updateRoutine(id: string, data: Partial<InsertRoutine>): Promise<void> {
   const ref = doc(db, 'routines', id.toString());
   await updateDoc(ref, data);
 }
@@ -126,7 +126,7 @@ export async function updateRoutine(id: number, data: Partial<InsertRoutine>): P
 /**
  * Delete a routine
  */
-export async function deleteRoutine(id: number): Promise<void> {
+export async function deleteRoutine(id: string): Promise<void> {
   await deleteDoc(doc(db, 'routines', id.toString()));
 }
 
@@ -137,7 +137,7 @@ export async function getGroupRoutines(): Promise<GroupRoutine[]> {
   const snaps = await getDocs(collection(db, 'groupRoutines'));
   return snaps.docs.map((d) => {
     const dataDoc = d.data() as Omit<GroupRoutine, 'id'>;
-    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+    return Object.assign({ id: d.id }, dataDoc);
   });
 }
 
@@ -154,7 +154,7 @@ export async function assignGroupToRoutine(
 /**
  * Remove a group-routine assignment by id
  */
-export async function removeGroupRoutine(id: number): Promise<void> {
+export async function removeGroupRoutine(id: string): Promise<void> {
   await deleteDoc(doc(db, 'groupRoutines', id.toString()));
 }
 
@@ -162,21 +162,21 @@ export async function removeGroupRoutine(id: number): Promise<void> {
  * Fetch weekday schedule for a routine
  */
 export async function getWeekdaySchedule(
-  routineId: number,
+  routineId: string,
 ): Promise<WeekdaySchedule> {
   const snaps = await getDocs(
     query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)),
   );
   const docSnap = snaps.docs[0];
   const dataDoc = docSnap?.data() as Omit<WeekdaySchedule, 'id'>;
-  return Object.assign({ id: parseInt(docSnap?.id ?? '0', 10) }, dataDoc);
+  return Object.assign({ id: docSnap?.id }, dataDoc);
 }
 
 /**
  * Update or create a weekday schedule for a routine
  */
 export async function updateWeekdaySchedule(
-  routineId: number,
+  routineId: string,
   data: Omit<InsertWeekdaySchedule, 'id' | 'routineId'>,
 ): Promise<void> {
   const snaps = await getDocs(
@@ -207,7 +207,7 @@ export async function getCompletionsByDate(
   );
   return snaps.docs.map((d) => {
     const dataDoc = d.data() as Omit<Completion, 'id'>;
-    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+    return Object.assign({ id: d.id }, dataDoc);
   });
 }
 
@@ -229,7 +229,7 @@ export async function getCompletionsInRange(
   );
   return snaps.docs.map((d) => {
     const dataDoc = d.data() as Omit<Completion, 'id'>;
-    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+    return Object.assign({ id: d.id}, dataDoc);
   });
 }
 
@@ -248,7 +248,7 @@ export async function addCompletion(
  */
 export async function removeCompletion(
   userId: string,
-  routineId: number,
+  routineId: string,
   date: string,
 ): Promise<void> {
   const snaps = await getDocs(

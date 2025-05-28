@@ -41,7 +41,7 @@ export function AssignGroupToRoutine({ isOpen, onClose, routine, onComplete }) {
             if (selectedGroupId) {
                 await assignGroupToRoutine({
                     routineId: routine.id,
-                    groupId: parseInt(selectedGroupId, 10),
+                    groupId: selectedGroupId,
                     order: 0,
                 });
             }

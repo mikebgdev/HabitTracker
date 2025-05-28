@@ -103,7 +103,7 @@ export default function MyRoutines() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleArchiveRoutine = async (routineId: number) => {
+  const handleArchiveRoutine = async (routineId: string) => {
     try {
       await updateRoutine(routineId, {
         archived: true,
@@ -125,7 +125,7 @@ export default function MyRoutines() {
     }
   };
 
-  const handleUnarchiveRoutine = async (routineId: number) => {
+  const handleUnarchiveRoutine = async (routineId: string) => {
     try {
       await updateRoutine(routineId, { archived: false });
 
@@ -174,7 +174,7 @@ export default function MyRoutines() {
     queryFn: getGroupRoutines,
   });
 
-  const getRoutineGroupInfo = (routineId: number) => {
+  const getRoutineGroupInfo = (routineId: string) => {
     if (!Array.isArray(groupRoutines) || !Array.isArray(groups)) return null;
 
     const assignment = groupRoutines.find((gr) => gr.routineId === routineId);
@@ -206,7 +206,7 @@ export default function MyRoutines() {
     if (groupFilter !== "all") {
 
       const groupInfo = getRoutineGroupInfo(routine.id);
-      if (!groupInfo || groupInfo.id !== parseInt(groupFilter)) {
+      if (!groupInfo || groupInfo.id !== groupFilter) {
         return false;
       }
     }

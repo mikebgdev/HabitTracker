@@ -33,11 +33,24 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { formatTime } from '@/lib/date';
-import { useQuery } from '@tanstack/react-query';
+
+import {
+  getUserGroups,
+  getGroupRoutines,
+  getWeekdaySchedule,
+  updateWeekdaySchedule,
+  updateRoutine,
+  assignGroupToRoutine,
+  removeGroupRoutine,
+} from "@/lib/firebase";
+import {useQuery} from "@tanstack/react-query";
+import type {Group, GroupRoutine} from "@/lib/types";
+import {useAuth} from "@/contexts/AuthContext";
+
 
 interface RoutineItemProps {
   routine: {
-    id: number;
+    id: string;
     name: string;
     priority: 'high' | 'medium' | 'low';
     expectedTime: string;
@@ -45,7 +58,7 @@ interface RoutineItemProps {
     completed?: boolean;
     completedAt?: string;
   };
-  onToggleCompletion: (id: number, completed: boolean) => void;
+  onToggleCompletion: (id: string, completed: boolean) => void;
   isEditable?: boolean;
 }
 
@@ -55,14 +68,18 @@ export function RoutineItem({
   isEditable = true 
 }: RoutineItemProps) {
 
-  const { data: groupRoutines = [] } = useQuery({
-    queryKey: ['/api/group-routines'],
+  const { user } = useAuth();
+  const { data: groupRoutines = [] } = useQuery<GroupRoutine[]>({
+    queryKey: ['groupRoutines'],
+    queryFn: getGroupRoutines,
+    enabled: !!routine,
   });
   
-  const { data: groups = [] } = useQuery({
-    queryKey: ['/api/groups'],
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ['groups'],
+    queryFn: () => getUserGroups(user?.uid || ''),
+    enabled: !!user,
   });
-
   const routineGroup = Array.isArray(groupRoutines) 
     ? groupRoutines.find((gr: any) => gr.routineId === routine.id)
     : null;

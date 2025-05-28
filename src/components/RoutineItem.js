@@ -4,13 +4,20 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { formatTime } from '@/lib/date';
-import { useQuery } from '@tanstack/react-query';
+import { getUserGroups, getGroupRoutines, } from "@/lib/firebase";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 export function RoutineItem({ routine, onToggleCompletion, isEditable = true }) {
+    const { user } = useAuth();
     const { data: groupRoutines = [] } = useQuery({
-        queryKey: ['/api/group-routines'],
+        queryKey: ['groupRoutines'],
+        queryFn: getGroupRoutines,
+        enabled: !!routine,
     });
     const { data: groups = [] } = useQuery({
-        queryKey: ['/api/groups'],
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
+        enabled: !!user,
     });
     const routineGroup = Array.isArray(groupRoutines)
         ? groupRoutines.find((gr) => gr.routineId === routine.id)

@@ -33,7 +33,7 @@ export async function getUserGroups(userId) {
     const snaps = await getDocs(q);
     return snaps.docs.map((d) => {
         const dataDoc = d.data();
-        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+        return Object.assign({ id: d.id }, dataDoc);
     });
 }
 /**
@@ -64,7 +64,7 @@ export async function getUserRoutines(userId) {
     const snaps = await getDocs(q);
     return snaps.docs.map((d) => {
         const dataDoc = d.data();
-        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+        return Object.assign({ id: d.id }, dataDoc);
     });
 }
 /**
@@ -94,7 +94,7 @@ export async function getGroupRoutines() {
     const snaps = await getDocs(collection(db, 'groupRoutines'));
     return snaps.docs.map((d) => {
         const dataDoc = d.data();
-        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+        return Object.assign({ id: d.id }, dataDoc);
     });
 }
 /**
@@ -117,7 +117,7 @@ export async function getWeekdaySchedule(routineId) {
     const snaps = await getDocs(query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)));
     const docSnap = snaps.docs[0];
     const dataDoc = docSnap?.data();
-    return Object.assign({ id: parseInt(docSnap?.id ?? '0', 10) }, dataDoc);
+    return Object.assign({ id: docSnap?.id }, dataDoc);
 }
 /**
  * Update or create a weekday schedule for a routine
@@ -139,7 +139,7 @@ export async function getCompletionsByDate(userId, date) {
     const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', date), where('completedAt', '<', date + 'T23:59:59.999Z')));
     return snaps.docs.map((d) => {
         const dataDoc = d.data();
-        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+        return Object.assign({ id: d.id }, dataDoc);
     });
 }
 /**
@@ -149,7 +149,7 @@ export async function getCompletionsInRange(userId, startDate, endDate) {
     const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', startDate), where('completedAt', '<=', endDate + 'T23:59:59.999Z')));
     return snaps.docs.map((d) => {
         const dataDoc = d.data();
-        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
+        return Object.assign({ id: d.id }, dataDoc);
     });
 }
 /**

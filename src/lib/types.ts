@@ -1,5 +1,5 @@
 export interface Routine {
-  id: number;
+  id: string;
   name: string;
   expectedTime: string;
   priority: 'high' | 'medium' | 'low';
@@ -21,7 +21,7 @@ export interface InsertRoutine {
 }
 
 export interface Group {
-  id: number;
+  id: string;
   name: string;
   icon?: string;
   timeRange?: string;
@@ -37,21 +37,21 @@ export interface InsertGroup {
 }
 
 export interface GroupRoutine {
-  id: number;
-  groupId: number;
-  routineId: number;
+  id: string;
+  groupId: string;
+  routineId: string;
   order: number;
 }
 
 export interface InsertGroupRoutine {
-  groupId: number;
-  routineId: number;
+  groupId: string;
+  routineId: string;
   order: number;
 }
 
 export interface WeekdaySchedule {
-  id: number;
-  routineId: number;
+  id: string;
+  routineId: string;
   monday: boolean;
   tuesday: boolean;
   wednesday: boolean;
@@ -62,7 +62,7 @@ export interface WeekdaySchedule {
 }
 
 export interface InsertWeekdaySchedule {
-  routineId: number;
+  routineId: string;
   monday: boolean;
   tuesday: boolean;
   wednesday: boolean;
@@ -73,14 +73,14 @@ export interface InsertWeekdaySchedule {
 }
 
 export interface Completion {
-  id: number;
-  routineId: number;
+  id: string;
+  routineId: string;
   completedAt: string;
   userId: string;
 }
 
 export interface InsertCompletion {
-  routineId: number;
+  routineId: string;
   completedAt: string;
   userId: string;
 }

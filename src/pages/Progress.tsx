@@ -94,7 +94,13 @@ export default function ProgressPage() {
       };
     });
   };
-  
+
+
+  const { data: todayCompletions = [], isLoading: isLoadingToday } = useQuery<Completion[]>({
+    queryKey: ['completionsByDate', user?.uid, todayString],
+    queryFn: () => getCompletionsByDate(user!.uid, todayString),
+    enabled: !!user,
+  });
   const dailyData = generateDailyCompletionData();
 
   const generatePriorityData = () => {
@@ -152,12 +158,6 @@ export default function ProgressPage() {
 
   const todayString = format(new Date(), 'yyyy-MM-dd');
 
-  const { data: todayCompletions = [], isLoading: isLoadingToday } = useQuery<Completion[]>({
-    queryKey: ['completionsByDate', user?.uid, todayString],
-    queryFn: () => getCompletionsByDate(user!.uid, todayString),
-    enabled: !!user,
-  });
-
   const calculateOverallStats = () => {
 
     const totalRoutines = userRoutines.length || 0;
@@ -193,7 +193,7 @@ export default function ProgressPage() {
       }
     }
 
-    const routineStats: Record<number, { completed: number, total: number, name: string }> = {};
+    const routineStats: Record<string, { completed: number, total: number, name: string }> = {};
 
     userRoutines.forEach(routine => {
       routineStats[routine.id] = {

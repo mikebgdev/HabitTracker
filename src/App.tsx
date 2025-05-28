@@ -1,16 +1,16 @@
 import {Switch, Route, useLocation} from "wouter";
-import {Toaster} from "@/presentation/components/ui/toaster";
-import {AuthProvider} from "@/infrastructure/api/AuthContext";
-import {I18nProvider} from "@/infrastructure/api/I18nProvider";
-import ProtectedRoute from "@/infrastructure/api/ProtectedRoute";
-import Dashboard from "@/presentation/pages/Dashboard";
-import Login from "@/presentation/pages/Login";
-import MyRoutines from "@/presentation/pages/MyRoutines";
-import Groups from "@/presentation/pages/Groups";
-import ProgressPage from "@/presentation/pages/Progress";
-import Account from "@/presentation/pages/Account";
-import NotFound from "@/presentation/pages/not-found";
-import Home from "@/presentation/pages/Home";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { I18nProvider } from "@/contexts/I18nProvider";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
+import MyRoutines from "@/pages/MyRoutines";
+import Groups from "@/pages/Groups";
+import ProgressPage from "@/pages/Progress";
+import Account from "@/pages/Account";
+import NotFound from "@/pages/NotFound";
+import Home from "@/pages/Home";
 
 function App() {
     return (

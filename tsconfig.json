@@ -8,10 +8,6 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"],
-      "@application/*": ["application/*"],
-      "@presentation/*": ["presentation/*"],
-      "@infrastructure/*": ["infrastructure/*"],
-      "@shared/*": ["../shared/*"]
     },
     "strict": true,
     "esModuleInterop": true,

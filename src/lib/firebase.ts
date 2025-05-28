@@ -27,7 +27,7 @@ import type {
   InsertGroupRoutine,
   InsertWeekdaySchedule,
   InsertCompletion,
-} from '@shared/schema';
+} from '@/lib/types';
 
 // Firebase configuration initialized via VITE_FIREBASE_* environment variables
 const firebaseConfig = {

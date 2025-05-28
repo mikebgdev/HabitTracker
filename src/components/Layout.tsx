@@ -70,7 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            <Link href="/">
+            <Link href="/dashboard">
               <a className="text-xl font-bold text-blue-600 dark:text-blue-400">HabitMaster</a>
             </Link>
           </div>

@@ -65,8 +65,8 @@ export async function getUserGroups(userId: string): Promise<Group[]> {
   const q = query(collection(db, 'groups'), where('userId', '==', userId));
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => {
-    const data = d.data() as Omit<Group, 'id'>;
-    return { id: parseInt(d.id, 10), ...data };
+    const dataDoc = d.data() as Omit<Group, 'id'>;
+    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
   });
 }
 
@@ -100,8 +100,8 @@ export async function getUserRoutines(userId: string): Promise<Routine[]> {
   const q = query(collection(db, 'routines'), where('userId', '==', userId));
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => {
-    const data = d.data() as Omit<Routine, 'id'>;
-    return { id: parseInt(d.id, 10), ...data };
+    const dataDoc = d.data() as Omit<Routine, 'id'>;
+    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
   });
 }
 
@@ -136,8 +136,8 @@ export async function deleteRoutine(id: number): Promise<void> {
 export async function getGroupRoutines(): Promise<GroupRoutine[]> {
   const snaps = await getDocs(collection(db, 'groupRoutines'));
   return snaps.docs.map((d) => {
-    const data = d.data() as Omit<GroupRoutine, 'id'>;
-    return { id: parseInt(d.id, 10), ...data };
+    const dataDoc = d.data() as Omit<GroupRoutine, 'id'>;
+    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
   });
 }
 
@@ -168,8 +168,8 @@ export async function getWeekdaySchedule(
     query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)),
   );
   const docSnap = snaps.docs[0];
-  const data = docSnap?.data() as Omit<WeekdaySchedule, 'id'>;
-  return { id: parseInt(docSnap?.id ?? '0', 10), ...data };
+  const dataDoc = docSnap?.data() as Omit<WeekdaySchedule, 'id'>;
+  return Object.assign({ id: parseInt(docSnap?.id ?? '0', 10) }, dataDoc);
 }
 
 /**
@@ -206,8 +206,8 @@ export async function getCompletionsByDate(
     ),
   );
   return snaps.docs.map((d) => {
-    const data = d.data() as Omit<Completion, 'id'>;
-    return { id: parseInt(d.id, 10), ...data };
+    const dataDoc = d.data() as Omit<Completion, 'id'>;
+    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
   });
 }
 
@@ -228,8 +228,8 @@ export async function getCompletionsInRange(
     ),
   );
   return snaps.docs.map((d) => {
-    const data = d.data() as Omit<Completion, 'id'>;
-    return { id: parseInt(d.id, 10), ...data };
+    const dataDoc = d.data() as Omit<Completion, 'id'>;
+    return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
   });
 }
 

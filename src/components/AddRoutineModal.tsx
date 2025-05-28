@@ -104,7 +104,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
         finalGroupId = parseInt(newId, 10);
       }
 
-      const routineData: InsertRoutine & { 
+      const routineData: Omit<InsertRoutine, 'userId'> & {
         groupId?: number;
         weekdays?: Record<string, boolean>;
       } = {

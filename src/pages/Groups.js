@@ -109,7 +109,8 @@ export default function Groups() {
         const timeRange = `${formattedStartTime} - ${formattedEndTime}`;
         try {
             const dataToSend = {
-                ...groupFormState,
+                name: groupFormState.name,
+                icon: groupFormState.icon,
                 timeRange,
             };
             if (editingGroup && user) {

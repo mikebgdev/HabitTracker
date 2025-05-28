@@ -158,8 +158,9 @@ export default function Groups() {
     const timeRange = `${formattedStartTime} - ${formattedEndTime}`;
 
     try {
-      const dataToSend = {
-        ...groupFormState,
+      const dataToSend: Omit<InsertGroup, 'userId'> = {
+        name: groupFormState.name!,
+        icon: groupFormState.icon!,
         timeRange,
       };
       
@@ -207,7 +208,7 @@ export default function Groups() {
     }
   };
   
-  const getIconClass = (iconName: string | null) => {
+  const getIconClass = (iconName?: string | null) => {
     if (!iconName) return "text-primary fas fa-layer-group";
     
     switch (iconName) {

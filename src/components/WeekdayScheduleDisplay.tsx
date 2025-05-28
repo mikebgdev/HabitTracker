@@ -8,10 +8,11 @@ interface WeekdayScheduleDisplayProps {
 
 export function WeekdayScheduleDisplay({ routineId }: WeekdayScheduleDisplayProps) {
 
-  const { data: weekdaySchedule } = useQuery([
-    'weekdaySchedule',
-    routineId,
-  ], () => getWeekdaySchedule(routineId), {
+  const { data: weekdaySchedule } = useQuery<
+    ReturnType<typeof getWeekdaySchedule>
+  >({
+    queryKey: ['weekdaySchedule', routineId],
+    queryFn: () => getWeekdaySchedule(routineId),
     enabled: !!routineId,
   });
   

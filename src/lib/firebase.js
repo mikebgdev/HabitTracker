@@ -32,8 +32,8 @@ export async function getUserGroups(userId) {
     const q = query(collection(db, 'groups'), where('userId', '==', userId));
     const snaps = await getDocs(q);
     return snaps.docs.map((d) => {
-        const data = d.data();
-        return { id: parseInt(d.id, 10), ...data };
+        const dataDoc = d.data();
+        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
     });
 }
 /**
@@ -63,8 +63,8 @@ export async function getUserRoutines(userId) {
     const q = query(collection(db, 'routines'), where('userId', '==', userId));
     const snaps = await getDocs(q);
     return snaps.docs.map((d) => {
-        const data = d.data();
-        return { id: parseInt(d.id, 10), ...data };
+        const dataDoc = d.data();
+        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
     });
 }
 /**
@@ -93,8 +93,8 @@ export async function deleteRoutine(id) {
 export async function getGroupRoutines() {
     const snaps = await getDocs(collection(db, 'groupRoutines'));
     return snaps.docs.map((d) => {
-        const data = d.data();
-        return { id: parseInt(d.id, 10), ...data };
+        const dataDoc = d.data();
+        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
     });
 }
 /**
@@ -116,8 +116,8 @@ export async function removeGroupRoutine(id) {
 export async function getWeekdaySchedule(routineId) {
     const snaps = await getDocs(query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)));
     const docSnap = snaps.docs[0];
-    const data = docSnap?.data();
-    return { id: parseInt(docSnap?.id ?? '0', 10), ...data };
+    const dataDoc = docSnap?.data();
+    return Object.assign({ id: parseInt(docSnap?.id ?? '0', 10) }, dataDoc);
 }
 /**
  * Update or create a weekday schedule for a routine
@@ -138,8 +138,8 @@ export async function updateWeekdaySchedule(routineId, data) {
 export async function getCompletionsByDate(userId, date) {
     const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', date), where('completedAt', '<', date + 'T23:59:59.999Z')));
     return snaps.docs.map((d) => {
-        const data = d.data();
-        return { id: parseInt(d.id, 10), ...data };
+        const dataDoc = d.data();
+        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
     });
 }
 /**
@@ -148,8 +148,8 @@ export async function getCompletionsByDate(userId, date) {
 export async function getCompletionsInRange(userId, startDate, endDate) {
     const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', startDate), where('completedAt', '<=', endDate + 'T23:59:59.999Z')));
     return snaps.docs.map((d) => {
-        const data = d.data();
-        return { id: parseInt(d.id, 10), ...data };
+        const dataDoc = d.data();
+        return Object.assign({ id: parseInt(d.id, 10) }, dataDoc);
     });
 }
 /**

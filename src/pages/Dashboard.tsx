@@ -52,6 +52,7 @@ export default function Dashboard() {
             error
           );
           return {
+            id: 0,
             routineId: routine.id,
             monday: true,
             tuesday: true,
@@ -60,7 +61,7 @@ export default function Dashboard() {
             friday: true,
             saturday: true,
             sunday: true,
-          };
+          } as WeekdaySchedule;
         })
       )
     );
@@ -98,13 +99,12 @@ export default function Dashboard() {
 
         const routinesForToday = userRoutines.filter(routine => {
 
-          const schedule = weekdaySchedules.find((schedule: any) => 
+          const schedule = weekdaySchedules.find((schedule: any) =>
             schedule.routineId === routine.id
           );
 
           if (schedule) {
-
-            return schedule[currentDay] === true;
+            return Boolean((schedule as any)[currentDay]);
           }
 
           return format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');

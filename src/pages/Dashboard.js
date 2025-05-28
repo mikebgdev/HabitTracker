@@ -15,16 +15,18 @@ export default function Dashboard() {
     const { user } = useAuth();
     const formattedDate = format(selectedDate, 'EEEE, MMMM d, yyyy');
     const dateParam = format(selectedDate, 'yyyy-MM-dd');
-    const { data: userGroups = [] } = useQuery({
-        queryKey: ['groups'],
-        queryFn: () => getUserGroups(user?.uid || ''),
+    const { data: userGroupsData } = useQuery({
+        queryKey: ['groups', user?.uid],
+        queryFn: () => getUserGroups(user.uid),
         enabled: !!user,
     });
-    const { data: userRoutines = [] } = useQuery({
-        queryKey: ['routines'],
-        queryFn: () => getUserRoutines(user?.uid || ''),
+    const userGroups = userGroupsData ?? [];
+    const { data: userRoutinesData } = useQuery({
+        queryKey: ['routines', user?.uid],
+        queryFn: () => getUserRoutines(user.uid),
         enabled: !!user,
     });
+    const userRoutines = userRoutinesData ?? [];
     const fetchSchedules = async () => {
         if (!userRoutines || userRoutines.length === 0) {
             return [];
@@ -32,6 +34,7 @@ export default function Dashboard() {
         return Promise.all(userRoutines.map((routine) => getWeekdaySchedule(routine.id).catch((error) => {
             console.error(`Error al obtener programación para rutina ${routine.id}:`, error);
             return {
+                id: 0,
                 routineId: routine.id,
                 monday: true,
                 tuesday: true,
@@ -43,20 +46,23 @@ export default function Dashboard() {
             };
         })));
     };
-    const { data: weekdaySchedules = [] } = useQuery({
-        queryKey: ['weekdaySchedules', userRoutines],
+    const { data: weekdaySchedulesData } = useQuery({
+        queryKey: ['weekdaySchedules', user?.uid],
         queryFn: fetchSchedules,
         enabled: userRoutines.length > 0,
     });
-    const { data: completions = [] } = useQuery({
-        queryKey: ['completions', dateParam],
-        queryFn: () => getCompletionsByDate(user?.uid || '', dateParam),
+    const weekdaySchedules = weekdaySchedulesData ?? [];
+    const { data: completionsData } = useQuery({
+        queryKey: ['completions', user?.uid, dateParam],
+        queryFn: () => getCompletionsByDate(user.uid, dateParam),
         enabled: !!user && !!dateParam,
     });
-    const { data: groupRoutines = [] } = useQuery({
-        queryKey: ['groupRoutines'],
+    const completions = completionsData ?? [];
+    const { data: groupRoutinesData } = useQuery({
+        queryKey: ['groupRoutines', user?.uid],
         queryFn: getGroupRoutines,
     });
+    const groupRoutines = groupRoutinesData ?? [];
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['routines', 'daily', dateParam, userGroups, userRoutines, weekdaySchedules, completions, groupRoutines],
         queryFn: async () => {
@@ -67,7 +73,7 @@ export default function Dashboard() {
                 const routinesForToday = userRoutines.filter(routine => {
                     const schedule = weekdaySchedules.find((schedule) => schedule.routineId === routine.id);
                     if (schedule) {
-                        return schedule[currentDay] === true;
+                        return Boolean(schedule[currentDay]);
                     }
                     return format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
                 });

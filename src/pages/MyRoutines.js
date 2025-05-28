@@ -28,12 +28,12 @@ export default function MyRoutines() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [routineToDelete, setRoutineToDelete] = useState(null);
     const [routineToEdit, setRoutineToEdit] = useState(null);
-    const { data: routines = [], isLoading } = useQuery({
+    const { data: routines = [], isLoading, refetch: refetchRoutines, } = useQuery({
         queryKey: ['routines', user?.uid],
         queryFn: () => getUserRoutines(user.uid),
         enabled: !!user,
     });
-    const { data: groups = [] } = useQuery({
+    const { data: groups = [], refetch: refetchGroups, } = useQuery({
         queryKey: ['groups', user?.uid],
         queryFn: () => getUserGroups(user.uid),
         enabled: !!user,
@@ -105,21 +105,21 @@ export default function MyRoutines() {
     };
     const { data: groupRoutines = [] } = useQuery({
         queryKey: ['groupRoutines'],
-        queryFn: () => getGroupRoutines(),
+        queryFn: getGroupRoutines,
     });
     const getRoutineGroupInfo = (routineId) => {
-        if (!Array.isArray(groupRoutines))
+        if (!Array.isArray(groupRoutines) || !Array.isArray(groups))
             return null;
-        const assignment = groupRoutines.find((gr) => {
-            return gr.routineId === routineId;
-        });
-        if (!assignment) {
+        const assignment = groupRoutines.find((gr) => gr.routineId === routineId);
+        if (!assignment)
             return null;
-        }
+        const grp = groups.find((g) => g.id === assignment.groupId);
+        if (!grp)
+            return null;
         return {
-            id: assignment.groupId,
-            name: assignment.groupName,
-            icon: assignment.groupIcon
+            id: grp.id,
+            name: grp.name,
+            icon: grp.icon,
         };
     };
     const filteredRoutines = routines.filter(routine => {
@@ -224,6 +224,6 @@ export default function MyRoutines() {
                 }, routine: routineToEdit || undefined, onComplete: async () => {
                     await refetchRoutines();
                     await refetchGroups();
-                    await queryClient.invalidateQueries({ queryKey: ['/api/routines/group-assignments'] });
+                    await queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
                 } })] }));
 }

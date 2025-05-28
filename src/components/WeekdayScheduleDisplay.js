@@ -2,10 +2,9 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useQuery } from "@tanstack/react-query";
 import { getWeekdaySchedule } from "@/lib/firebase";
 export function WeekdayScheduleDisplay({ routineId }) {
-    const { data: weekdaySchedule } = useQuery([
-        'weekdaySchedule',
-        routineId,
-    ], () => getWeekdaySchedule(routineId), {
+    const { data: weekdaySchedule } = useQuery({
+        queryKey: ['weekdaySchedule', routineId],
+        queryFn: () => getWeekdaySchedule(routineId),
         enabled: !!routineId,
     });
     const days = [

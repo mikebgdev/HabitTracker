@@ -1,5 +1,4 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-// @ts-nocheck
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { AddRoutineModal } from "@/components/AddRoutineModal";
@@ -10,12 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash, Clock, Flame, BatteryMedium, Timer, FolderOpen, Archive, RotateCcw, Activity, Bike, Book, BrainCircuit, Coffee, Dumbbell, Footprints, HandPlatter, Heart, Laptop, Microscope, Music, Palette, Pen, Smartphone, Sparkles, Utensils, Waves } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/useToast";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserRoutines, getUserGroups, getGroupRoutines, updateRoutine, deleteRoutine, } from "@/lib/firebase";
 import { DeleteRoutineDialog } from "@/components/dialogs/DeleteRoutineDialog";
 import { WeekdayScheduleDisplay } from "@/components/WeekdayScheduleDisplay";
 export default function MyRoutines() {
     const { toast } = useToast();
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
     const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
     const [isEditRoutineModalOpen, setIsEditRoutineModalOpen] = useState(false);
     const [isAssignGroupModalOpen, setIsAssignGroupModalOpen] = useState(false);
@@ -25,11 +28,15 @@ export default function MyRoutines() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [routineToDelete, setRoutineToDelete] = useState(null);
     const [routineToEdit, setRoutineToEdit] = useState(null);
-    const { data: routines = [], isLoading, refetch: refetchRoutines } = useQuery({
-        queryKey: ['/api/routines'],
+    const { data: routines = [], isLoading } = useQuery({
+        queryKey: ['routines', user?.uid],
+        queryFn: () => getUserRoutines(user.uid),
+        enabled: !!user,
     });
-    const { data: groups = [], refetch: refetchGroups } = useQuery({
-        queryKey: ['/api/groups'],
+    const { data: groups = [] } = useQuery({
+        queryKey: ['groups', user?.uid],
+        queryFn: () => getUserGroups(user.uid),
+        enabled: !!user,
     });
     const confirmDeleteRoutine = (routine) => {
         setRoutineToDelete(routine);
@@ -37,35 +44,38 @@ export default function MyRoutines() {
     };
     const handleArchiveRoutine = async (routineId) => {
         try {
-            await apiRequest("PATCH", `/api/routines/${routineId}/archive`, {});
-            await refetchRoutines();
+            await updateRoutine(routineId, {
+                archived: true,
+                archivedAt: new Date().toISOString(),
+            });
+            queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
             toast({
                 title: "Rutina archivada",
-                description: "La rutina ha sido archivada correctamente y ya no aparecerá en rutinas futuras"
+                description: "La rutina ha sido archivada correctamente y ya no aparecerá en rutinas futuras",
             });
         }
         catch (error) {
             console.error("Failed to archive routine:", error);
             toast({
                 title: "Error",
-                description: "No se pudo archivar la rutina. Inténtalo de nuevo."
+                description: "No se pudo archivar la rutina. Inténtalo de nuevo.",
             });
         }
     };
     const handleUnarchiveRoutine = async (routineId) => {
         try {
-            await apiRequest("PATCH", `/api/routines/${routineId}/unarchive`, {});
-            await refetchRoutines();
+            await updateRoutine(routineId, { archived: false });
+            queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
             toast({
                 title: "Rutina desarchivada",
-                description: "La rutina ha sido restaurada y volverá a aparecer en rutinas activas"
+                description: "La rutina ha sido restaurada y volverá a aparecer en rutinas activas",
             });
         }
         catch (error) {
             console.error("Failed to unarchive routine:", error);
             toast({
                 title: "Error",
-                description: "No se pudo desarchivar la rutina. Inténtalo de nuevo."
+                description: "No se pudo desarchivar la rutina. Inténtalo de nuevo.",
             });
         }
     };
@@ -73,19 +83,19 @@ export default function MyRoutines() {
         if (!routineToDelete)
             return;
         try {
-            await apiRequest("DELETE", `/api/routines/${routineToDelete.id}`, {});
-            await refetchRoutines();
-            await refetchGroups();
+            await deleteRoutine(routineToDelete.id);
+            queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
+            queryClient.invalidateQueries({ queryKey: ['groups', user?.uid] });
             toast({
                 title: "Rutina eliminada",
-                description: "La rutina ha sido eliminada correctamente"
+                description: "La rutina ha sido eliminada correctamente",
             });
         }
         catch (error) {
             console.error("Failed to delete routine:", error);
             toast({
                 title: "Error",
-                description: "No se pudo eliminar la rutina. Inténtalo de nuevo."
+                description: "No se pudo eliminar la rutina. Inténtalo de nuevo.",
             });
         }
         finally {
@@ -94,7 +104,8 @@ export default function MyRoutines() {
         }
     };
     const { data: groupRoutines = [] } = useQuery({
-        queryKey: ['/api/group-routines']
+        queryKey: ['groupRoutines'],
+        queryFn: () => getGroupRoutines(),
     });
     const getRoutineGroupInfo = (routineId) => {
         if (!Array.isArray(groupRoutines))

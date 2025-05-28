@@ -143,6 +143,16 @@ export async function getCompletionsByDate(userId, date) {
     });
 }
 /**
+ * Fetch completions for a user in a date range (inclusive)
+ */
+export async function getCompletionsInRange(userId, startDate, endDate) {
+    const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', startDate), where('completedAt', '<=', endDate + 'T23:59:59.999Z')));
+    return snaps.docs.map((d) => {
+        const data = d.data();
+        return { id: parseInt(d.id, 10), ...data };
+    });
+}
+/**
  * Add a completion record
  */
 export async function addCompletion(data) {

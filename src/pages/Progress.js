@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-// @ts-nocheck
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserRoutines, getCompletionsInRange, getCompletionsByDate } from "@/lib/firebase";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -31,11 +32,18 @@ export default function ProgressPage() {
         }
     };
     const dateRange = getDateRange();
-    const { data: completionStats = [], isLoading } = useQuery({
-        queryKey: ['/api/completions/stats', format(dateRange.start, 'yyyy-MM-dd'), format(dateRange.end, 'yyyy-MM-dd')],
+    const { user } = useAuth();
+    const startDateStr = format(dateRange.start, 'yyyy-MM-dd');
+    const endDateStr = format(dateRange.end, 'yyyy-MM-dd');
+    const { data: completionStats = [], isLoading: isLoadingStats } = useQuery({
+        queryKey: ['completionsRange', user?.uid, startDateStr, endDateStr],
+        queryFn: () => getCompletionsInRange(user.uid, startDateStr, endDateStr),
+        enabled: !!user,
     });
-    const { data: userRoutines = [] } = useQuery({
-        queryKey: ['/api/routines'],
+    const { data: userRoutines = [], isLoading: isLoadingRoutines } = useQuery({
+        queryKey: ['routines', user?.uid],
+        queryFn: () => getUserRoutines(user.uid),
+        enabled: !!user,
     });
     const generateDailyCompletionData = () => {
         const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
@@ -68,14 +76,13 @@ export default function ProgressPage() {
             medium: userRoutines.filter(r => r.priority === 'medium'),
             low: userRoutines.filter(r => r.priority === 'low')
         };
-        const todayStr = format(new Date(), 'yyyy-MM-dd');
-        const todayCompletions = completionStats.filter(c => format(new Date(c.completedAt), 'yyyy-MM-dd') === todayStr);
+        const statsForToday = todayCompletions;
         const uniqueCompletedByPriority = {
             high: new Set(),
             medium: new Set(),
             low: new Set()
         };
-        todayCompletions.forEach((c) => {
+        statsForToday.forEach((c) => {
             const routineId = c.routineId;
             if (routinesByPriority.high.some(r => r.id === routineId)) {
                 uniqueCompletedByPriority.high.add(routineId);
@@ -111,8 +118,10 @@ export default function ProgressPage() {
     };
     const priorityData = generatePriorityData();
     const todayString = format(new Date(), 'yyyy-MM-dd');
-    const { data: todayCompletions = [] } = useQuery({
-        queryKey: ['/api/completions', todayString],
+    const { data: todayCompletions = [], isLoading: isLoadingToday } = useQuery({
+        queryKey: ['completionsByDate', user?.uid, todayString],
+        queryFn: () => getCompletionsByDate(user.uid, todayString),
+        enabled: !!user,
     });
     const calculateOverallStats = () => {
         const totalRoutines = userRoutines.length || 0;
@@ -184,15 +193,8 @@ export default function ProgressPage() {
         total: 0
     };
     return (_jsxs(Layout, { children: [_jsxs("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between mb-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Progreso y An\u00E1lisis" }), _jsx("p", { className: "text-gray-600 dark:text-gray-400", children: "Seguimiento de tus rutinas a lo largo del tiempo" })] }), _jsx("div", { className: "mt-4 md:mt-0 w-full md:w-48", children: _jsxs(Select, { value: timeRange, onValueChange: setTimeRange, children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, { placeholder: "Seleccionar per\u00EDodo" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "week", children: "\u00DAltimos 7 d\u00EDas" }), _jsx(SelectItem, { value: "month", children: "\u00DAltimos 30 d\u00EDas" }), _jsx(SelectItem, { value: "year", children: "\u00DAltimos 365 d\u00EDas" })] })] }) })] }), _jsxs("div", { className: "grid gap-6 mb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4", children: [_jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "Tasa de Completado" }) }), _jsx(CardContent, { children: (() => {
-                                    const todayFormatted = format(new Date(), 'yyyy-MM-dd');
-                                    const uniqueCompletedIds = new Set();
-                                    completionStats.forEach((completion) => {
-                                        if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === todayFormatted) {
-                                            uniqueCompletedIds.add(completion.routineId);
-                                        }
-                                    });
                                     const totalCount = userRoutines.length || 0;
-                                    const completedCount = uniqueCompletedIds.size;
+                                    const completedCount = new Set(todayCompletions.map(c => c.routineId)).size;
                                     const percentage = totalCount > 0
                                         ? Math.min(Math.round((completedCount / totalCount) * 100), 100)
                                         : 0;

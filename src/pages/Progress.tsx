@@ -1,5 +1,6 @@
-// @ts-nocheck
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserRoutines, getCompletionsInRange, getCompletionsByDate } from "@/lib/firebase";
 import Layout from "@/components/Layout";
 import {
   Card,
@@ -46,12 +47,21 @@ export default function ProgressPage() {
   
   const dateRange = getDateRange();
 
-  const { data: completionStats = [], isLoading } = useQuery<any[]>({
-    queryKey: ['/api/completions/stats', format(dateRange.start, 'yyyy-MM-dd'), format(dateRange.end, 'yyyy-MM-dd')],
+  const { user } = useAuth();
+
+  const startDateStr = format(dateRange.start, 'yyyy-MM-dd');
+  const endDateStr = format(dateRange.end,   'yyyy-MM-dd');
+
+  const { data: completionStats = [], isLoading: isLoadingStats } = useQuery<Completion[]>({
+    queryKey: ['completionsRange', user?.uid, startDateStr, endDateStr],
+    queryFn: () => getCompletionsInRange(user!.uid, startDateStr, endDateStr),
+    enabled: !!user,
   });
 
-  const { data: userRoutines = [] } = useQuery<Routine[]>({
-    queryKey: ['/api/routines'],
+  const { data: userRoutines = [], isLoading: isLoadingRoutines } = useQuery<Routine[]>({
+    queryKey: ['routines', user?.uid],
+    queryFn: () => getUserRoutines(user!.uid),
+    enabled: !!user,
   });
 
   const generateDailyCompletionData = () => {
@@ -95,10 +105,7 @@ export default function ProgressPage() {
       low: userRoutines.filter(r => r.priority === 'low')
     };
 
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const todayCompletions = completionStats.filter(c => 
-      format(new Date(c.completedAt), 'yyyy-MM-dd') === todayStr
-    );
+    const statsForToday = todayCompletions;
 
     const uniqueCompletedByPriority = {
       high: new Set<number>(),
@@ -106,7 +113,7 @@ export default function ProgressPage() {
       low: new Set<number>()
     };
 
-    todayCompletions.forEach((c: any) => {
+    statsForToday.forEach((c: any) => {
       const routineId = c.routineId;
       if (routinesByPriority.high.some(r => r.id === routineId)) {
         uniqueCompletedByPriority.high.add(routineId);
@@ -145,8 +152,10 @@ export default function ProgressPage() {
 
   const todayString = format(new Date(), 'yyyy-MM-dd');
 
-  const { data: todayCompletions = [] } = useQuery<Completion[]>({
-    queryKey: ['/api/completions', todayString],
+  const { data: todayCompletions = [], isLoading: isLoadingToday } = useQuery<Completion[]>({
+    queryKey: ['completionsByDate', user?.uid, todayString],
+    queryFn: () => getCompletionsByDate(user!.uid, todayString),
+    enabled: !!user,
   });
 
   const calculateOverallStats = () => {
@@ -283,22 +292,14 @@ export default function ProgressPage() {
           <CardContent>
             
             {(() => {
-
-              const todayFormatted = format(new Date(), 'yyyy-MM-dd');
-              const uniqueCompletedIds = new Set();
-
-              completionStats.forEach((completion: any) => {
-                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === todayFormatted) {
-                  uniqueCompletedIds.add(completion.routineId);
-                }
-              });
-              
               const totalCount = userRoutines.length || 0;
-              const completedCount = uniqueCompletedIds.size;
-              const percentage = totalCount > 0 
-                ? Math.min(Math.round((completedCount / totalCount) * 100), 100) 
+              const completedCount = new Set(
+                todayCompletions.map(c => c.routineId)
+              ).size;
+              const percentage = totalCount > 0
+                ? Math.min(Math.round((completedCount / totalCount) * 100), 100)
                 : 0;
-                
+
               return (
                 <>
                   <div className={`text-3xl font-bold ${getColorClass(percentage)}`}>

@@ -43,15 +43,6 @@ export default function Account() {
     const handleDeleteAccount = async () => {
         setIsDeleting(true);
         try {
-            const response = await fetch('/api/auth/delete-account', {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${await user?.getIdToken()}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to delete account data');
-            }
             if (user) {
                 await user.delete();
             }

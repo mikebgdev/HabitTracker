@@ -26,17 +26,19 @@ export default function Dashboard() {
   const formattedDate = format(selectedDate, 'EEEE, MMMM d, yyyy');
   const dateParam = format(selectedDate, 'yyyy-MM-dd');
 
-  const { data: userGroups = [] } = useQuery<Group[]>({
-    queryKey: ['groups'],
-    queryFn: () => getUserGroups(user?.uid || ''),
+  const { data: userGroupsData } = useQuery<Group[]>({
+    queryKey: ['groups', user?.uid],
+    queryFn: () => getUserGroups(user!.uid),
     enabled: !!user,
   });
+  const userGroups: Group[] = userGroupsData ?? [];
 
-  const { data: userRoutines = [] } = useQuery<Routine[]>({
-    queryKey: ['routines'],
-    queryFn: () => getUserRoutines(user?.uid || ''),
+  const { data: userRoutinesData } = useQuery<Routine[]>({
+    queryKey: ['routines', user?.uid],
+    queryFn: () => getUserRoutines(user!.uid),
     enabled: !!user,
   });
+  const userRoutines: Routine[] = userRoutinesData ?? [];
 
   const fetchSchedules = async (): Promise<WeekdaySchedule[]> => {
     if (!userRoutines || userRoutines.length === 0) {
@@ -64,22 +66,25 @@ export default function Dashboard() {
     );
   };
 
-  const { data: weekdaySchedules = [] } = useQuery<WeekdaySchedule[]>({
-    queryKey: ['weekdaySchedules', userRoutines],
+  const { data: weekdaySchedulesData } = useQuery<WeekdaySchedule[]>({
+    queryKey: ['weekdaySchedules', user?.uid],
     queryFn: fetchSchedules,
     enabled: userRoutines.length > 0,
   });
+  const weekdaySchedules: WeekdaySchedule[] = weekdaySchedulesData ?? [];
 
-  const { data: completions = [] } = useQuery<Completion[]>({
-    queryKey: ['completions', dateParam],
-    queryFn: () => getCompletionsByDate(user?.uid || '', dateParam),
+  const { data: completionsData } = useQuery<Completion[]>({
+    queryKey: ['completions', user?.uid, dateParam],
+    queryFn: () => getCompletionsByDate(user!.uid, dateParam),
     enabled: !!user && !!dateParam,
   });
+  const completions: Completion[] = completionsData ?? [];
 
-  const { data: groupRoutines = [] } = useQuery<GroupRoutine[]>({
-    queryKey: ['groupRoutines'],
+  const { data: groupRoutinesData } = useQuery<GroupRoutine[]>({
+    queryKey: ['groupRoutines', user?.uid],
     queryFn: getGroupRoutines,
   });
+  const groupRoutines: GroupRoutine[] = groupRoutinesData ?? [];
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['routines', 'daily', dateParam, userGroups, userRoutines, weekdaySchedules, completions, groupRoutines],

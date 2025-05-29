@@ -1,0 +1,19 @@
+{
+  "title": "Progreso y Análisis",
+  "analytics": "Análisis",
+  "overview": "Resumen",
+  "completionRate": "Tasa de Finalización",
+  "dailyCompletion": "Tasa de Finalización Diaria",
+  "completionByPriority": "Finalización por Prioridad",
+  "streakCalendar": "Calendario de Rachas",
+  "week": "Semana",
+  "month": "Mes",
+  "year": "Año",
+  "completed": "Completadas",
+  "total": "Total",
+  "percentage": "Porcentaje",
+  "mostCompletedStats": "{{completed}} de {{total}} días",
+  "leastCompletedStats": "Completada solo {{completed}} de {{total}} días",
+  "mostCompletedTitle": "Más Completada",
+  "leastCompletedTitle": "Necesita Mejorar"
+}

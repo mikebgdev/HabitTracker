@@ -1,0 +1,11 @@
+{
+  "title": "Groups",
+  "name": "Name",
+  "icon": "Icon",
+  "timeRange": "Time Range",
+  "add": "Add Group",
+  "edit": "Edit Group",
+  "delete": "Delete Group",
+  "noGroups": "No groups created yet",
+  "createFirst": "Create your first group"
+}

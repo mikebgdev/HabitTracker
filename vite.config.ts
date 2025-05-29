@@ -5,7 +5,7 @@ import path from 'path'
 // @ts-ignore
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '../.env.local' }); // 👈 carga el .env.local desde la raíz
+dotenv.config({ path: '.env.local' }); // 👈 carga el .env.local desde la raíz
 
 export default defineConfig({
   plugins: [react()],

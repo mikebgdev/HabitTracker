@@ -9,20 +9,20 @@ export function useToast() {
             return {
                 id,
                 dismiss: () => {
-                    toasts = toasts.filter(t => t.id !== id);
+                    toasts = toasts.filter((t) => t.id !== id);
                 },
                 update: (props) => {
-                    toasts = toasts.map(t => t.id === id ? { ...t, ...props } : t);
-                }
+                    toasts = toasts.map((t) => (t.id === id ? { ...t, ...props } : t));
+                },
             };
         },
         dismiss: (toastId) => {
             if (toastId) {
-                toasts = toasts.filter(t => t.id !== toastId);
+                toasts = toasts.filter((t) => t.id !== toastId);
             }
             else {
                 toasts = [];
             }
-        }
+        },
     };
 }

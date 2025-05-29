@@ -21,6 +21,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Line
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays, eachDayOfInterval } from "date-fns";
 import type { Routine, Completion } from "@/lib/types";
+import { useI18n } from '@/contexts/I18nProvider';
 
 const getColorClass = (percentage: number) => {
   if (percentage >= 80) return "text-green-500";
@@ -29,6 +30,7 @@ const getColorClass = (percentage: number) => {
 };
 
 export default function ProgressPage() {
+  const { t } = useI18n();
   const [timeRange, setTimeRange] = useState("week");
   const today = new Date();
 
@@ -44,218 +46,77 @@ export default function ProgressPage() {
         return { start: subDays(today, 6), end: today };
     }
   };
-  
-  const dateRange = getDateRange();
 
+  const dateRange = getDateRange();
+  const todayString = format(today, 'yyyy-MM-dd');
   const { user } = useAuth();
 
-  const startDateStr = format(dateRange.start, 'yyyy-MM-dd');
-  const endDateStr = format(dateRange.end,   'yyyy-MM-dd');
-
-  const { data: completionStats = [], isLoading: isLoadingStats } = useQuery<Completion[]>({
-    queryKey: ['completionsRange', user?.uid, startDateStr, endDateStr],
-    queryFn: () => getCompletionsInRange(user!.uid, startDateStr, endDateStr),
+  const { data: completionStats = [] } = useQuery<Completion[]>({
+    queryKey: [
+      'completionsRange',
+      user?.uid,
+      format(dateRange.start, 'yyyy-MM-dd'),
+      format(dateRange.end, 'yyyy-MM-dd'),
+    ],
+    queryFn: () =>
+      getCompletionsInRange(
+        user!.uid,
+        format(dateRange.start, 'yyyy-MM-dd'),
+        format(dateRange.end, 'yyyy-MM-dd'),
+      ),
     enabled: !!user,
   });
 
-  const { data: userRoutines = [], isLoading: isLoadingRoutines } = useQuery<Routine[]>({
+  const { data: userRoutines = [] } = useQuery<Routine[]>({
     queryKey: ['routines', user?.uid],
     queryFn: () => getUserRoutines(user!.uid),
     enabled: !!user,
   });
 
-  const generateDailyCompletionData = () => {
-    const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
-    
-    return days.map(day => {
-      const dayStr = format(day, "yyyy-MM-dd");
-      const isToday = dayStr === format(new Date(), 'yyyy-MM-dd');
-
-      const total = userRoutines.length;
-
-      const uniqueCompletedIds = new Set();
-      completionStats.forEach((completion: any) => {
-        if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
-          uniqueCompletedIds.add(completion.routineId);
-        }
-      });
-
-      const completed = uniqueCompletedIds.size;
-
-      const percentage = isToday && uniqueCompletedIds.size > 0 
-        ? Math.min(Math.round((completed / total) * 100), 100) 
-        : total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
-      
-      return {
-        date: format(day, "MMM dd"),
-        completed,
-        total,
-        percentage
-      };
-    });
-  };
-
-
-  const { data: todayCompletions = [], isLoading: isLoadingToday } = useQuery<Completion[]>({
+  const { data: todayCompletions = [] } = useQuery<Completion[]>({
     queryKey: ['completionsByDate', user?.uid, todayString],
     queryFn: () => getCompletionsByDate(user!.uid, todayString),
     enabled: !!user,
   });
-  const dailyData = generateDailyCompletionData();
 
-  const generatePriorityData = () => {
-
-    const routinesByPriority: Record<string, Routine[]> = {
-      high: userRoutines.filter(r => r.priority === 'high'),
-      medium: userRoutines.filter(r => r.priority === 'medium'),
-      low: userRoutines.filter(r => r.priority === 'low')
-    };
-
-    const statsForToday = todayCompletions;
-
-    const uniqueCompletedByPriority = {
-      high: new Set<number>(),
-      medium: new Set<number>(),
-      low: new Set<number>()
-    };
-
-    statsForToday.forEach((c: any) => {
-      const routineId = c.routineId;
-      if (routinesByPriority.high.some(r => r.id === routineId)) {
-        uniqueCompletedByPriority.high.add(routineId);
-      } else if (routinesByPriority.medium.some(r => r.id === routineId)) {
-        uniqueCompletedByPriority.medium.add(routineId);
-      } else if (routinesByPriority.low.some(r => r.id === routineId)) {
-        uniqueCompletedByPriority.low.add(routineId);
-      }
-    });
-
-    const result = [
-      { 
-        name: "High", 
-        completed: uniqueCompletedByPriority.high.size,
-        expected: routinesByPriority.high.length || 1 
-      },
-      { 
-        name: "Medium", 
-        completed: uniqueCompletedByPriority.medium.size,
-        expected: routinesByPriority.medium.length || 1
-      },
-      { 
-        name: "Low", 
-        completed: uniqueCompletedByPriority.low.size,
-        expected: routinesByPriority.low.length || 1
-      }
-    ];
-
-    return result.map(item => ({
-      ...item,
-      completed: Math.min(Math.round((item.completed / item.expected) * 100), 100)
-    }));
-  };
-  
-  const priorityData = generatePriorityData();
-
-  const todayString = format(new Date(), 'yyyy-MM-dd');
-
-  const calculateOverallStats = () => {
-
-    const totalRoutines = userRoutines.length || 0;
-
-
-    const todayFormatted = format(new Date(), 'yyyy-MM-dd');
-
-    const completedRoutineIds = new Set();
-
-    completionStats.forEach((c: any) => {
-      if (format(new Date(c.completedAt), 'yyyy-MM-dd') === todayFormatted) {
-        completedRoutineIds.add(c.routineId);
-      }
-    });
-
-    const completedRoutines = completedRoutineIds.size;
-
-    const completionRate = totalRoutines > 0 
-      ? Math.min(Math.round((completedRoutines / totalRoutines) * 100), 100) 
-      : 0;
-
-    let currentStreak = 0;
-
-    const sortedDays = [...dailyData].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-
-    for (const day of sortedDays) {
-      if (day.completed > 0) {
-        currentStreak++;
-      } else if (day.total > 0) { 
-        break;
-      }
-    }
-
-    const routineStats: Record<string, { completed: number, total: number, name: string }> = {};
-
-    userRoutines.forEach(routine => {
-      routineStats[routine.id] = {
-        completed: 0,
-        total: dailyData.length, 
-        name: routine.name
-      };
-    });
-
-    completionStats.forEach((completion: any) => {
-      if (routineStats[completion.routineId]) {
-        routineStats[completion.routineId].completed++;
-      }
-    });
-
-    let mostCompletedRoutine = { name: "Ninguna", rate: 0 };
-    let leastCompletedRoutine = { name: "Ninguna", rate: 100 };
-    
-    Object.values(routineStats).forEach(({ completed, total, name }) => {
-      if (total > 0) {
-        const rate = (completed / total) * 100;
-        if (rate > mostCompletedRoutine.rate) {
-          mostCompletedRoutine = { name, rate };
-        }
-        if (rate < leastCompletedRoutine.rate && total > 0) {
-          leastCompletedRoutine = { name, rate };
-        }
-      }
-    });
-    
+  const dailyData = eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map(day => {
+    const dayStr = format(day, "yyyy-MM-dd");
+    const completed = new Set(completionStats.filter(c => format(new Date(c.completedAt), 'yyyy-MM-dd') === dayStr).map(c => c.routineId)).size;
+    const total = userRoutines.length;
+    const percentage = total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
     return {
-      totalRoutines,
-      completedRoutines,
-      completionRate,
-      streak: currentStreak,
-      mostCompletedRoutine: mostCompletedRoutine.name,
-      leastCompletedRoutine: leastCompletedRoutine.name,
-      routineStats 
+      date: format(day, "MMM dd"),
+      completed,
+      total,
+      percentage
     };
-  };
-  
-  const calculatedStats = calculateOverallStats();
+  });
 
-  const { 
-    totalRoutines, 
-    completedRoutines, 
-    completionRate, 
-    streak, 
-    mostCompletedRoutine, 
-    leastCompletedRoutine,
-    routineStats
-  } = calculatedStats;
+  const priorityData = ['high', 'medium', 'low'].map(priority => {
+    const expected = userRoutines.filter(r => r.priority === priority).length || 1;
+    const completed = new Set(todayCompletions.filter(c => userRoutines.find(r => r.id === c.routineId && r.priority === priority)).map(c => c.routineId)).size;
+    return {
+      name: priority.charAt(0).toUpperCase() + priority.slice(1),
+      completed: Math.min(Math.round((completed / expected) * 100), 100)
+    };
+  });
 
-  const mostCompletedStats = Object.values(routineStats).find(r => r.name === mostCompletedRoutine) || {
-    completed: 0,
-    total: 0
-  };
-  
-  const leastCompletedStats = Object.values(routineStats).find(r => r.name === leastCompletedRoutine) || {
-    completed: 0,
-    total: 0
-  };
+  const routineStats = userRoutines.reduce((acc, r) => {
+    acc[r.id] = { completed: 0, total: dailyData.length, name: r.name };
+    return acc;
+  }, {} as Record<string, { completed: number; total: number; name: string }>);
+
+  completionStats.forEach(c => {
+    if (routineStats[c.routineId]) routineStats[c.routineId].completed++;
+  });
+
+  const routineArray = Object.values(routineStats);
+  const mostCompletedRoutine = routineArray.reduce((max, r) => (r.completed / r.total > max.completed / max.total ? r : max), { completed: 0, total: 1, name: 'Ninguna' });
+  const leastCompletedRoutine = routineArray.reduce((min, r) => (r.completed / r.total < min.completed / min.total ? r : min), { completed: Infinity, total: 1, name: 'Ninguna' });
+
+  const streak = dailyData.reverse().reduce((acc, d) => d.completed > 0 ? acc + 1 : 0, 0);
+
+
 
   return (
     <Layout>
@@ -339,10 +200,13 @@ export default function ProgressPage() {
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {mostCompletedRoutine}
+              {mostCompletedRoutine.name}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              {mostCompletedStats.completed} de {mostCompletedStats.total} días
+              {t('progress.mostCompletedStats', {
+                completed: mostCompletedRoutine.completed,
+                total: mostCompletedRoutine.total
+              })}
             </p>
           </CardContent>
         </Card>
@@ -355,10 +219,13 @@ export default function ProgressPage() {
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {leastCompletedRoutine}
+              {leastCompletedRoutine.name}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Completada solo {leastCompletedStats.completed} de {leastCompletedStats.total} días
+              {t('progress.leastCompletedStats', {
+                completed: leastCompletedRoutine.completed,
+                total: leastCompletedRoutine.total
+              })}
             </p>
           </CardContent>
         </Card>

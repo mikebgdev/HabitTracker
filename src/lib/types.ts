@@ -5,9 +5,11 @@ export interface Routine {
   priority: 'high' | 'medium' | 'low';
   icon?: string;
   userId: string;
+  groupId?: string;
   archived: boolean;
   archivedAt?: string;
   createdAt?: string;
+  completed?: boolean;
 }
 
 export interface InsertRoutine {
@@ -16,6 +18,7 @@ export interface InsertRoutine {
   priority: 'high' | 'medium' | 'low';
   icon?: string;
   userId: string;
+  groupId?: string;
   archived?: boolean;
   archivedAt?: string;
 }
@@ -34,19 +37,6 @@ export interface InsertGroup {
   icon?: string;
   timeRange?: string;
   userId: string;
-}
-
-export interface GroupRoutine {
-  id: string;
-  groupId: string;
-  routineId: string;
-  order: number;
-}
-
-export interface InsertGroupRoutine {
-  groupId: string;
-  routineId: string;
-  order: number;
 }
 
 export interface WeekdaySchedule {
@@ -84,3 +74,12 @@ export interface InsertCompletion {
   completedAt: string;
   userId: string;
 }
+
+export type DayKey =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';

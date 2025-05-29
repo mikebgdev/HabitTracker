@@ -1,0 +1,15 @@
+{
+  "title": "Rutinas",
+  "name": "Nombre",
+  "priority": "Prioridad",
+  "expectedTime": "Tiempo Esperado",
+  "high": "Alta",
+  "medium": "Media",
+  "low": "Baja",
+  "add": "Agregar Rutina",
+  "edit": "Editar Rutina",
+  "delete": "Eliminar Rutina",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "assignToGroup": "Asignar a Grupo"
+}

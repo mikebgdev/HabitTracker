@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LineChart, Line, CartesianGrid } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays, eachDayOfInterval } from "date-fns";
+import { useI18n } from '@/contexts/I18nProvider';
 const getColorClass = (percentage) => {
     if (percentage >= 80)
         return "text-green-500";
@@ -17,6 +18,7 @@ const getColorClass = (percentage) => {
     return "text-red-500";
 };
 export default function ProgressPage() {
+    const { t } = useI18n();
     const [timeRange, setTimeRange] = useState("week");
     const today = new Date();
     const getDateRange = () => {
@@ -32,166 +34,60 @@ export default function ProgressPage() {
         }
     };
     const dateRange = getDateRange();
+    const todayString = format(today, 'yyyy-MM-dd');
     const { user } = useAuth();
-    const startDateStr = format(dateRange.start, 'yyyy-MM-dd');
-    const endDateStr = format(dateRange.end, 'yyyy-MM-dd');
-    const { data: completionStats = [], isLoading: isLoadingStats } = useQuery({
-        queryKey: ['completionsRange', user?.uid, startDateStr, endDateStr],
-        queryFn: () => getCompletionsInRange(user.uid, startDateStr, endDateStr),
+    const { data: completionStats = [] } = useQuery({
+        queryKey: [
+            'completionsRange',
+            user?.uid,
+            format(dateRange.start, 'yyyy-MM-dd'),
+            format(dateRange.end, 'yyyy-MM-dd'),
+        ],
+        queryFn: () => getCompletionsInRange(user.uid, format(dateRange.start, 'yyyy-MM-dd'), format(dateRange.end, 'yyyy-MM-dd')),
         enabled: !!user,
     });
-    const { data: userRoutines = [], isLoading: isLoadingRoutines } = useQuery({
+    const { data: userRoutines = [] } = useQuery({
         queryKey: ['routines', user?.uid],
         queryFn: () => getUserRoutines(user.uid),
         enabled: !!user,
     });
-    const generateDailyCompletionData = () => {
-        const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
-        return days.map(day => {
-            const dayStr = format(day, "yyyy-MM-dd");
-            const isToday = dayStr === format(new Date(), 'yyyy-MM-dd');
-            const total = userRoutines.length;
-            const uniqueCompletedIds = new Set();
-            completionStats.forEach((completion) => {
-                if (format(new Date(completion.completedAt), 'yyyy-MM-dd') === dayStr) {
-                    uniqueCompletedIds.add(completion.routineId);
-                }
-            });
-            const completed = uniqueCompletedIds.size;
-            const percentage = isToday && uniqueCompletedIds.size > 0
-                ? Math.min(Math.round((completed / total) * 100), 100)
-                : total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
-            return {
-                date: format(day, "MMM dd"),
-                completed,
-                total,
-                percentage
-            };
-        });
-    };
-    const dailyData = generateDailyCompletionData();
-    const generatePriorityData = () => {
-        const routinesByPriority = {
-            high: userRoutines.filter(r => r.priority === 'high'),
-            medium: userRoutines.filter(r => r.priority === 'medium'),
-            low: userRoutines.filter(r => r.priority === 'low')
-        };
-        const statsForToday = todayCompletions;
-        const uniqueCompletedByPriority = {
-            high: new Set(),
-            medium: new Set(),
-            low: new Set()
-        };
-        statsForToday.forEach((c) => {
-            const routineId = c.routineId;
-            if (routinesByPriority.high.some(r => r.id === routineId)) {
-                uniqueCompletedByPriority.high.add(routineId);
-            }
-            else if (routinesByPriority.medium.some(r => r.id === routineId)) {
-                uniqueCompletedByPriority.medium.add(routineId);
-            }
-            else if (routinesByPriority.low.some(r => r.id === routineId)) {
-                uniqueCompletedByPriority.low.add(routineId);
-            }
-        });
-        const result = [
-            {
-                name: "High",
-                completed: uniqueCompletedByPriority.high.size,
-                expected: routinesByPriority.high.length || 1
-            },
-            {
-                name: "Medium",
-                completed: uniqueCompletedByPriority.medium.size,
-                expected: routinesByPriority.medium.length || 1
-            },
-            {
-                name: "Low",
-                completed: uniqueCompletedByPriority.low.size,
-                expected: routinesByPriority.low.length || 1
-            }
-        ];
-        return result.map(item => ({
-            ...item,
-            completed: Math.min(Math.round((item.completed / item.expected) * 100), 100)
-        }));
-    };
-    const priorityData = generatePriorityData();
-    const todayString = format(new Date(), 'yyyy-MM-dd');
-    const { data: todayCompletions = [], isLoading: isLoadingToday } = useQuery({
+    const { data: todayCompletions = [] } = useQuery({
         queryKey: ['completionsByDate', user?.uid, todayString],
         queryFn: () => getCompletionsByDate(user.uid, todayString),
         enabled: !!user,
     });
-    const calculateOverallStats = () => {
-        const totalRoutines = userRoutines.length || 0;
-        const todayFormatted = format(new Date(), 'yyyy-MM-dd');
-        const completedRoutineIds = new Set();
-        completionStats.forEach((c) => {
-            if (format(new Date(c.completedAt), 'yyyy-MM-dd') === todayFormatted) {
-                completedRoutineIds.add(c.routineId);
-            }
-        });
-        const completedRoutines = completedRoutineIds.size;
-        const completionRate = totalRoutines > 0
-            ? Math.min(Math.round((completedRoutines / totalRoutines) * 100), 100)
-            : 0;
-        let currentStreak = 0;
-        const sortedDays = [...dailyData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        for (const day of sortedDays) {
-            if (day.completed > 0) {
-                currentStreak++;
-            }
-            else if (day.total > 0) {
-                break;
-            }
-        }
-        const routineStats = {};
-        userRoutines.forEach(routine => {
-            routineStats[routine.id] = {
-                completed: 0,
-                total: dailyData.length,
-                name: routine.name
-            };
-        });
-        completionStats.forEach((completion) => {
-            if (routineStats[completion.routineId]) {
-                routineStats[completion.routineId].completed++;
-            }
-        });
-        let mostCompletedRoutine = { name: "Ninguna", rate: 0 };
-        let leastCompletedRoutine = { name: "Ninguna", rate: 100 };
-        Object.values(routineStats).forEach(({ completed, total, name }) => {
-            if (total > 0) {
-                const rate = (completed / total) * 100;
-                if (rate > mostCompletedRoutine.rate) {
-                    mostCompletedRoutine = { name, rate };
-                }
-                if (rate < leastCompletedRoutine.rate && total > 0) {
-                    leastCompletedRoutine = { name, rate };
-                }
-            }
-        });
+    const dailyData = eachDayOfInterval({ start: dateRange.start, end: dateRange.end }).map(day => {
+        const dayStr = format(day, "yyyy-MM-dd");
+        const completed = new Set(completionStats.filter(c => format(new Date(c.completedAt), 'yyyy-MM-dd') === dayStr).map(c => c.routineId)).size;
+        const total = userRoutines.length;
+        const percentage = total > 0 ? Math.min(Math.round((completed / total) * 100), 100) : 0;
         return {
-            totalRoutines,
-            completedRoutines,
-            completionRate,
-            streak: currentStreak,
-            mostCompletedRoutine: mostCompletedRoutine.name,
-            leastCompletedRoutine: leastCompletedRoutine.name,
-            routineStats
+            date: format(day, "MMM dd"),
+            completed,
+            total,
+            percentage
         };
-    };
-    const calculatedStats = calculateOverallStats();
-    const { totalRoutines, completedRoutines, completionRate, streak, mostCompletedRoutine, leastCompletedRoutine, routineStats } = calculatedStats;
-    const mostCompletedStats = Object.values(routineStats).find(r => r.name === mostCompletedRoutine) || {
-        completed: 0,
-        total: 0
-    };
-    const leastCompletedStats = Object.values(routineStats).find(r => r.name === leastCompletedRoutine) || {
-        completed: 0,
-        total: 0
-    };
+    });
+    const priorityData = ['high', 'medium', 'low'].map(priority => {
+        const expected = userRoutines.filter(r => r.priority === priority).length || 1;
+        const completed = new Set(todayCompletions.filter(c => userRoutines.find(r => r.id === c.routineId && r.priority === priority)).map(c => c.routineId)).size;
+        return {
+            name: priority.charAt(0).toUpperCase() + priority.slice(1),
+            completed: Math.min(Math.round((completed / expected) * 100), 100)
+        };
+    });
+    const routineStats = userRoutines.reduce((acc, r) => {
+        acc[r.id] = { completed: 0, total: dailyData.length, name: r.name };
+        return acc;
+    }, {});
+    completionStats.forEach(c => {
+        if (routineStats[c.routineId])
+            routineStats[c.routineId].completed++;
+    });
+    const routineArray = Object.values(routineStats);
+    const mostCompletedRoutine = routineArray.reduce((max, r) => (r.completed / r.total > max.completed / max.total ? r : max), { completed: 0, total: 1, name: 'Ninguna' });
+    const leastCompletedRoutine = routineArray.reduce((min, r) => (r.completed / r.total < min.completed / min.total ? r : min), { completed: Infinity, total: 1, name: 'Ninguna' });
+    const streak = dailyData.reverse().reduce((acc, d) => d.completed > 0 ? acc + 1 : 0, 0);
     return (_jsxs(Layout, { children: [_jsxs("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between mb-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Progreso y An\u00E1lisis" }), _jsx("p", { className: "text-gray-600 dark:text-gray-400", children: "Seguimiento de tus rutinas a lo largo del tiempo" })] }), _jsx("div", { className: "mt-4 md:mt-0 w-full md:w-48", children: _jsxs(Select, { value: timeRange, onValueChange: setTimeRange, children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, { placeholder: "Seleccionar per\u00EDodo" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "week", children: "\u00DAltimos 7 d\u00EDas" }), _jsx(SelectItem, { value: "month", children: "\u00DAltimos 30 d\u00EDas" }), _jsx(SelectItem, { value: "year", children: "\u00DAltimos 365 d\u00EDas" })] })] }) })] }), _jsxs("div", { className: "grid gap-6 mb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4", children: [_jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "Tasa de Completado" }) }), _jsx(CardContent, { children: (() => {
                                     const totalCount = userRoutines.length || 0;
                                     const completedCount = new Set(todayCompletions.map(c => c.routineId)).size;
@@ -199,7 +95,13 @@ export default function ProgressPage() {
                                         ? Math.min(Math.round((completedCount / totalCount) * 100), 100)
                                         : 0;
                                     return (_jsxs(_Fragment, { children: [_jsxs("div", { className: `text-3xl font-bold ${getColorClass(percentage)}`, children: [percentage, "%"] }), _jsx(ProgressBar, { value: percentage, className: "mt-2 h-2" }), _jsxs("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: [completedCount, " de ", totalCount, " rutinas completadas"] })] }));
-                                })() })] }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "Racha Actual" }) }), _jsxs(CardContent, { children: [_jsxs("div", { className: "text-3xl font-bold text-gray-900 dark:text-white", children: [streak, " d\u00EDas"] }), _jsx("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: "\u00A1Sigue as\u00ED! Lo est\u00E1s haciendo genial." })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "M\u00E1s Completada" }) }), _jsxs(CardContent, { children: [_jsx("div", { className: "text-lg font-bold text-gray-900 dark:text-white", children: mostCompletedRoutine }), _jsxs("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: [mostCompletedStats.completed, " de ", mostCompletedStats.total, " d\u00EDas"] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "Necesita Mejorar" }) }), _jsxs(CardContent, { children: [_jsx("div", { className: "text-lg font-bold text-gray-900 dark:text-white", children: leastCompletedRoutine }), _jsxs("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: ["Completada solo ", leastCompletedStats.completed, " de ", leastCompletedStats.total, " d\u00EDas"] })] })] })] }), _jsxs(Card, { className: "mb-6", children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Daily Completion Rate" }), _jsx(CardDescription, { children: "Percentage of routines completed each day" })] }), _jsx(CardContent, { children: _jsx("div", { className: "h-80", children: _jsx(ResponsiveContainer, { width: "100%", height: "100%", children: _jsxs(LineChart, { data: dailyData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3" }), _jsx(XAxis, { dataKey: "date" }), _jsx(YAxis, { domain: [0, 100], tickFormatter: (value) => `${value}%` }), _jsx(Tooltip, { formatter: (value) => [`${value}%`, "Completion Rate"] }), _jsx(Legend, {}), _jsx(Line, { type: "monotone", dataKey: "percentage", name: "Completion Rate", stroke: "hsl(var(--primary))", strokeWidth: 2, dot: { r: 4 }, activeDot: { r: 6 } })] }) }) }) })] }), _jsxs(Card, { className: "mb-6", children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Completion by Priority" }), _jsx(CardDescription, { children: "How well you're completing routines based on priority level" })] }), _jsx(CardContent, { children: _jsx("div", { className: "h-80", children: _jsx(ResponsiveContainer, { width: "100%", height: "100%", children: _jsxs(BarChart, { data: priorityData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3" }), _jsx(XAxis, { dataKey: "name" }), _jsx(YAxis, { tickFormatter: (value) => `${value}%` }), _jsx(Tooltip, { formatter: (value) => [`${value}%`, "Completion Rate"] }), _jsx(Legend, {}), _jsx(Bar, { dataKey: "completed", name: "Completion Rate", fill: "hsl(var(--primary))" })] }) }) }) })] }), _jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Streak Calendar" }), _jsxs(CardDescription, { children: ["Your daily routine completion over the last ", timeRange === "week" ? "7" : timeRange === "month" ? "30" : "365", " days"] })] }), _jsxs(CardContent, { children: [_jsx("div", { className: "grid grid-cols-7 gap-1", children: dailyData.slice(-35).map((day, index) => {
+                                })() })] }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "Racha Actual" }) }), _jsxs(CardContent, { children: [_jsxs("div", { className: "text-3xl font-bold text-gray-900 dark:text-white", children: [streak, " d\u00EDas"] }), _jsx("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: "\u00A1Sigue as\u00ED! Lo est\u00E1s haciendo genial." })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "M\u00E1s Completada" }) }), _jsxs(CardContent, { children: [_jsx("div", { className: "text-lg font-bold text-gray-900 dark:text-white", children: mostCompletedRoutine.name }), _jsx("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: t('progress.mostCompletedStats', {
+                                            completed: mostCompletedRoutine.completed,
+                                            total: mostCompletedRoutine.total
+                                        }) })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-2", children: _jsx(CardTitle, { className: "text-sm font-medium text-gray-500 dark:text-gray-400", children: "Necesita Mejorar" }) }), _jsxs(CardContent, { children: [_jsx("div", { className: "text-lg font-bold text-gray-900 dark:text-white", children: leastCompletedRoutine.name }), _jsx("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-2", children: t('progress.leastCompletedStats', {
+                                            completed: leastCompletedRoutine.completed,
+                                            total: leastCompletedRoutine.total
+                                        }) })] })] })] }), _jsxs(Card, { className: "mb-6", children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Daily Completion Rate" }), _jsx(CardDescription, { children: "Percentage of routines completed each day" })] }), _jsx(CardContent, { children: _jsx("div", { className: "h-80", children: _jsx(ResponsiveContainer, { width: "100%", height: "100%", children: _jsxs(LineChart, { data: dailyData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3" }), _jsx(XAxis, { dataKey: "date" }), _jsx(YAxis, { domain: [0, 100], tickFormatter: (value) => `${value}%` }), _jsx(Tooltip, { formatter: (value) => [`${value}%`, "Completion Rate"] }), _jsx(Legend, {}), _jsx(Line, { type: "monotone", dataKey: "percentage", name: "Completion Rate", stroke: "hsl(var(--primary))", strokeWidth: 2, dot: { r: 4 }, activeDot: { r: 6 } })] }) }) }) })] }), _jsxs(Card, { className: "mb-6", children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Completion by Priority" }), _jsx(CardDescription, { children: "How well you're completing routines based on priority level" })] }), _jsx(CardContent, { children: _jsx("div", { className: "h-80", children: _jsx(ResponsiveContainer, { width: "100%", height: "100%", children: _jsxs(BarChart, { data: priorityData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3" }), _jsx(XAxis, { dataKey: "name" }), _jsx(YAxis, { tickFormatter: (value) => `${value}%` }), _jsx(Tooltip, { formatter: (value) => [`${value}%`, "Completion Rate"] }), _jsx(Legend, {}), _jsx(Bar, { dataKey: "completed", name: "Completion Rate", fill: "hsl(var(--primary))" })] }) }) }) })] }), _jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Streak Calendar" }), _jsxs(CardDescription, { children: ["Your daily routine completion over the last ", timeRange === "week" ? "7" : timeRange === "month" ? "30" : "365", " days"] })] }), _jsxs(CardContent, { children: [_jsx("div", { className: "grid grid-cols-7 gap-1", children: dailyData.slice(-35).map((day, index) => {
                                     const completionRate = day.total > 0 ? (day.completed / day.total) * 100 : 0;
                                     let bgColor = "bg-gray-100 dark:bg-gray-800";
                                     if (day.total > 0) {

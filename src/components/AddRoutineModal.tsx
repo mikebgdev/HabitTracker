@@ -1,22 +1,38 @@
-import {useState} from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Toggle} from "@/components/ui/toggle";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {useAuth} from "@/contexts/AuthContext";
-import {addGroup, addRoutine, getUserGroups} from "@/lib/firebase";
-import {useToast} from "@/hooks/useToast";
-import type {Group, InsertRoutine} from "@/lib/types";
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Toggle } from '@/components/ui/toggle';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  addGroup,
+  addRoutine,
+  getUserGroups,
+  updateWeekdaySchedule,
+} from '@/lib/firebase';
+import { useToast } from '@/hooks/useToast';
+import type {
+  DayKey,
+  Group,
+  InsertRoutine,
+  InsertWeekdaySchedule,
+} from '@/lib/types';
 
 interface AddRoutineModalProps {
   isOpen: boolean;
@@ -24,15 +40,21 @@ interface AddRoutineModalProps {
   onRoutineCreated?: () => Promise<void>;
 }
 
-export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutineModalProps) {
+export function AddRoutineModal({
+  isOpen,
+  onClose,
+  onRoutineCreated,
+}: AddRoutineModalProps) {
   const { toast } = useToast();
-  const [name, setName] = useState("");
-  const [expectedTime, setExpectedTime] = useState("");
-  const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
+  const [name, setName] = useState('');
+  const [expectedTime, setExpectedTime] = useState('');
+  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [groupId, setGroupId] = useState<string | null>(null);
-  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupName, setNewGroupName] = useState('');
   const [showNewGroupInput, setShowNewGroupInput] = useState(false);
-  const [selectedDays, setSelectedDays] = useState<Record<string, boolean>>({
+  const [selectedDays, setSelectedDays] = useState<
+    Omit<InsertWeekdaySchedule, 'id' | 'routineId'>
+  >({
     monday: true,
     tuesday: true,
     wednesday: true,
@@ -51,15 +73,15 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
     enabled: !!user,
   });
 
-  const toggleDay = (day: string) => {
-    setSelectedDays(prev => ({
+  const toggleDay = (day: DayKey) => {
+    setSelectedDays((prev) => ({
       ...prev,
-      [day]: !prev[day]
+      [day]: !prev[day],
     }));
   };
 
   const handleGroupChange = (value: string) => {
-    if (value === "new") {
+    if (value === 'new') {
       setShowNewGroupInput(true);
       setGroupId(null);
     } else {
@@ -69,11 +91,11 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
   };
 
   const resetForm = () => {
-    setName("");
-    setExpectedTime("");
-    setPriority("medium");
+    setName('');
+    setExpectedTime('');
+    setPriority('medium');
     setGroupId(null);
-    setNewGroupName("");
+    setNewGroupName('');
     setShowNewGroupInput(false);
     setSelectedDays({
       monday: true,
@@ -94,32 +116,28 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
       let finalGroupId = groupId;
 
       if (showNewGroupInput && newGroupName && user) {
-        finalGroupId = await addGroup({name: newGroupName, userId: user.uid});
+        finalGroupId = await addGroup({ name: newGroupName, userId: user.uid });
       }
 
-      const routineData: Omit<InsertRoutine, 'userId'> & {
-        groupId?: string;
-        weekdays?: Record<string, boolean>;
-      } = {
+      if (!user) throw new Error('Usuario no autenticado');
+
+      const routineData: Omit<InsertRoutine, 'userId'> = {
         name,
         expectedTime,
         priority,
+        groupId: finalGroupId || undefined,
       };
 
-      if (finalGroupId) {
-        routineData.groupId = finalGroupId;
-      }
+      const routineId = await addRoutine({
+        ...routineData,
+        userId: user.uid,
+      });
 
-      routineData.weekdays = selectedDays;
-
-      if (user) {
-        const newId = await addRoutine({ ...routineData, userId: user.uid });
-        // newRoutine id: newId
-      }
+      await updateWeekdaySchedule(routineId, selectedDays);
 
       toast({
-        title: "Rutina creada",
-        description: `La rutina "${name}" ha sido creada correctamente.`
+        title: 'Rutina creada',
+        description: `La rutina "${name}" ha sido creada correctamente.`,
       });
 
       if (onRoutineCreated) {
@@ -133,10 +151,10 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
       resetForm();
       onClose();
     } catch (error) {
-      console.error("Failed to create routine:", error);
+      console.error(error);
       toast({
-        title: "Error",
-        description: "No se pudo crear la rutina. Inténtalo de nuevo."
+        title: 'Error',
+        description: 'No se pudo crear la rutina. Inténtalo de nuevo.',
       });
     } finally {
       setIsSubmitting(false);
@@ -144,7 +162,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -154,37 +172,46 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
             Create a new routine to track daily habits
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-2">
             <div className="mb-4">
-              <Label htmlFor="routine-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label
+                htmlFor="routine-name"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Routine Name
               </Label>
-              <Input 
+              <Input
                 id="routine-name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Enter routine name"
                 required
               />
             </div>
-            
+
             <div className="mb-4">
-              <Label htmlFor="routine-time" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label
+                htmlFor="routine-time"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Expected Time (Optional)
               </Label>
-              <Input 
+              <Input
                 id="routine-time"
                 type="time"
                 value={expectedTime}
-                onChange={e => setExpectedTime(e.target.value)}
+                onChange={(e) => setExpectedTime(e.target.value)}
                 placeholder="Optional"
               />
             </div>
-            
+
             <div className="mb-4">
-              <Label htmlFor="routine-group" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label
+                htmlFor="routine-group"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Group
               </Label>
               <Select onValueChange={handleGroupChange}>
@@ -192,7 +219,7 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   <SelectValue placeholder="Select a group" />
                 </SelectTrigger>
                 <SelectContent>
-                  {groups.map(group => (
+                  {groups.map((group) => (
                     <SelectItem key={group.id} value={group.id.toString()}>
                       {group.name}
                     </SelectItem>
@@ -200,12 +227,12 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                   <SelectItem value="new">Create New Group...</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               {showNewGroupInput && (
                 <div className="mt-2">
-                  <Input 
+                  <Input
                     value={newGroupName}
-                    onChange={e => setNewGroupName(e.target.value)}
+                    onChange={(e) => setNewGroupName(e.target.value)}
                     placeholder="Enter new group name"
                     className="mt-1"
                     required={showNewGroupInput}
@@ -213,12 +240,20 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                 </div>
               )}
             </div>
-            
+
             <div className="mb-4">
-              <Label htmlFor="routine-priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label
+                htmlFor="routine-priority"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Priority
               </Label>
-              <Select defaultValue={priority} onValueChange={(val: "high" | "medium" | "low") => setPriority(val)}>
+              <Select
+                defaultValue={priority}
+                onValueChange={(val: 'high' | 'medium' | 'low') =>
+                  setPriority(val)
+                }
+              >
                 <SelectTrigger id="routine-priority">
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
@@ -229,92 +264,92 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="mb-4">
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Repeat
               </Label>
               <div className="grid grid-cols-7 gap-1">
-                <Toggle 
-                  variant={selectedDays.monday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.monday ? 'selected' : 'day'}
                   pressed={selectedDays.monday}
-                  onPressedChange={() => toggleDay("monday")}
+                  onPressedChange={() => toggleDay('monday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.monday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.monday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   L
                 </Toggle>
-                <Toggle 
-                  variant={selectedDays.tuesday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.tuesday ? 'selected' : 'day'}
                   pressed={selectedDays.tuesday}
-                  onPressedChange={() => toggleDay("tuesday")}
+                  onPressedChange={() => toggleDay('tuesday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.tuesday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.tuesday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   M
                 </Toggle>
-                <Toggle 
-                  variant={selectedDays.wednesday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.wednesday ? 'selected' : 'day'}
                   pressed={selectedDays.wednesday}
-                  onPressedChange={() => toggleDay("wednesday")}
+                  onPressedChange={() => toggleDay('wednesday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.wednesday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.wednesday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   X
                 </Toggle>
-                <Toggle 
-                  variant={selectedDays.thursday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.thursday ? 'selected' : 'day'}
                   pressed={selectedDays.thursday}
-                  onPressedChange={() => toggleDay("thursday")}
+                  onPressedChange={() => toggleDay('thursday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.thursday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.thursday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   J
                 </Toggle>
-                <Toggle 
-                  variant={selectedDays.friday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.friday ? 'selected' : 'day'}
                   pressed={selectedDays.friday}
-                  onPressedChange={() => toggleDay("friday")}
+                  onPressedChange={() => toggleDay('friday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.friday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.friday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   V
                 </Toggle>
-                <Toggle 
-                  variant={selectedDays.saturday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.saturday ? 'selected' : 'day'}
                   pressed={selectedDays.saturday}
-                  onPressedChange={() => toggleDay("saturday")}
+                  onPressedChange={() => toggleDay('saturday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.saturday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.saturday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   S
                 </Toggle>
-                <Toggle 
-                  variant={selectedDays.sunday ? "selected" : "day"}
+                <Toggle
+                  variant={selectedDays.sunday ? 'selected' : 'day'}
                   pressed={selectedDays.sunday}
-                  onPressedChange={() => toggleDay("sunday")}
+                  onPressedChange={() => toggleDay('sunday')}
                   className={`text-xs font-medium text-center ${
-                    selectedDays.sunday 
-                      ? "bg-blue-500 text-white dark:bg-blue-600" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                    selectedDays.sunday
+                      ? 'bg-blue-500 text-white dark:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   D
@@ -322,21 +357,18 @@ export function AddRoutineModal({ isOpen, onClose, onRoutineCreated }: AddRoutin
               </div>
             </div>
           </div>
-          
+
           <DialogFooter className="flex justify-end space-x-3 mt-6">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Saving..." : "Save Routine"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Routine'}
             </Button>
           </DialogFooter>
         </form>

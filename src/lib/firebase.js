@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, } from 'firebase/auth';
 import { getFirestore, collection, query, where, doc, getDocs, addDoc, updateDoc, deleteDoc, } from 'firebase/firestore';
-// Firebase configuration initialized via VITE_FIREBASE_* environment variables
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
@@ -13,157 +12,111 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
-/**
- * Sign in with Google popup
- */
 export async function signInWithGoogle() {
     return signInWithPopup(auth, googleProvider);
 }
-/**
- * Sign out current user
- */
 export async function signOutUser() {
     return firebaseSignOut(auth);
 }
-/**
- * Fetch groups for a user
- */
+// Groups
 export async function getUserGroups(userId) {
     const q = query(collection(db, 'groups'), where('userId', '==', userId));
     const snaps = await getDocs(q);
-    return snaps.docs.map((d) => {
-        const dataDoc = d.data();
-        return Object.assign({ id: d.id }, dataDoc);
-    });
+    return snaps.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+    }));
 }
-/**
- * Create a new group
- */
 export async function addGroup(data) {
     const ref = await addDoc(collection(db, 'groups'), data);
     return ref.id;
 }
-/**
- * Update an existing group
- */
 export async function updateGroup(id, data) {
-    const ref = doc(db, 'groups', id.toString());
-    await updateDoc(ref, data);
+    await updateDoc(doc(db, 'groups', id), data);
 }
-/**
- * Delete a group
- */
 export async function deleteGroup(id) {
-    await deleteDoc(doc(db, 'groups', id.toString()));
+    await deleteDoc(doc(db, 'groups', id));
 }
-/**
- * Fetch routines for a user
- */
+// Routines
 export async function getUserRoutines(userId) {
     const q = query(collection(db, 'routines'), where('userId', '==', userId));
     const snaps = await getDocs(q);
-    return snaps.docs.map((d) => {
-        const dataDoc = d.data();
-        return Object.assign({ id: d.id }, dataDoc);
-    });
+    return snaps.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+    }));
 }
-/**
- * Create a new routine
- */
 export async function addRoutine(data) {
     const ref = await addDoc(collection(db, 'routines'), data);
     return ref.id;
 }
-/**
- * Update an existing routine
- */
 export async function updateRoutine(id, data) {
-    const ref = doc(db, 'routines', id.toString());
-    await updateDoc(ref, data);
+    await updateDoc(doc(db, 'routines', id), data);
 }
-/**
- * Delete a routine
- */
 export async function deleteRoutine(id) {
-    await deleteDoc(doc(db, 'routines', id.toString()));
+    await deleteDoc(doc(db, 'routines', id));
 }
-/**
- * Fetch group-routine assignments
- */
-export async function getGroupRoutines() {
-    const snaps = await getDocs(collection(db, 'groupRoutines'));
-    return snaps.docs.map((d) => {
-        const dataDoc = d.data();
-        return Object.assign({ id: d.id }, dataDoc);
-    });
-}
-/**
- * Assign a routine to a group
- */
-export async function assignGroupToRoutine(data) {
-    const ref = await addDoc(collection(db, 'groupRoutines'), data);
-    return ref.id;
-}
-/**
- * Remove a group-routine assignment by id
- */
-export async function removeGroupRoutine(id) {
-    await deleteDoc(doc(db, 'groupRoutines', id.toString()));
-}
-/**
- * Fetch weekday schedule for a routine
- */
+// Weekday Schedule
 export async function getWeekdaySchedule(routineId) {
     const snaps = await getDocs(query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)));
+    if (snaps.empty) {
+        throw new Error(`No weekday schedule found for routine ${routineId}`);
+    }
     const docSnap = snaps.docs[0];
-    const dataDoc = docSnap?.data();
-    return Object.assign({ id: docSnap?.id }, dataDoc);
+    return {
+        id: docSnap.id,
+        ...docSnap.data(),
+    };
 }
-/**
- * Update or create a weekday schedule for a routine
- */
 export async function updateWeekdaySchedule(routineId, data) {
     const snaps = await getDocs(query(collection(db, 'weekdaySchedules'), where('routineId', '==', routineId)));
-    if (snaps.docs.length > 0) {
-        const ref = doc(db, 'weekdaySchedules', snaps.docs[0].id);
-        await updateDoc(ref, data);
+    if (!snaps.empty) {
+        await updateDoc(doc(db, 'weekdaySchedules', snaps.docs[0].id), data);
     }
     else {
         await addDoc(collection(db, 'weekdaySchedules'), { routineId, ...data });
     }
 }
-/**
- * Fetch completions for a user on a given date
- */
+// Completions
+function getDayRange(date) {
+    return {
+        startAt: `${date}T00:00:00.000Z`,
+        endAt: `${date}T23:59:59.999Z`,
+    };
+}
 export async function getCompletionsByDate(userId, date) {
-    const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', date), where('completedAt', '<', date + 'T23:59:59.999Z')));
-    return snaps.docs.map((d) => {
-        const dataDoc = d.data();
-        return Object.assign({ id: d.id }, dataDoc);
-    });
+    const { startAt, endAt } = getDayRange(date);
+    const q = query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', startAt), where('completedAt', '<=', endAt));
+    const snaps = await getDocs(q);
+    return snaps.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+    }));
 }
-/**
- * Fetch completions for a user in a date range (inclusive)
- */
 export async function getCompletionsInRange(userId, startDate, endDate) {
-    const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', startDate), where('completedAt', '<=', endDate + 'T23:59:59.999Z')));
-    return snaps.docs.map((d) => {
-        const dataDoc = d.data();
-        return Object.assign({ id: d.id }, dataDoc);
-    });
+    const startAt = `${startDate}T00:00:00.000Z`;
+    const endAt = `${endDate}T23:59:59.999Z`;
+    const q = query(collection(db, 'completions'), where('userId', '==', userId), where('completedAt', '>=', startAt), where('completedAt', '<=', endAt));
+    const snaps = await getDocs(q);
+    return snaps.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+    }));
 }
-/**
- * Add a completion record
- */
 export async function addCompletion(data) {
+    // Delete any existing completion for this user, routine, and date
+    const date = data.completedAt.split('T')[0];
+    const { startAt, endAt } = getDayRange(date);
+    const existing = await getDocs(query(collection(db, 'completions'), where('userId', '==', data.userId), where('routineId', '==', data.routineId), where('completedAt', '>=', startAt), where('completedAt', '<=', endAt)));
+    for (const d of existing.docs) {
+        await deleteDoc(doc(db, 'completions', d.id));
+    }
     const ref = await addDoc(collection(db, 'completions'), data);
     return ref.id;
 }
-/**
- * Remove a completion for a routine at a given date
- */
 export async function removeCompletion(userId, routineId, date) {
-    const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('routineId', '==', routineId), where('completedAt', '>=', date), where('completedAt', '<', date + 'T23:59:59.999Z')));
+    const { startAt, endAt } = getDayRange(date);
+    const snaps = await getDocs(query(collection(db, 'completions'), where('userId', '==', userId), where('routineId', '==', routineId), where('completedAt', '>=', startAt), where('completedAt', '<=', endAt)));
     for (const d of snaps.docs) {
         await deleteDoc(doc(db, 'completions', d.id));
     }

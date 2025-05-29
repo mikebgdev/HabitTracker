@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
-import { Redirect } from "wouter";
-import { useAuth } from "@/contexts/AuthContext";
-import { useI18n } from "@/contexts/i18n";
+import { ReactNode } from 'react';
+import { Redirect } from 'wouter';
+import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nProvider';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,7 +14,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {t('common.loading') || 'Loading...'}
+        </p>
       </div>
     );
   }
@@ -23,7 +25,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Redirect to="/login" />;
   }
 
-  return <>{children}</>;
+  return children;
 };
 
 export default ProtectedRoute;

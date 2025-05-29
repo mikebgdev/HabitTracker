@@ -1,0 +1,22 @@
+{
+  "title": "Account Settings",
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "english": "English",
+  "spanish": "Spanish",
+  "deleteAccount": "Delete Account",
+  "confirmDelete": "Confirm Account Deletion",
+  "deleteWarning": "This action cannot be undone. All your data will be permanently deleted.",
+  "confirmDeleteButton": "Delete My Account",
+  "languageChangedEn": "Language changed to English",
+  "languageChangedEs": "Language changed to Spanish",
+  "deletedSuccess": "Account deleted successfully",
+  "deletedError": "Failed to delete account",
+  "userInfo": "User Information",
+  "userInfoDescription": "Your account details",
+  "email": "Email",
+  "name": "Name",
+  "notProvided": "Not provided",
+  "actions": "Account Actions",
+  "actionsDescription": "Manage your account"
+}

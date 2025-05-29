@@ -1,229 +1,126 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useState } from "react";
-import Layout from "@/components/Layout";
-import { AddRoutineModal } from "@/components/AddRoutineModal";
-import { EditRoutineModal } from "@/components/EditRoutineModal";
-import { AssignGroupToRoutine } from "@/components/AssignGroupToRoutine";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash, Clock, Flame, BatteryMedium, Timer, FolderOpen, Archive, RotateCcw, Activity, Bike, Book, BrainCircuit, Coffee, Dumbbell, Footprints, HandPlatter, Heart, Laptop, Microscope, Music, Palette, Pen, Smartphone, Sparkles, Utensils, Waves } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/useToast";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserRoutines, getUserGroups, getGroupRoutines, updateRoutine, deleteRoutine, } from "@/lib/firebase";
-import { DeleteRoutineDialog } from "@/components/dialogs/DeleteRoutineDialog";
-import { WeekdayScheduleDisplay } from "@/components/WeekdayScheduleDisplay";
-export default function MyRoutines() {
+import { useState } from 'react';
+import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, } from '@/components/ui/select';
+import { Plus, Edit, Trash, Clock } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserGroups, addGroup, updateGroup, deleteGroup, } from '@/lib/firebase';
+import { useToast } from '@/hooks/useToast';
+import { useI18n } from '@/contexts/I18nProvider';
+export default function Groups() {
+    const { t } = useI18n();
     const { toast } = useToast();
-    const { user } = useAuth();
-    const queryClient = useQueryClient();
-    const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
-    const [isEditRoutineModalOpen, setIsEditRoutineModalOpen] = useState(false);
-    const [isAssignGroupModalOpen, setIsAssignGroupModalOpen] = useState(false);
-    const [filter, setFilter] = useState("all");
-    const [groupFilter, setGroupFilter] = useState("all");
-    const [viewMode, setViewMode] = useState("active");
+    const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+    const [editingGroup, setEditingGroup] = useState(null);
+    const [groupFormState, setGroupFormState] = useState({
+        name: '',
+        icon: 'fa-layer-group',
+        timeRange: '',
+    });
+    const [startTime, setStartTime] = useState('08:00');
+    const [endTime, setEndTime] = useState('09:00');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [routineToDelete, setRoutineToDelete] = useState(null);
-    const [routineToEdit, setRoutineToEdit] = useState(null);
-    const { data: routines = [], isLoading, refetch: refetchRoutines, } = useQuery({
-        queryKey: ['routines', user?.uid],
-        queryFn: () => getUserRoutines(user.uid),
+    const [groupToDelete, setGroupToDelete] = useState(null);
+    const { user } = useAuth();
+    const client = useQueryClient();
+    const { data: groups = [], isLoading: isLoadingGroups } = useQuery({
+        queryKey: ['groups'],
+        queryFn: () => getUserGroups(user?.uid || ''),
         enabled: !!user,
     });
-    const { data: groups = [], refetch: refetchGroups, } = useQuery({
-        queryKey: ['groups', user?.uid],
-        queryFn: () => getUserGroups(user.uid),
-        enabled: !!user,
-    });
-    const confirmDeleteRoutine = (routine) => {
-        setRoutineToDelete(routine);
+    const handleOpenEditGroupModal = (group = null) => {
+        setEditingGroup(group);
+        if (group) {
+            setGroupFormState({
+                name: group.name,
+                icon: group.icon || 'fa-layer-group',
+                timeRange: group.timeRange || '',
+            });
+            const [start, end] = (group.timeRange || '08:00 - 09:00')
+                .split(' - ')
+                .map((time) => {
+                const [h, m, ap] = time.match(/(\d+):(\d+) (AM|PM)/i).slice(1);
+                let hour = parseInt(h);
+                if (ap.toUpperCase() === 'PM' && hour < 12)
+                    hour += 12;
+                if (ap.toUpperCase() === 'AM' && hour === 12)
+                    hour = 0;
+                return `${hour.toString().padStart(2, '0')}:${m}`;
+            });
+            setStartTime(start);
+            setEndTime(end);
+        }
+        else {
+            setGroupFormState({ name: '', icon: 'fa-layer-group', timeRange: '' });
+            setStartTime('08:00');
+            setEndTime('09:00');
+        }
+        setIsEditGroupModalOpen(true);
+    };
+    const formatTimeFor12Hour = (time) => {
+        const [hours, minutes] = time.split(':');
+        const h = parseInt(hours);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour12 = h % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    };
+    const handleSaveGroup = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        const timeRange = `${formatTimeFor12Hour(startTime)} - ${formatTimeFor12Hour(endTime)}`;
+        const data = { ...groupFormState, timeRange };
+        try {
+            if (editingGroup && user) {
+                await updateGroup(editingGroup.id, data);
+            }
+            else if (user) {
+                await addGroup({ ...data, userId: user.uid });
+            }
+            await client.invalidateQueries({ queryKey: ['groups'] });
+            setIsEditGroupModalOpen(false);
+        }
+        catch (err) {
+            console.error(err);
+        }
+        finally {
+            setIsSubmitting(false);
+        }
+    };
+    const confirmDeleteGroup = (groupId) => {
+        setGroupToDelete(groupId);
         setIsDeleteDialogOpen(true);
     };
-    const handleArchiveRoutine = async (routineId) => {
-        try {
-            await updateRoutine(routineId, {
-                archived: true,
-                archivedAt: new Date().toISOString(),
-            });
-            queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
-            toast({
-                title: "Rutina archivada",
-                description: "La rutina ha sido archivada correctamente y ya no aparecerá en rutinas futuras",
-            });
-        }
-        catch (error) {
-            console.error("Failed to archive routine:", error);
-            toast({
-                title: "Error",
-                description: "No se pudo archivar la rutina. Inténtalo de nuevo.",
-            });
-        }
-    };
-    const handleUnarchiveRoutine = async (routineId) => {
-        try {
-            await updateRoutine(routineId, { archived: false });
-            queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
-            toast({
-                title: "Rutina desarchivada",
-                description: "La rutina ha sido restaurada y volverá a aparecer en rutinas activas",
-            });
-        }
-        catch (error) {
-            console.error("Failed to unarchive routine:", error);
-            toast({
-                title: "Error",
-                description: "No se pudo desarchivar la rutina. Inténtalo de nuevo.",
-            });
-        }
-    };
-    const handleDeleteRoutine = async () => {
-        if (!routineToDelete)
+    const handleDeleteGroup = async () => {
+        if (!groupToDelete)
             return;
         try {
-            await deleteRoutine(routineToDelete.id);
-            queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
-            queryClient.invalidateQueries({ queryKey: ['groups', user?.uid] });
+            await deleteGroup(groupToDelete);
+            await client.invalidateQueries({ queryKey: ['groups'] });
             toast({
-                title: "Rutina eliminada",
-                description: "La rutina ha sido eliminada correctamente",
+                title: t('groups.confirmDeleteBtn'),
+                description: t('groups.deletedSuccess'),
             });
         }
-        catch (error) {
-            console.error("Failed to delete routine:", error);
-            toast({
-                title: "Error",
-                description: "No se pudo eliminar la rutina. Inténtalo de nuevo.",
-            });
+        catch (err) {
+            toast({ title: t('common.error'), description: t('groups.deleteError') });
         }
         finally {
             setIsDeleteDialogOpen(false);
-            setRoutineToDelete(null);
+            setGroupToDelete(null);
         }
     };
-    const { data: groupRoutines = [] } = useQuery({
-        queryKey: ['groupRoutines'],
-        queryFn: getGroupRoutines,
-    });
-    const getRoutineGroupInfo = (routineId) => {
-        if (!Array.isArray(groupRoutines) || !Array.isArray(groups))
-            return null;
-        const assignment = groupRoutines.find((gr) => gr.routineId === routineId);
-        if (!assignment)
-            return null;
-        const grp = groups.find((g) => g.id === assignment.groupId);
-        if (!grp)
-            return null;
-        return {
-            id: grp.id,
-            name: grp.name,
-            icon: grp.icon,
-        };
-    };
-    const filteredRoutines = routines.filter(routine => {
-        if (viewMode === "active" && routine.archived) {
-            return false;
-        }
-        if (viewMode === "archived" && !routine.archived) {
-            return false;
-        }
-        if (filter !== "all" && routine.priority !== filter) {
-            return false;
-        }
-        if (groupFilter !== "all") {
-            const groupInfo = getRoutineGroupInfo(routine.id);
-            if (!groupInfo || groupInfo.id !== groupFilter) {
-                return false;
-            }
-        }
-        return true;
-    });
-    const priorityIcons = {
-        high: _jsx(Flame, { className: "w-4 h-4 mr-1" }),
-        medium: _jsx(BatteryMedium, { className: "w-4 h-4 mr-1" }),
-        low: _jsx(Timer, { className: "w-4 h-4 mr-1" })
-    };
-    const priorityLabels = {
-        high: 'Alta',
-        medium: 'Media',
-        low: 'Baja'
-    };
-    const iconMap = {
-        activity: Activity,
-        bike: Bike,
-        book: Book,
-        brain: BrainCircuit,
-        coffee: Coffee,
-        dumbbell: Dumbbell,
-        footprints: Footprints,
-        food: HandPlatter,
-        heart: Heart,
-        laptop: Laptop,
-        microscope: Microscope,
-        music: Music,
-        palette: Palette,
-        pen: Pen,
-        phone: Smartphone,
-        sparkles: Sparkles,
-        utensils: Utensils,
-        waves: Waves
-    };
-    const renderRoutineIcon = (iconName) => {
-        if (!iconName)
-            return null;
-        const IconComponent = iconMap[iconName];
-        if (!IconComponent)
-            return null;
-        return _jsx(IconComponent, { className: "w-5 h-5 mr-2 text-primary" });
-    };
-    const getPriorityBadgeVariant = (priority) => {
-        switch (priority) {
-            case "high":
-                return "destructive";
-            case "medium":
-                return "default";
-            case "low":
-                return "secondary";
-            default:
-                return "default";
-        }
-    };
-    const formatTime = (timeString) => {
-        if (!timeString)
-            return '';
-        if (timeString.includes(':')) {
-            const [hours, minutes] = timeString.split(':');
-            const hour = parseInt(hours, 10);
-            const ampm = hour >= 12 ? 'PM' : 'AM';
-            const hour12 = hour % 12 || 12;
-            return `${hour12}:${minutes || '00'} ${ampm}`;
-        }
-        return timeString;
-    };
-    return (_jsxs(Layout, { children: [_jsxs("div", { className: "flex flex-col md:flex-row md:items-center md:justify-between mb-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "My Routines" }), _jsx("p", { className: "text-gray-600 dark:text-gray-400", children: "View and manage all your routines" })] }), _jsx("div", { className: "mt-4 md:mt-0", children: _jsxs(Button, { onClick: () => setIsAddRoutineModalOpen(true), className: "flex items-center", children: [_jsx(Plus, { className: "mr-2 h-4 w-4" }), " Add Routine"] }) })] }), _jsx("div", { className: "mb-6", children: _jsxs("div", { className: "flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg w-fit", children: [_jsx("button", { onClick: () => setViewMode("active"), className: `px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewMode === "active"
-                                ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`, children: "Active Routines" }), _jsx("button", { onClick: () => setViewMode("archived"), className: `px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewMode === "archived"
-                                ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`, children: "Archived Routines" })] }) }), _jsx("div", { className: "bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6", children: _jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:items-center", children: [_jsxs("div", { className: "w-full md:w-1/3", children: [_jsx("label", { className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Filter by Priority" }), _jsxs(Select, { value: filter, onValueChange: setFilter, children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, { placeholder: "Select priority" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "all", children: "All Priorities" }), _jsx(SelectItem, { value: "high", children: "High Priority" }), _jsx(SelectItem, { value: "medium", children: "Medium Priority" }), _jsx(SelectItem, { value: "low", children: "Low Priority" })] })] })] }), _jsxs("div", { className: "w-full md:w-1/3", children: [_jsx("label", { className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Filter by Group" }), _jsxs(Select, { value: groupFilter, onValueChange: setGroupFilter, children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, { placeholder: "Select group" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "all", children: "All Groups" }), groups.map(group => (_jsx(SelectItem, { value: group.id.toString(), children: group.name }, group.id)))] })] })] })] }) }), isLoading ? (_jsx("div", { className: "text-center py-8", children: _jsx("p", { className: "text-gray-500 dark:text-gray-400", children: "Loading routines..." }) })) : filteredRoutines.length > 0 ? (_jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: filteredRoutines.map((routine) => (_jsxs(Card, { className: "overflow-hidden", children: [_jsx(CardHeader, { className: "p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700", children: _jsxs("div", { className: "flex justify-between items-start", children: [_jsxs("div", { className: "flex gap-3 items-start", children: [_jsx("div", { className: "w-10 h-10 flex items-center justify-center bg-primary-100 dark:bg-primary-800/30 rounded-full text-primary-700 dark:text-primary-300", children: _jsx(Activity, { className: "w-5 h-5" }) }), _jsxs("div", { children: [_jsx(CardTitle, { className: "text-lg font-semibold", children: routine.name }), _jsx("div", { className: "mt-1", children: getRoutineGroupInfo(routine.id) ? (_jsxs(Badge, { variant: "outline", className: "flex items-center text-xs gap-1", children: [_jsx(FolderOpen, { className: "w-3 h-3" }), _jsx("span", { children: getRoutineGroupInfo(routine.id)?.name })] })) : (_jsxs(Badge, { variant: "outline", className: "flex items-center text-xs gap-1 text-gray-400 dark:text-gray-500", children: [_jsx(FolderOpen, { className: "w-3 h-3 opacity-50" }), _jsx("span", { children: "Sin grupo" })] })) })] })] }), _jsxs(Badge, { variant: getPriorityBadgeVariant(routine.priority), className: "flex items-center gap-1", children: [priorityIcons[routine.priority], _jsx("span", { children: priorityLabels[routine.priority] })] })] }) }), _jsxs(CardContent, { className: "p-4", children: [_jsxs("div", { className: "mb-4", children: [_jsxs("div", { className: "text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center", children: [_jsx(Clock, { className: "w-4 h-4 mr-1 text-gray-400" }), "Tiempo estimado"] }), _jsx("div", { className: "text-gray-900 dark:text-white font-medium", children: formatTime(routine.expectedTime) })] }), _jsx(WeekdayScheduleDisplay, { routineId: routine.id }), _jsxs("div", { className: "flex justify-end space-x-2 flex-wrap gap-2", children: [_jsxs(Button, { variant: "outline", size: "sm", className: "text-gray-700 dark:text-gray-300", onClick: () => {
-                                                setRoutineToEdit(routine);
-                                                setIsEditRoutineModalOpen(true);
-                                            }, children: [_jsx(Edit, { className: "h-4 w-4 mr-1" }), " Editar"] }), viewMode === "active" ? (_jsxs(Button, { variant: "outline", size: "sm", className: "text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20", onClick: () => handleArchiveRoutine(routine.id), children: [_jsx(Archive, { className: "h-4 w-4 mr-1" }), " Archivar"] })) : (_jsxs(Button, { variant: "outline", size: "sm", className: "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20", onClick: () => handleUnarchiveRoutine(routine.id), children: [_jsx(RotateCcw, { className: "h-4 w-4 mr-1" }), " Desarchivar"] })), _jsxs(Button, { variant: "outline", size: "sm", className: "text-red-600 dark:text-red-400", onClick: () => confirmDeleteRoutine(routine), children: [_jsx(Trash, { className: "h-4 w-4 mr-1" }), " Eliminar"] })] })] })] }, routine.id))) })) : (_jsxs("div", { className: "bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center", children: [_jsx("h3", { className: "text-lg font-medium text-gray-900 dark:text-white mb-2", children: "No routines found" }), filter !== "all" || groupFilter !== "all" ? (_jsx("p", { className: "text-gray-500 dark:text-gray-400 mb-4", children: "Try changing your filter criteria to see more routines." })) : (_jsx("p", { className: "text-gray-500 dark:text-gray-400 mb-4", children: "You haven't created any routines yet. Get started by adding your first routine." })), _jsx(Button, { onClick: () => setIsAddRoutineModalOpen(true), children: "Add Your First Routine" })] })), _jsx("div", { className: "fixed bottom-20 right-4 md:hidden", children: _jsx(Button, { onClick: () => setIsAddRoutineModalOpen(true), className: "rounded-full w-14 h-14 flex items-center justify-center shadow-lg", size: "icon", children: _jsx(Plus, { size: 24 }) }) }), _jsx(AddRoutineModal, { isOpen: isAddRoutineModalOpen, onClose: () => setIsAddRoutineModalOpen(false), onRoutineCreated: async () => {
-                    await refetchRoutines();
-                    await refetchGroups();
-                } }), _jsx(DeleteRoutineDialog, { open: isDeleteDialogOpen, onOpenChange: setIsDeleteDialogOpen, onConfirm: handleDeleteRoutine, routineName: routineToDelete?.name }), _jsx(EditRoutineModal, { isOpen: isEditRoutineModalOpen, onClose: () => {
-                    setIsEditRoutineModalOpen(false);
-                    setRoutineToEdit(null);
-                }, routine: routineToEdit || undefined, onRoutineUpdated: async () => {
-                    await refetchRoutines();
-                    await refetchGroups();
-                } }), _jsx(AssignGroupToRoutine, { isOpen: isAssignGroupModalOpen, onClose: () => {
-                    setIsAssignGroupModalOpen(false);
-                    setRoutineToEdit(null);
-                }, routine: routineToEdit || undefined, onComplete: async () => {
-                    await refetchRoutines();
-                    await refetchGroups();
-                    await queryClient.invalidateQueries({ queryKey: ['groupRoutines'] });
-                } })] }));
+    return (_jsxs(Layout, { children: [_jsxs("div", { className: "flex justify-between items-center mb-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-2xl font-bold", children: t('groups.title') }), _jsx("p", { className: "text-gray-600 dark:text-gray-400", children: t('groups.description') })] }), _jsxs(Button, { onClick: () => handleOpenEditGroupModal(), children: [_jsx(Plus, { className: "mr-2 h-4 w-4" }), " ", t('groups.add')] })] }), isLoadingGroups ? (_jsx("p", { className: "text-center py-8", children: t('groups.loading') })) : groups.length > 0 ? (_jsx("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-4", children: groups.map((group) => (_jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: group.name }), group.timeRange && (_jsxs(CardDescription, { children: [_jsx(Clock, { className: "inline w-4 h-4 mr-1" }), " ", group.timeRange] }))] }), _jsx(CardContent, { children: _jsx("p", { children: t('groups.routinesInGroup') }) }), _jsxs(CardFooter, { className: "flex justify-end gap-2", children: [_jsxs(Button, { variant: "outline", onClick: () => handleOpenEditGroupModal(group), children: [_jsx(Edit, { className: "mr-1 h-4 w-4" }), " ", t('groups.edit')] }), _jsxs(Button, { variant: "destructive", onClick: () => confirmDeleteGroup(group.id), children: [_jsx(Trash, { className: "mr-1 h-4 w-4" }), " ", t('groups.delete')] })] })] }, group.id))) })) : (_jsxs("div", { className: "text-center py-12", children: [_jsx("h3", { className: "text-lg font-medium mb-2", children: t('groups.noGroups') }), _jsx("p", { className: "text-gray-500 dark:text-gray-400 mb-4", children: t('groups.createFirst') }), _jsx(Button, { onClick: () => handleOpenEditGroupModal(), children: t('groups.add') })] })), _jsx(Dialog, { open: isEditGroupModalOpen, onOpenChange: setIsEditGroupModalOpen, children: _jsxs(DialogContent, { children: [_jsxs(DialogHeader, { children: [_jsx(DialogTitle, { children: editingGroup ? t('groups.editTitle') : t('groups.newTitle') }), _jsx(DialogDescription, { children: editingGroup
+                                        ? t('groups.editDescription')
+                                        : t('groups.newDescription') })] }), _jsxs("form", { onSubmit: handleSaveGroup, children: [_jsxs("div", { className: "space-y-4 py-2", children: [_jsxs("div", { children: [_jsx(Label, { children: t('groups.name') }), _jsx(Input, { value: groupFormState.name, onChange: (e) => setGroupFormState({
+                                                        ...groupFormState,
+                                                        name: e.target.value,
+                                                    }), required: true })] }), _jsxs("div", { children: [_jsx(Label, { children: t('groups.timeRange') }), _jsxs("div", { className: "flex items-center space-x-2", children: [_jsx(Input, { type: "time", value: startTime, onChange: (e) => setStartTime(e.target.value), required: true }), _jsx("span", { children: "-" }), _jsx(Input, { type: "time", value: endTime, onChange: (e) => setEndTime(e.target.value), required: true })] }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [t('groups.preview'), ": ", formatTimeFor12Hour(startTime), " -", ' ', formatTimeFor12Hour(endTime)] })] }), _jsxs("div", { children: [_jsx(Label, { children: t('groups.icon') }), _jsxs(Select, { value: groupFormState.icon, onValueChange: (val) => setGroupFormState({ ...groupFormState, icon: val }), children: [_jsx(SelectTrigger, {}), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "fa-sun", children: "\u2600\uFE0F Morning" }), _jsx(SelectItem, { value: "fa-briefcase", children: "\uD83D\uDCBC Work" }), _jsx(SelectItem, { value: "fa-moon", children: "\uD83C\uDF19 Evening" }), _jsx(SelectItem, { value: "fa-dumbbell", children: "\uD83C\uDFCB\uFE0F Fitness" }), _jsx(SelectItem, { value: "fa-book", children: "\uD83D\uDCDA Study" }), _jsx(SelectItem, { value: "fa-layer-group", children: "\uD83D\uDDC2 General" })] })] })] })] }), _jsxs(DialogFooter, { children: [_jsx(Button, { type: "button", variant: "outline", onClick: () => setIsEditGroupModalOpen(false), children: t('groups.cancel') }), _jsx(Button, { type: "submit", disabled: isSubmitting, children: isSubmitting ? t('common.loading') : t('groups.save') })] })] })] }) }), _jsx(AlertDialog, { open: isDeleteDialogOpen, onOpenChange: setIsDeleteDialogOpen, children: _jsxs(AlertDialogContent, { children: [_jsxs(AlertDialogHeader, { children: [_jsx(AlertDialogTitle, { children: t('groups.confirmDeleteTitle') }), _jsx(AlertDialogDescription, { children: t('groups.confirmDeleteDesc') })] }), _jsxs(AlertDialogFooter, { children: [_jsx(AlertDialogCancel, { children: t('groups.cancel') }), _jsx(AlertDialogAction, { onClick: handleDeleteGroup, children: t('groups.confirmDeleteBtn') })] })] }) })] }));
 }

@@ -1,0 +1,19 @@
+{
+  "title": "Progress & Analytics",
+  "analytics": "Analytics",
+  "overview": "Overview",
+  "completionRate": "Completion Rate",
+  "dailyCompletion": "Daily Completion Rate",
+  "completionByPriority": "Completion by Priority",
+  "streakCalendar": "Streak Calendar",
+  "week": "Week",
+  "month": "Month",
+  "year": "Year",
+  "completed": "Completed",
+  "total": "Total",
+  "percentage": "Percentage",
+  "mostCompletedStats": "{{completed}} out of {{total}} days",
+  "leastCompletedStats": "Completed only {{completed}} out of {{total}} days",
+  "mostCompletedTitle": "Most Completed",
+  "leastCompletedTitle": "Needs Improvement"
+}

@@ -1,44 +1,29 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { Clock, AlertTriangle, BatteryMedium, Flame, Activity, Bike, Book, BrainCircuit, Coffee, Dumbbell, Footprints, HandPlatter, Heart, Laptop, Microscope, Music, Palette, Pen, Smartphone, Sparkles, Utensils, Waves, CircleCheckBig, FolderOpen, Timer } from 'lucide-react';
+import { Clock, AlertTriangle, BatteryMedium, Flame, Activity, Bike, Book, BrainCircuit, Coffee, Dumbbell, Footprints, HandPlatter, Heart, Laptop, Microscope, Music, Palette, Pen, Smartphone, Sparkles, Utensils, Waves, CircleCheckBig, FolderOpen, Timer, } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { formatTime } from '@/lib/date';
-import { getUserGroups, getGroupRoutines, } from "@/lib/firebase";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
-export function RoutineItem({ routine, onToggleCompletion, isEditable = true }) {
+import { useQuery } from '@tanstack/react-query';
+import { getUserGroups } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
+export function RoutineItem({ routine, onToggleCompletion, isEditable = true, }) {
     const { user } = useAuth();
-    const { data: groupRoutines = [] } = useQuery({
-        queryKey: ['groupRoutines'],
-        queryFn: getGroupRoutines,
-        enabled: !!routine,
-    });
     const { data: groups = [] } = useQuery({
         queryKey: ['groups'],
         queryFn: () => getUserGroups(user?.uid || ''),
         enabled: !!user,
     });
-    const routineGroup = Array.isArray(groupRoutines)
-        ? groupRoutines.find((gr) => gr.routineId === routine.id)
-        : null;
-    const group = routineGroup && Array.isArray(groups)
-        ? groups.find((g) => g.id === routineGroup.groupId)
-        : null;
-    const priorityColors = {
-        high: 'text-red-600 dark:text-red-400',
-        medium: 'text-yellow-600 dark:text-yellow-400',
-        low: 'text-blue-600 dark:text-blue-400'
-    };
+    const group = groups.find((g) => g.id === routine.groupId);
     const priorityLabels = {
         high: 'Alta',
         medium: 'Media',
-        low: 'Baja'
+        low: 'Baja',
     };
     const priorityIcons = {
         high: _jsx(Flame, { className: "w-4 h-4" }),
         medium: _jsx(BatteryMedium, { className: "w-4 h-4" }),
-        low: _jsx(Timer, { className: "w-4 h-4" })
+        low: _jsx(Timer, { className: "w-4 h-4" }),
     };
     const iconMap = {
         activity: Activity,
@@ -58,7 +43,7 @@ export function RoutineItem({ routine, onToggleCompletion, isEditable = true }) 
         phone: Smartphone,
         sparkles: Sparkles,
         utensils: Utensils,
-        waves: Waves
+        waves: Waves,
     };
     const handleChange = () => {
         if (isEditable) {
@@ -69,9 +54,7 @@ export function RoutineItem({ routine, onToggleCompletion, isEditable = true }) 
         if (!routine.icon)
             return null;
         const IconComponent = iconMap[routine.icon];
-        if (!IconComponent)
-            return null;
-        return _jsx(IconComponent, { className: "w-5 h-5 mr-2 text-primary" });
+        return IconComponent ? (_jsx(IconComponent, { className: "w-5 h-5 mr-2 text-primary" })) : null;
     };
     return (_jsx(Card, { className: `mb-3 hover:shadow transition-all ${routine.completed ? 'bg-gray-50 dark:bg-gray-800 opacity-70' : ''}`, children: _jsxs("div", { className: "p-4 flex items-center", children: [_jsx("div", { className: "mr-3", children: _jsx(Checkbox, { checked: !!routine.completed, onCheckedChange: handleChange, className: "h-5 w-5", disabled: !isEditable }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "flex items-center flex-wrap gap-2", children: [_jsxs("div", { className: "flex items-center mr-1", children: [renderRoutineIcon(), _jsx("h3", { className: `font-medium ${routine.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`, children: routine.name })] }), _jsxs(Badge, { variant: "outline", className: `flex items-center px-2 py-0.5 text-xs ${routine.priority === 'high'
                                         ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'

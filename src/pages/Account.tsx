@@ -1,13 +1,36 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useI18n, Language } from '@/contexts/i18n';
+import { useI18n } from '@/contexts/I18nProvider';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Trash2, Globe, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { Language } from '@/lib/i18n';
 
 export default function Account() {
   const { user, signOut } = useAuth();
@@ -24,7 +47,10 @@ export default function Account() {
     setLanguage(selectedLanguage);
     toast({
       title: t('common.success'),
-      description: `Language changed to ${selectedLanguage === 'en' ? 'English' : 'Español'}`,
+      description:
+        selectedLanguage === 'en'
+          ? t('account.languageChangedEn')
+          : t('account.languageChangedEs'),
     });
   };
 
@@ -33,12 +59,12 @@ export default function Account() {
       await signOut();
       toast({
         title: t('common.success'),
-        description: 'Successfully signed out',
+        description: t('auth.signOutSuccess'),
       });
-    } catch (error) {
+    } catch (err) {
       toast({
         title: t('common.error'),
-        description: 'Failed to sign out',
+        description: t('auth.signOutError'),
       });
     }
   };
@@ -46,20 +72,16 @@ export default function Account() {
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
-
-      if (user) {
-        await user.delete();
-      }
+      if (user) await user.delete();
 
       toast({
         title: t('common.success'),
-        description: 'Account deleted successfully',
+        description: t('account.deletedSuccess'),
       });
-    } catch (error) {
-      console.error('Error deleting account:', error);
+    } catch (err) {
       toast({
         title: t('common.error'),
-        description: 'Failed to delete account',
+        description: t('account.deletedError'),
       });
     } finally {
       setIsDeleting(false);
@@ -69,55 +91,23 @@ export default function Account() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">{t('account.title')}</h1>
-        </div>
+        <h1 className="text-3xl font-bold">{t('account.title')}</h1>
 
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5" />
-              User Information
-            </CardTitle>
-            <CardDescription>
-              Your account details
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
-              </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {user?.email}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Name
-              </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {user?.displayName || 'Not provided'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        
+        {/* Language settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="w-5 h-5" />
               {t('account.language')}
             </CardTitle>
-            <CardDescription>
-              {t('account.selectLanguage')}
-            </CardDescription>
+            <CardDescription>{t('account.selectLanguage')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
-              <Select value={selectedLanguage} onValueChange={handleLanguageSelect}>
+              <Select
+                value={selectedLanguage}
+                onValueChange={handleLanguageSelect}
+              >
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
@@ -126,24 +116,50 @@ export default function Account() {
                   <SelectItem value="es">{t('account.spanish')}</SelectItem>
                 </SelectContent>
               </Select>
-              <Button 
+              <Button
                 onClick={handleSaveLanguage}
                 disabled={selectedLanguage === language}
                 size="sm"
               >
-                Guardar
+                {t('common.save')}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        
+        {/* User info */}
         <Card>
           <CardHeader>
-            <CardTitle>Account Actions</CardTitle>
+            <CardTitle>{t('account.userInfo')}</CardTitle>
             <CardDescription>
-              Manage your account
+              {t('account.userInfoDescription')}
             </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('account.email')}
+              </label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {user?.email}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('account.name')}
+              </label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {user?.displayName || t('account.notProvided')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Session actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('account.actions')}</CardTitle>
+            <CardDescription>{t('account.actionsDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
@@ -157,14 +173,19 @@ export default function Account() {
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="flex items-center gap-2">
+                <Button
+                  variant="destructive"
+                  className="flex items-center gap-2"
+                >
                   <Trash2 className="w-4 h-4" />
                   {t('account.deleteAccount')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t('account.confirmDelete')}</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    {t('account.confirmDelete')}
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
                     {t('account.deleteWarning')}
                   </AlertDialogDescription>
@@ -176,7 +197,9 @@ export default function Account() {
                     disabled={isDeleting}
                     className="bg-red-600 hover:bg-red-700"
                   >
-                    {isDeleting ? t('common.loading') : t('account.confirmDeleteButton')}
+                    {isDeleting
+                      ? t('common.loading')
+                      : t('account.confirmDeleteButton')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

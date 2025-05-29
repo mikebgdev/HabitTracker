@@ -1,0 +1,20 @@
+{
+  "title": "Rutinas Diarias",
+  "todayRoutines": "Rutinas de Hoy",
+  "noRoutinesScheduled": "No hay rutinas programadas para hoy",
+  "addRoutine": "Agregar Rutina",
+  "completeAllToday": "Completar todas para hoy",
+  "markCompleted": "Marcar como completada",
+  "markIncomplete": "Marcar como incompleta",
+  "editRoutine": "Editar rutina",
+  "deleteRoutine": "Eliminar rutina",
+  "previousDay": "Día anterior",
+  "today": "Hoy",
+  "nextDay": "Día siguiente",
+  "dailyProgress": "Progreso Diario",
+  "routinesCompletedLabel": "rutinas completadas",
+  "loading": "Cargando rutinas...",
+  "errorLoading": "Error al cargar rutinas. Intenta de nuevo.",
+  "noRoutinesTitle": "No hay rutinas programadas para hoy",
+  "noRoutinesSubtitle": "No tienes rutinas asignadas para este día."
+}

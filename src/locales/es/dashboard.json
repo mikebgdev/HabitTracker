@@ -15,6 +15,8 @@
   "routinesCompletedLabel": "rutinas completadas",
   "loading": "Cargando rutinas...",
   "errorLoading": "Error al cargar rutinas. Intenta de nuevo.",
+  "retry": "Reintentar",
+  "ungrouped": "Sin grupo",
   "noRoutinesTitle": "No hay rutinas programadas para hoy",
   "noRoutinesSubtitle": "No tienes rutinas asignadas para este día."
 }

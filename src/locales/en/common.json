@@ -10,5 +10,6 @@
   "no": "No",
   "loading": "Loading...",
   "error": "Error",
-  "success": "Success"
+  "success": "Success",
+  "appName": "HabitMaster"
 }

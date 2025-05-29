@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useI18n } from '@/contexts/I18nProvider';
 import { RoutineItem } from './RoutineItem';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
@@ -30,6 +31,8 @@ export function RoutineGroup({
     totalRoutines > 0
       ? Math.round((completedRoutines / totalRoutines) * 100)
       : 0;
+
+  const { t } = useI18n();
 
   return (
     <Card className="mb-6">
@@ -99,7 +102,7 @@ export function RoutineGroup({
 
             {group.routines.length === 0 && (
               <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-                No routines in this group yet
+                {t('routines.noRoutinesInGroup')}
               </div>
             )}
           </div>

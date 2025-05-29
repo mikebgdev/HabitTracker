@@ -7,6 +7,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { useI18n } from '@/contexts/I18nProvider';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ export function AssignGroupToRoutine({
   onComplete,
 }: AssignGroupToRoutineProps) {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -98,11 +100,10 @@ export function AssignGroupToRoutine({
       <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-            Asignar a Grupo
+            {t('routines.assignToGroup')}
           </DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
-            Selecciona un grupo para asignar esta rutina o déjalo vacío para no
-            asignarla a ningún grupo.
+            {t('routines.assignToGroupDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -112,11 +113,11 @@ export function AssignGroupToRoutine({
               value={selectedGroupId || ''}
               onValueChange={setSelectedGroupId}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleccionar grupo" />
+            <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('routines.selectGroup')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sin grupo</SelectItem>
+                <SelectItem value="">{t('routines.none')}</SelectItem>
                 {groups.map((group) => (
                   <SelectItem key={group.id} value={group.id.toString()}>
                     {group.name}
@@ -133,14 +134,14 @@ export function AssignGroupToRoutine({
               onClick={onClose}
               className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
             >
-              {isSubmitting ? 'Guardando...' : 'Guardar'}
+              {isSubmitting ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>
         </form>

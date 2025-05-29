@@ -35,6 +35,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getUserGroups } from '@/lib/firebase';
 import type { Group, Routine } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nProvider';
 
 interface RoutineItemProps {
   routine: Routine & {
@@ -51,6 +52,7 @@ export function RoutineItem({
   isEditable = true,
 }: RoutineItemProps) {
   const { user } = useAuth();
+  const { t } = useI18n();
 
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ['groups'],
@@ -61,9 +63,9 @@ export function RoutineItem({
   const group = groups.find((g) => g.id === routine.groupId);
 
   const priorityLabels = {
-    high: 'Alta',
-    medium: 'Media',
-    low: 'Baja',
+    high: t('routines.high'),
+    medium: t('routines.medium'),
+    low: t('routines.low'),
   };
 
   const priorityIcons = {
@@ -161,7 +163,9 @@ export function RoutineItem({
           <div className="flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400 gap-3">
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" />
-              <span>Tiempo: {formatTime(routine.expectedTime)}</span>
+              <span>
+                {t('routines.expectedTime')}: {formatTime(routine.expectedTime)}
+              </span>
             </div>
 
             {routine.completed ? (
@@ -169,14 +173,14 @@ export function RoutineItem({
                 <CircleCheckBig className="w-4 h-4 mr-1" />
                 <span>
                   {routine.completedAt
-                    ? `Completado a las ${formatTime(routine.completedAt)}`
-                    : 'Completado'}
+                    ? t('routines.completedAt', { time: formatTime(routine.completedAt) })
+                    : t('routines.completed')}
                 </span>
               </div>
             ) : (
               <div className="flex items-center text-gray-500 dark:text-gray-400">
                 <AlertTriangle className="w-4 h-4 mr-1" />
-                <span>Pendiente</span>
+                <span>{t('routines.pending')}</span>
               </div>
             )}
           </div>

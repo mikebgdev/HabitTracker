@@ -15,5 +15,14 @@
   "mostCompletedStats": "{{completed}} out of {{total}} days",
   "leastCompletedStats": "Completed only {{completed}} out of {{total}} days",
   "mostCompletedTitle": "Most Completed",
-  "leastCompletedTitle": "Needs Improvement"
+  "leastCompletedTitle": "Needs Improvement",
+  "description": "Track your routines over time",
+  "rangePlaceholder": "Select range",
+  "rangeWeek": "Last 7 days",
+  "rangeMonth": "Last 30 days",
+  "rangeYear": "Last 365 days",
+  "dailyCompletionDescription": "Percentage of routines completed each day",
+  "completionByPriorityDescription": "How well you're completing routines based on priority level",
+  "streakMessage": "Keep it up! You're doing great.",
+  "streakCalendarDescription": "Your daily routine completion over the last {{days}} days"
 }

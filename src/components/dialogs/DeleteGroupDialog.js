@@ -1,5 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from "@/components/ui/alert-dialog";
+import { useI18n } from '@/contexts/I18nProvider';
 export function DeleteGroupDialog({ open, onOpenChange, onConfirm, groupName = "este grupo" }) {
-    return (_jsx(AlertDialog, { open: open, onOpenChange: onOpenChange, children: _jsxs(AlertDialogContent, { children: [_jsxs(AlertDialogHeader, { children: [_jsx(AlertDialogTitle, { children: "\u00BFEst\u00E1s seguro?" }), _jsxs(AlertDialogDescription, { children: ["Esta acci\u00F3n eliminar\u00E1 permanentemente ", groupName, " de tu lista de grupos. Las rutinas asociadas no se eliminar\u00E1n, pero ya no estar\u00E1n vinculadas a este grupo."] })] }), _jsxs(AlertDialogFooter, { children: [_jsx(AlertDialogCancel, { children: "Cancelar" }), _jsx(AlertDialogAction, { onClick: onConfirm, className: "bg-destructive text-destructive-foreground hover:bg-destructive/90", children: "Eliminar" })] })] }) }));
+    const { t } = useI18n();
+    return (_jsx(AlertDialog, { open: open, onOpenChange: onOpenChange, children: _jsxs(AlertDialogContent, { children: [_jsxs(AlertDialogHeader, { children: [_jsx(AlertDialogTitle, { children: t('groups.confirmDeleteTitle') }), _jsx(AlertDialogDescription, { children: t('groups.confirmDeleteDesc', { groupName }) })] }), _jsxs(AlertDialogFooter, { children: [_jsx(AlertDialogCancel, { children: t('common.cancel') }), _jsx(AlertDialogAction, { onClick: onConfirm, className: "bg-destructive text-destructive-foreground hover:bg-destructive/90", children: t('groups.confirmDeleteBtn') })] })] }) }));
 }

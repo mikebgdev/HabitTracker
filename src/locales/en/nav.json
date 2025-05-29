@@ -4,5 +4,7 @@
   "groups": "Groups",
   "progress": "Progress",
   "account": "Account",
-  "logout": "Logout"
+  "logout": "Logout",
+  "menu": "Menu",
+  "profile": "Profile"
 }

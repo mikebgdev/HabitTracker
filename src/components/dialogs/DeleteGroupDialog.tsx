@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useI18n } from '@/contexts/I18nProvider';
 
 interface DeleteGroupDialogProps {
   open: boolean;
@@ -22,23 +23,23 @@ export function DeleteGroupDialog({
   onConfirm,
   groupName = "este grupo"
 }: DeleteGroupDialogProps) {
+  const { t } = useI18n();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+          <AlertDialogTitle>{t('groups.confirmDeleteTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción eliminará permanentemente {groupName} de tu lista de grupos. 
-            Las rutinas asociadas no se eliminarán, pero ya no estarán vinculadas a este grupo.
+            {t('groups.confirmDeleteDesc', { groupName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction 
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Eliminar
+            {t('groups.confirmDeleteBtn')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

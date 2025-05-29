@@ -1,18 +1,18 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useState } from "react";
-import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, } from "@/components/ui/select";
-import { Plus, Edit, Trash, Clock } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserGroups, addGroup, updateGroup, deleteGroup, } from "@/lib/firebase";
-import { useToast } from "@/hooks/useToast";
+import { useState } from 'react';
+import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Edit, Trash, Clock } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserGroups, addGroup, updateGroup, deleteGroup, } from '@/lib/firebase';
+import { useToast } from '@/hooks/useToast';
 import { useI18n } from '@/contexts/I18nProvider';
 export default function Groups() {
     const { t } = useI18n();
@@ -20,12 +20,12 @@ export default function Groups() {
     const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
     const [editingGroup, setEditingGroup] = useState(null);
     const [groupFormState, setGroupFormState] = useState({
-        name: "",
-        icon: "fa-layer-group",
-        timeRange: "",
+        name: '',
+        icon: 'fa-layer-group',
+        timeRange: '',
     });
-    const [startTime, setStartTime] = useState("08:00");
-    const [endTime, setEndTime] = useState("09:00");
+    const [startTime, setStartTime] = useState('08:00');
+    const [endTime, setEndTime] = useState('09:00');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState(null);
@@ -41,15 +41,17 @@ export default function Groups() {
         if (group) {
             setGroupFormState({
                 name: group.name,
-                icon: group.icon || "fa-layer-group",
-                timeRange: group.timeRange || "",
+                icon: group.icon || 'fa-layer-group',
+                timeRange: group.timeRange || '',
             });
-            const [start, end] = (group.timeRange || "08:00 - 09:00").split(" - ").map(time => {
+            const [start, end] = (group.timeRange || '08:00 - 09:00')
+                .split(' - ')
+                .map((time) => {
                 const [h, m, ap] = time.match(/(\d+):(\d+) (AM|PM)/i).slice(1);
                 let hour = parseInt(h);
-                if (ap.toUpperCase() === "PM" && hour < 12)
+                if (ap.toUpperCase() === 'PM' && hour < 12)
                     hour += 12;
-                if (ap.toUpperCase() === "AM" && hour === 12)
+                if (ap.toUpperCase() === 'AM' && hour === 12)
                     hour = 0;
                 return `${hour.toString().padStart(2, '0')}:${m}`;
             });
@@ -57,16 +59,16 @@ export default function Groups() {
             setEndTime(end);
         }
         else {
-            setGroupFormState({ name: "", icon: "fa-layer-group", timeRange: "" });
-            setStartTime("08:00");
-            setEndTime("09:00");
+            setGroupFormState({ name: '', icon: 'fa-layer-group', timeRange: '' });
+            setStartTime('08:00');
+            setEndTime('09:00');
         }
         setIsEditGroupModalOpen(true);
     };
     const formatTimeFor12Hour = (time) => {
-        const [hours, minutes] = time.split(":");
+        const [hours, minutes] = time.split(':');
         const h = parseInt(hours);
-        const ampm = h >= 12 ? "PM" : "AM";
+        const ampm = h >= 12 ? 'PM' : 'AM';
         const hour12 = h % 12 || 12;
         return `${hour12}:${minutes} ${ampm}`;
     };
@@ -102,7 +104,10 @@ export default function Groups() {
         try {
             await deleteGroup(groupToDelete);
             await client.invalidateQueries({ queryKey: ['groups'] });
-            toast({ title: t('groups.confirmDeleteBtn'), description: t('groups.deletedSuccess') });
+            toast({
+                title: t('groups.confirmDeleteBtn'),
+                description: t('groups.deletedSuccess'),
+            });
         }
         catch (err) {
             toast({ title: t('common.error'), description: t('groups.deleteError') });
@@ -112,5 +117,17 @@ export default function Groups() {
             setGroupToDelete(null);
         }
     };
-    return (_jsxs(Layout, { children: [_jsxs("div", { className: "flex justify-between items-center mb-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-2xl font-bold", children: t('groups.title') }), _jsx("p", { className: "text-gray-600 dark:text-gray-400", children: t('groups.description') })] }), _jsxs(Button, { onClick: () => handleOpenEditGroupModal(), children: [_jsx(Plus, { className: "mr-2 h-4 w-4" }), " ", t('groups.add')] })] }), isLoadingGroups ? (_jsx("p", { className: "text-center py-8", children: t('groups.loading') })) : groups.length > 0 ? (_jsx("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-4", children: groups.map((group) => (_jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: group.name }), group.timeRange && (_jsxs(CardDescription, { children: [_jsx(Clock, { className: "inline w-4 h-4 mr-1" }), " ", group.timeRange] }))] }), _jsx(CardContent, { children: _jsx("p", { children: t('groups.routinesInGroup') }) }), _jsxs(CardFooter, { className: "flex justify-end gap-2", children: [_jsxs(Button, { variant: "outline", onClick: () => handleOpenEditGroupModal(group), children: [_jsx(Edit, { className: "mr-1 h-4 w-4" }), " ", t('groups.edit')] }), _jsxs(Button, { variant: "destructive", onClick: () => confirmDeleteGroup(group.id), children: [_jsx(Trash, { className: "mr-1 h-4 w-4" }), " ", t('groups.delete')] })] })] }, group.id))) })) : (_jsxs("div", { className: "text-center py-12", children: [_jsx("h3", { className: "text-lg font-medium mb-2", children: t('groups.noGroups') }), _jsx("p", { className: "text-gray-500 dark:text-gray-400 mb-4", children: t('groups.createFirst') }), _jsx(Button, { onClick: () => handleOpenEditGroupModal(), children: t('groups.add') })] })), _jsx(Dialog, { open: isEditGroupModalOpen, onOpenChange: setIsEditGroupModalOpen, children: _jsxs(DialogContent, { children: [_jsxs(DialogHeader, { children: [_jsx(DialogTitle, { children: editingGroup ? t('groups.editTitle') : t('groups.newTitle') }), _jsx(DialogDescription, { children: editingGroup ? t('groups.editDescription') : t('groups.newDescription') })] }), _jsxs("form", { onSubmit: handleSaveGroup, children: [_jsxs("div", { className: "space-y-4 py-2", children: [_jsxs("div", { children: [_jsx(Label, { children: t('groups.name') }), _jsx(Input, { value: groupFormState.name, onChange: e => setGroupFormState({ ...groupFormState, name: e.target.value }), required: true })] }), _jsxs("div", { children: [_jsx(Label, { children: t('groups.timeRange') }), _jsxs("div", { className: "flex items-center space-x-2", children: [_jsx(Input, { type: "time", value: startTime, onChange: e => setStartTime(e.target.value), required: true }), _jsx("span", { children: "-" }), _jsx(Input, { type: "time", value: endTime, onChange: e => setEndTime(e.target.value), required: true })] }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [t('groups.preview'), ": ", formatTimeFor12Hour(startTime), " - ", formatTimeFor12Hour(endTime)] })] }), _jsxs("div", { children: [_jsx(Label, { children: t('groups.icon') }), _jsxs(Select, { value: groupFormState.icon, onValueChange: val => setGroupFormState({ ...groupFormState, icon: val }), children: [_jsx(SelectTrigger, {}), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "fa-sun", children: "\\u2600\\ufe0f Morning" }), _jsx(SelectItem, { value: "fa-briefcase", children: "\\ud83d\\udcbc Work" }), _jsx(SelectItem, { value: "fa-moon", children: "\\ud83c\\udf19 Evening" }), _jsx(SelectItem, { value: "fa-dumbbell", children: "\\ud83c\\udfcb\\ufe0f Fitness" }), _jsx(SelectItem, { value: "fa-book", children: "\\ud83d\\udcda Study" }), _jsx(SelectItem, { value: "fa-layer-group", children: "\\ud83d\\udcc2 General" })] })] })] })] }), _jsxs(DialogFooter, { children: [_jsx(Button, { type: "button", variant: "outline", onClick: () => setIsEditGroupModalOpen(false), children: t('groups.cancel') }), _jsx(Button, { type: "submit", disabled: isSubmitting, children: isSubmitting ? t('common.loading') : t('groups.save') })] })] })] }) }), _jsx(AlertDialog, { open: isDeleteDialogOpen, onOpenChange: setIsDeleteDialogOpen, children: _jsxs(AlertDialogContent, { children: [_jsxs(AlertDialogHeader, { children: [_jsx(AlertDialogTitle, { children: t('groups.confirmDeleteTitle') }), _jsx(AlertDialogDescription, { children: t('groups.confirmDeleteDesc') })] }), _jsxs(AlertDialogFooter, { children: [_jsx(AlertDialogCancel, { children: t('groups.cancel') }), _jsx(AlertDialogAction, { onClick: handleDeleteGroup, children: t('groups.confirmDeleteBtn') })] })] }) })] }));
+    return (_jsxs(Layout, { children: [_jsxs("div", { className: "flex justify-between items-center mb-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-2xl font-bold", children: t('groups.title') }), _jsx("p", { className: "text-gray-600 dark:text-gray-400", children: t('groups.description') })] }), _jsxs(Button, { onClick: () => handleOpenEditGroupModal(), children: [_jsx(Plus, { className: "mr-2 h-4 w-4" }), " ", t('groups.add')] })] }), isLoadingGroups ? (_jsx("p", { className: "text-center py-8", children: t('groups.loading') })) : groups.length > 0 ? (_jsx("div", { className: "grid md:grid-cols-2 lg:grid-cols-3 gap-4", children: groups.map((group) => (_jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: group.name }), group.timeRange && (_jsxs(CardDescription, { children: [_jsx(Clock, { className: "inline w-4 h-4 mr-1" }), " ", group.timeRange] }))] }), _jsx(CardContent, { children: _jsx("p", { children: t('groups.routinesInGroup') }) }), _jsxs(CardFooter, { className: "flex justify-end gap-2", children: [_jsxs(Button, { variant: "outline", onClick: () => handleOpenEditGroupModal(group), children: [_jsx(Edit, { className: "mr-1 h-4 w-4" }), " ", t('groups.edit')] }), _jsxs(Button, { variant: "destructive", onClick: () => confirmDeleteGroup(group.id), children: [_jsx(Trash, { className: "mr-1 h-4 w-4" }), " ", t('groups.delete')] })] })] }, group.id))) })) : (_jsxs("div", { className: "text-center py-12", children: [_jsx("h3", { className: "text-lg font-medium mb-2", children: t('groups.noGroups') }), _jsx("p", { className: "text-gray-500 dark:text-gray-400 mb-4", children: t('groups.createFirst') }), _jsx(Button, { onClick: () => handleOpenEditGroupModal(), children: t('groups.add') })] })), _jsx(Dialog, { open: isEditGroupModalOpen, onOpenChange: setIsEditGroupModalOpen, children: _jsxs(DialogContent, { children: [_jsxs(DialogHeader, { children: [_jsx(DialogTitle, { children: editingGroup ? t('groups.editTitle') : t('groups.newTitle') }), _jsx(DialogDescription, { children: editingGroup
+                                        ? t('groups.editDescription')
+                                        : t('groups.newDescription') })] }), _jsxs("form", { onSubmit: handleSaveGroup, children: [_jsxs("div", { className: "space-y-4 py-2", children: [_jsxs("div", { children: [_jsx(Label, { children: t('groups.name') }), _jsx(Input, { value: groupFormState.name, onChange: (e) => setGroupFormState({
+                                                        ...groupFormState,
+                                                        name: e.target.value,
+                                                    }), required: true })] }), _jsxs("div", { children: [_jsx(Label, { children: t('groups.timeRange') }), _jsxs("div", { className: "flex items-center space-x-2", children: [_jsx(Input, { type: "time", value: startTime, onChange: (e) => setStartTime(e.target.value), required: true }), _jsx("span", { children: "-" }), _jsx(Input, { type: "time", value: endTime, onChange: (e) => setEndTime(e.target.value), required: true })] }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [t('groups.preview'), ": ", formatTimeFor12Hour(startTime), " -", ' ', formatTimeFor12Hour(endTime)] })] }), _jsxs("div", { children: [_jsx(Label, { children: t('groups.icon') }), _jsxs(Select, { value: groupFormState.icon, onValueChange: (val) => setGroupFormState({ ...groupFormState, icon: val }), children: [_jsx(SelectTrigger, { children: _jsx(SelectValue, { children: groupFormState.icon && (_jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: `fas ${groupFormState.icon} mr-2` }), _jsx("span", { children: {
+                                                                                'fa-sun': 'Morning',
+                                                                                'fa-briefcase': 'Work',
+                                                                                'fa-moon': 'Evening',
+                                                                                'fa-dumbbell': 'Fitness',
+                                                                                'fa-book': 'Study',
+                                                                                'fa-layer-group': 'General',
+                                                                            }[groupFormState.icon] })] })) }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "fa-sun", children: _jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: "fas fa-sun mr-2 text-amber-500" }), _jsx("span", { children: "Morning" })] }) }), _jsx(SelectItem, { value: "fa-briefcase", children: _jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: "fas fa-briefcase mr-2 text-blue-500" }), _jsx("span", { children: "Work" })] }) }), _jsx(SelectItem, { value: "fa-moon", children: _jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: "fas fa-moon mr-2 text-purple-500" }), _jsx("span", { children: "Evening" })] }) }), _jsx(SelectItem, { value: "fa-dumbbell", children: _jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: "fas fa-dumbbell mr-2 text-red-500" }), _jsx("span", { children: "Fitness" })] }) }), _jsx(SelectItem, { value: "fa-book", children: _jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: "fas fa-book mr-2 text-green-500" }), _jsx("span", { children: "Study" })] }) }), _jsx(SelectItem, { value: "fa-layer-group", children: _jsxs("div", { className: "flex items-center", children: [_jsx("i", { className: "fas fa-layer-group mr-2 text-gray-500" }), _jsx("span", { children: "General" })] }) })] })] })] })] }), _jsxs(DialogFooter, { children: [_jsx(Button, { type: "button", variant: "outline", onClick: () => setIsEditGroupModalOpen(false), children: t('common.cancel') }), _jsx(Button, { type: "submit", disabled: isSubmitting, children: isSubmitting ? t('common.loading') : t('common.save') })] })] })] }) }), _jsx(AlertDialog, { open: isDeleteDialogOpen, onOpenChange: setIsDeleteDialogOpen, children: _jsxs(AlertDialogContent, { children: [_jsxs(AlertDialogHeader, { children: [_jsx(AlertDialogTitle, { children: t('groups.confirmDeleteTitle') }), _jsx(AlertDialogDescription, { children: t('groups.confirmDeleteDesc') })] }), _jsxs(AlertDialogFooter, { children: [_jsx(AlertDialogCancel, { children: t('common.cancel') }), _jsx(AlertDialogAction, { onClick: handleDeleteGroup, children: t('groups.confirmDeleteBtn') })] })] }) })] }));
 }

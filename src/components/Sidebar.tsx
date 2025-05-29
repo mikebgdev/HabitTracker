@@ -19,7 +19,7 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: 'fa-home' },
+    { path: '/dashboard', label: 'Dashboard', icon: 'fa-home' },
     { path: '/routines', label: 'My Routines', icon: 'fa-list-check' },
     { path: '/groups', label: 'Groups', icon: 'fa-layer-group' },
     { path: '/progress', label: 'Progress', icon: 'fa-chart-line' },

@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useI18n } from '@/contexts/I18nProvider';
 
 interface DeleteRoutineDialogProps {
   open: boolean;
@@ -22,23 +23,23 @@ export function DeleteRoutineDialog({
   onConfirm,
   routineName = "esta rutina"
 }: DeleteRoutineDialogProps) {
+  const { t } = useI18n();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+          <AlertDialogTitle>{t('routines.confirmDeleteTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción eliminará permanentemente {routineName} de tu lista de rutinas.
-            Las repeticiones completadas asociadas también se eliminarán.
+            {t('routines.confirmDeleteDesc', { routineName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction 
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Eliminar
+            {t('routines.confirmDeleteBtn')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

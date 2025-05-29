@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'wouter';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/contexts/I18nProvider';
 
 export default function NotFound() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
       <div className="text-center mb-8">
@@ -12,10 +14,10 @@ export default function NotFound() {
         </div>
         <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
-          Página no encontrada
+          {t('notFound.title')}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-          La página que estás buscando no existe o ha sido movida a otra ubicación.
+          {t('notFound.description')}
         </p>
       </div>
       
@@ -23,13 +25,13 @@ export default function NotFound() {
         <Button asChild variant="outline">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al inicio
+            {t('notFound.backHome')}
           </Link>
         </Button>
         
         <Button asChild variant="primary">
           <a href="https://habitmaster.replit.app/help" target="_blank" rel="noopener noreferrer">
-            ¿Necesitas ayuda?
+            {t('notFound.help')}
           </a>
         </Button>
       </div>

@@ -27,6 +27,7 @@ import {
   updateRoutine,
 } from '@/lib/firebase';
 import { useToast } from '@/hooks/useToast';
+import { useI18n } from '@/contexts/I18nProvider';
 import {
   Flame,
   Timer,
@@ -69,36 +70,36 @@ interface EditRoutineModalProps {
 
 const ICON_CATEGORIES = [
   {
-    name: 'Actividades',
+    nameKey: 'activities',
     icons: [
-      { name: 'activity', icon: Activity, label: 'Actividad' },
-      { name: 'bike', icon: Bike, label: 'Bicicleta' },
-      { name: 'footprints', icon: Footprints, label: 'Caminar' },
-      { name: 'dumbbell', icon: Dumbbell, label: 'Ejercicio' },
-      { name: 'palette', icon: Palette, label: 'Arte' },
-      { name: 'music', icon: Music, label: 'Música' },
-      { name: 'waves', icon: Waves, label: 'Relajación' },
+      { name: 'activity', icon: Activity, labelKey: 'activity' },
+      { name: 'bike', icon: Bike, labelKey: 'bike' },
+      { name: 'footprints', icon: Footprints, labelKey: 'footprints' },
+      { name: 'dumbbell', icon: Dumbbell, labelKey: 'dumbbell' },
+      { name: 'palette', icon: Palette, labelKey: 'palette' },
+      { name: 'music', icon: Music, labelKey: 'music' },
+      { name: 'waves', icon: Waves, labelKey: 'waves' },
     ],
   },
   {
-    name: 'Trabajo y Estudio',
+    nameKey: 'workStudy',
     icons: [
-      { name: 'book', icon: Book, label: 'Lectura' },
-      { name: 'brain', icon: BrainCircuit, label: 'Aprendizaje' },
-      { name: 'laptop', icon: Laptop, label: 'Computadora' },
-      { name: 'microscope', icon: Microscope, label: 'Ciencia' },
-      { name: 'pen', icon: Pen, label: 'Escritura' },
-      { name: 'phone', icon: Smartphone, label: 'Celular' },
+      { name: 'book', icon: Book, labelKey: 'book' },
+      { name: 'brain', icon: BrainCircuit, labelKey: 'brain' },
+      { name: 'laptop', icon: Laptop, labelKey: 'laptop' },
+      { name: 'microscope', icon: Microscope, labelKey: 'microscope' },
+      { name: 'pen', icon: Pen, labelKey: 'pen' },
+      { name: 'phone', icon: Smartphone, labelKey: 'phone' },
     ],
   },
   {
-    name: 'Salud y Bienestar',
+    nameKey: 'healthWellness',
     icons: [
-      { name: 'coffee', icon: Coffee, label: 'Café' },
-      { name: 'food', icon: HandPlatter, label: 'Comida' },
-      { name: 'heart', icon: Heart, label: 'Salud' },
-      { name: 'sparkles', icon: Sparkles, label: 'Bienestar' },
-      { name: 'utensils', icon: Utensils, label: 'Alimentación' },
+      { name: 'coffee', icon: Coffee, labelKey: 'coffee' },
+      { name: 'food', icon: HandPlatter, labelKey: 'food' },
+      { name: 'heart', icon: Heart, labelKey: 'heart' },
+      { name: 'sparkles', icon: Sparkles, labelKey: 'sparkles' },
+      { name: 'utensils', icon: Utensils, labelKey: 'utensils' },
     ],
   },
 ];
@@ -118,6 +119,7 @@ export function EditRoutineModal({
   onRoutineUpdated,
 }: EditRoutineModalProps) {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [expectedTime, setExpectedTime] = useState('');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
@@ -238,8 +240,8 @@ export function EditRoutineModal({
         await updateWeekdaySchedule(routineId, selectedDays);
 
         toast({
-          title: 'Rutina actualizada',
-          description: `La rutina "${name}" ha sido actualizada correctamente.`,
+          title: t('common.success'),
+          description: t('routines.updatedSuccessDescription', { routineName: name }),
         });
       } else {
         console.error('Trying to update routine without ID');
@@ -253,8 +255,8 @@ export function EditRoutineModal({
       onClose();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'No se pudo actualizar la rutina. Inténtalo de nuevo.',
+        title: t('common.error'),
+        description: t('routines.updateErrorDescription'),
       });
     } finally {
       setIsSubmitting(false);
@@ -285,10 +287,10 @@ export function EditRoutineModal({
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
             {SelectedIcon && <SelectedIcon className="mr-2 h-5 w-5" />}
-            Editar rutina
+            {t('routines.editTitle')}
           </DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
-            Actualiza los detalles de tu rutina
+            {t('routines.editDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -298,14 +300,12 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Nombre de la rutina
-              </Label>
+              >{t('routines.name')}</Label>
               <Input
                 id="routine-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nombre de la rutina"
+                placeholder={t('routines.namePlaceholder')}
                 required
               />
             </div>
@@ -314,15 +314,13 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-time"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Tiempo estimado (Opcional)
-              </Label>
+              >{t('routines.expectedTimeLabel')}</Label>
               <Input
                 id="routine-time"
                 type="time"
                 value={expectedTime}
                 onChange={(e) => setExpectedTime(e.target.value)}
-                placeholder="Opcional"
+                placeholder={t('routines.expectedTimePlaceholder')}
               />
             </div>
 
@@ -330,18 +328,16 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-group"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Grupo
-              </Label>
+              >{t('routines.groupLabel')}</Label>
               <Select
                 value={groupId?.toString() || 'none'}
                 onValueChange={(val) => setGroupId(val === 'none' ? null : val)}
               >
                 <SelectTrigger id="routine-group">
-                  <SelectValue placeholder="Selecciona un grupo" />
+                  <SelectValue placeholder={t('routines.selectGroup')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Ninguno</SelectItem>
+                  <SelectItem value="none">{t('routines.none')}</SelectItem>
                   {groups.map((group) => (
                     <SelectItem key={group.id} value={group.id.toString()}>
                       {group.name}
@@ -355,17 +351,15 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-priority"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Prioridad
-              </Label>
+              >{t('routines.priorityLabel')}</Label>
               <Select
                 value={priority}
                 onValueChange={(val: 'high' | 'medium' | 'low') =>
                   setPriority(val)
                 }
               >
-                <SelectTrigger id="routine-priority">
-                  <SelectValue placeholder="Selecciona la prioridad" />
+                  <SelectTrigger id="routine-priority">
+                  <SelectValue placeholder={t('routines.selectPriority')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="high">
@@ -373,7 +367,7 @@ export function EditRoutineModal({
                       {React.createElement(PRIORITY_ICONS['high'].icon, {
                         className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['high'].color}`,
                       })}
-                      <span>Alta</span>
+                      <span>{t('routines.high')}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="medium">
@@ -381,7 +375,7 @@ export function EditRoutineModal({
                       {React.createElement(PRIORITY_ICONS['medium'].icon, {
                         className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['medium'].color}`,
                       })}
-                      <span>Media</span>
+                      <span>{t('routines.medium')}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="low">
@@ -389,7 +383,7 @@ export function EditRoutineModal({
                       {React.createElement(PRIORITY_ICONS['low'].icon, {
                         className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['low'].color}`,
                       })}
-                      <span>Baja</span>
+                      <span>{t('routines.low')}</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -400,17 +394,15 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-icon"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Icono (opcional)
-              </Label>
+              >{t('routines.iconLabel')}</Label>
               <Select
                 value={icon || 'none'}
                 onValueChange={(val: string) =>
                   setIcon(val === 'none' ? null : val)
                 }
               >
-                <SelectTrigger id="routine-icon" className="flex items-center">
-                  <SelectValue placeholder="Selecciona un ícono">
+                  <SelectTrigger id="routine-icon" className="flex items-center">
+                  <SelectValue placeholder={t('routines.iconPlaceholder')}>
                     {icon && getIconComponent(icon) ? (
                       <div className="flex items-center">
                         {React.createElement(
@@ -424,23 +416,23 @@ export function EditRoutineModal({
                         </span>
                       </div>
                     ) : (
-                      'Sin icono'
+                      {t('routines.noneIcon')}
                     )}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
                   <SelectItem value="none" className="flex items-center gap-2">
                     <div className="w-4 h-4 mr-2"></div>
-                    <span>Sin icono</span>
+                    <span>{t('routines.noneIcon')}</span>
                   </SelectItem>
 
-                  {ICON_CATEGORIES.map((category) => (
-                    <div key={category.name}>
+{ICON_CATEGORIES.map((category) => (
+                    <div key={category.nameKey}>
                       <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1">
-                        {category.name}
+                        {t(`routines.iconCategory.${category.nameKey}`)}
                       </div>
                       {category.icons.map(
-                        ({ name: iconName, icon: Icon, label }) => (
+                        ({ name: iconName, icon: Icon, labelKey }) => (
                           <SelectItem
                             key={iconName}
                             value={iconName}
@@ -448,7 +440,7 @@ export function EditRoutineModal({
                           >
                             <div className="flex items-center">
                               <Icon className="h-4 w-4 mr-2" />
-                              <span>{label}</span>
+                              <span>{t(`routines.iconLabels.${labelKey}`)}</span>
                             </div>
                           </SelectItem>
                         ),
@@ -461,7 +453,7 @@ export function EditRoutineModal({
 
             <div className="mb-4">
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Repetir
+                {t('routines.repeatLabel')}
               </Label>
               <div className="grid grid-cols-7 gap-1">
                 <Toggle
@@ -552,10 +544,10 @@ export function EditRoutineModal({
               onClick={onClose}
               disabled={isSubmitting}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+              {isSubmitting ? t('common.loading') : t('routines.saveChanges')}
             </Button>
           </DialogFooter>
         </form>

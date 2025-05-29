@@ -87,7 +87,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
             <Link href="/dashboard">
               <a className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                HabitMaster
+                {t('common.appName')}
               </a>
             </Link>
           </div>
@@ -104,7 +104,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Link href="/account">
               <a className="ml-4 flex items-center border border-gray-300 dark:border-gray-600 px-3 py-1 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                 <User size={16} className="mr-2" />
-                <span>Profile</span>
+                <span>{t('nav.account')}</span>
               </a>
             </Link>
           </div>
@@ -145,9 +145,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="md:hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-75">
             <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 p-4">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                  Menu
-                </h2>
+              <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                {t('nav.menu')}
+              </h2>
                 <button
                   onClick={closeMobileMenu}
                   className="text-gray-600 dark:text-gray-300"
@@ -160,28 +160,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <NavItem
                   to="/"
                   icon={<Home size={20} />}
-                  label="Dashboard"
+                  label={t('nav.dashboard')}
                   isActive={location === '/'}
                   onClick={closeMobileMenu}
                 />
                 <NavItem
                   to="/routines"
                   icon={<Calendar size={20} />}
-                  label="My Routines"
+                  label={t('nav.routines')}
                   isActive={location === '/routines'}
                   onClick={closeMobileMenu}
                 />
                 <NavItem
                   to="/groups"
                   icon={<Layers size={20} />}
-                  label="Groups"
+                  label={t('nav.groups')}
                   isActive={location === '/groups'}
                   onClick={closeMobileMenu}
                 />
                 <NavItem
                   to="/progress"
                   icon={<BarChart2 size={20} />}
-                  label="Progress"
+                  label={t('nav.progress')}
                   isActive={location === '/progress'}
                   onClick={closeMobileMenu}
                 />

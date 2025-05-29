@@ -3,10 +3,12 @@ import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nProvider';
 
 export default function Home() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (user) {
@@ -21,14 +23,14 @@ export default function Home() {
             <CheckCircle className="h-16 w-16 text-blue-600 dark:text-blue-400" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            HabitMaster
+            {t('auth.welcome')}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            Bienvenido a tu aplicación personal de seguimiento de hábitos.
+            {t('auth.welcomeDescription')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild variant="primary" size="lg">
-              <Link href="/login">Iniciar sesión</Link>
+              <Link href="/login">{t('auth.login')}</Link>
             </Button>
           </div>
         </div>

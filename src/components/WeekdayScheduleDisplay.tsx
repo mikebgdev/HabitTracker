@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '@/contexts/I18nProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWeekdaySchedule } from '@/lib/firebase';
 import type { WeekdaySchedule } from '@/lib/types';
@@ -26,10 +27,11 @@ export function WeekdayScheduleDisplay({
     enabled: !!routineId,
   });
 
+  const { t } = useI18n();
   return (
     <div className="mb-4">
       <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-        Días de la semana
+        {t('weekdays.title')}
       </div>
       <div className="flex flex-wrap gap-1">
         {days.map(({ key, label }) => {

@@ -10,39 +10,40 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserGroups, getWeekdaySchedule, updateWeekdaySchedule, updateRoutine, } from '@/lib/firebase';
 import { useToast } from '@/hooks/useToast';
+import { useI18n } from '@/contexts/I18nProvider';
 import { Flame, Timer, BatteryMedium, Activity, Bike, Book, BrainCircuit, Coffee, Dumbbell, Footprints, HandPlatter, Heart, Laptop, Microscope, Music, Palette, Pen, Smartphone, Sparkles, Utensils, Waves, } from 'lucide-react';
 const ICON_CATEGORIES = [
     {
-        name: 'Actividades',
+        nameKey: 'activities',
         icons: [
-            { name: 'activity', icon: Activity, label: 'Actividad' },
-            { name: 'bike', icon: Bike, label: 'Bicicleta' },
-            { name: 'footprints', icon: Footprints, label: 'Caminar' },
-            { name: 'dumbbell', icon: Dumbbell, label: 'Ejercicio' },
-            { name: 'palette', icon: Palette, label: 'Arte' },
-            { name: 'music', icon: Music, label: 'Música' },
-            { name: 'waves', icon: Waves, label: 'Relajación' },
+            { name: 'activity', icon: Activity, labelKey: 'activity' },
+            { name: 'bike', icon: Bike, labelKey: 'bike' },
+            { name: 'footprints', icon: Footprints, labelKey: 'footprints' },
+            { name: 'dumbbell', icon: Dumbbell, labelKey: 'dumbbell' },
+            { name: 'palette', icon: Palette, labelKey: 'palette' },
+            { name: 'music', icon: Music, labelKey: 'music' },
+            { name: 'waves', icon: Waves, labelKey: 'waves' },
         ],
     },
     {
-        name: 'Trabajo y Estudio',
+        nameKey: 'workStudy',
         icons: [
-            { name: 'book', icon: Book, label: 'Lectura' },
-            { name: 'brain', icon: BrainCircuit, label: 'Aprendizaje' },
-            { name: 'laptop', icon: Laptop, label: 'Computadora' },
-            { name: 'microscope', icon: Microscope, label: 'Ciencia' },
-            { name: 'pen', icon: Pen, label: 'Escritura' },
-            { name: 'phone', icon: Smartphone, label: 'Celular' },
+            { name: 'book', icon: Book, labelKey: 'book' },
+            { name: 'brain', icon: BrainCircuit, labelKey: 'brain' },
+            { name: 'laptop', icon: Laptop, labelKey: 'laptop' },
+            { name: 'microscope', icon: Microscope, labelKey: 'microscope' },
+            { name: 'pen', icon: Pen, labelKey: 'pen' },
+            { name: 'phone', icon: Smartphone, labelKey: 'phone' },
         ],
     },
     {
-        name: 'Salud y Bienestar',
+        nameKey: 'healthWellness',
         icons: [
-            { name: 'coffee', icon: Coffee, label: 'Café' },
-            { name: 'food', icon: HandPlatter, label: 'Comida' },
-            { name: 'heart', icon: Heart, label: 'Salud' },
-            { name: 'sparkles', icon: Sparkles, label: 'Bienestar' },
-            { name: 'utensils', icon: Utensils, label: 'Alimentación' },
+            { name: 'coffee', icon: Coffee, labelKey: 'coffee' },
+            { name: 'food', icon: HandPlatter, labelKey: 'food' },
+            { name: 'heart', icon: Heart, labelKey: 'heart' },
+            { name: 'sparkles', icon: Sparkles, labelKey: 'sparkles' },
+            { name: 'utensils', icon: Utensils, labelKey: 'utensils' },
         ],
     },
 ];
@@ -54,6 +55,7 @@ const PRIORITY_ICONS = {
 };
 export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated, }) {
     const { toast } = useToast();
+    const { t } = useI18n();
     const [name, setName] = useState('');
     const [expectedTime, setExpectedTime] = useState('');
     const [priority, setPriority] = useState('medium');
@@ -156,8 +158,8 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated, }
                 await updateRoutine(routineId, routineData);
                 await updateWeekdaySchedule(routineId, selectedDays);
                 toast({
-                    title: 'Rutina actualizada',
-                    description: `La rutina "${name}" ha sido actualizada correctamente.`,
+                    title: t('common.success'),
+                    description: t('routines.updatedSuccessDescription', { routineName: name }),
                 });
             }
             else {
@@ -171,8 +173,8 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated, }
         }
         catch (error) {
             toast({
-                title: 'Error',
-                description: 'No se pudo actualizar la rutina. Inténtalo de nuevo.',
+                title: t('common.error'),
+                description: t('routines.updateErrorDescription'),
             });
         }
         finally {
@@ -195,15 +197,15 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated, }
         return found ? found.icon : null;
     };
     const SelectedIcon = getSelectedIcon();
-    return (_jsx(Dialog, { open: isOpen, onOpenChange: (open) => !open && onClose(), children: _jsxs(DialogContent, { className: "bg-white dark:bg-gray-800 max-w-md mx-auto", children: [_jsxs(DialogHeader, { children: [_jsxs(DialogTitle, { className: "text-lg font-semibold text-gray-900 dark:text-white flex items-center", children: [SelectedIcon && _jsx(SelectedIcon, { className: "mr-2 h-5 w-5" }), "Editar rutina"] }), _jsx(DialogDescription, { className: "text-gray-500 dark:text-gray-400", children: "Actualiza los detalles de tu rutina" })] }), _jsxs("form", { onSubmit: handleSubmit, children: [_jsxs("div", { className: "space-y-4 py-2", children: [_jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-name", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Nombre de la rutina" }), _jsx(Input, { id: "routine-name", value: name, onChange: (e) => setName(e.target.value), placeholder: "Nombre de la rutina", required: true })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-time", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Tiempo estimado (Opcional)" }), _jsx(Input, { id: "routine-time", type: "time", value: expectedTime, onChange: (e) => setExpectedTime(e.target.value), placeholder: "Opcional" })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-group", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Grupo" }), _jsxs(Select, { value: groupId?.toString() || 'none', onValueChange: (val) => setGroupId(val === 'none' ? null : val), children: [_jsx(SelectTrigger, { id: "routine-group", children: _jsx(SelectValue, { placeholder: "Selecciona un grupo" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "none", children: "Ninguno" }), groups.map((group) => (_jsx(SelectItem, { value: group.id.toString(), children: group.name }, group.id)))] })] })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-priority", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Prioridad" }), _jsxs(Select, { value: priority, onValueChange: (val) => setPriority(val), children: [_jsx(SelectTrigger, { id: "routine-priority", children: _jsx(SelectValue, { placeholder: "Selecciona la prioridad" }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "high", children: _jsxs("div", { className: "flex items-center", children: [React.createElement(PRIORITY_ICONS['high'].icon, {
+    return (_jsx(Dialog, { open: isOpen, onOpenChange: (open) => !open && onClose(), children: _jsxs(DialogContent, { className: "bg-white dark:bg-gray-800 max-w-md mx-auto", children: [_jsxs(DialogHeader, { children: [_jsxs(DialogTitle, { className: "text-lg font-semibold text-gray-900 dark:text-white flex items-center", children: [SelectedIcon && _jsx(SelectedIcon, { className: "mr-2 h-5 w-5" }), t('routines.editTitle')] }), _jsx(DialogDescription, { className: "text-gray-500 dark:text-gray-400", children: t('routines.editDescription') })] }), _jsxs("form", { onSubmit: handleSubmit, children: [_jsxs("div", { className: "space-y-4 py-2", children: [_jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-name", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: t('routines.name') }), _jsx(Input, { id: "routine-name", value: name, onChange: (e) => setName(e.target.value), placeholder: t('routines.namePlaceholder'), required: true })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-time", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: t('routines.expectedTimeLabel') }), _jsx(Input, { id: "routine-time", type: "time", value: expectedTime, onChange: (e) => setExpectedTime(e.target.value), placeholder: t('routines.expectedTimePlaceholder') })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-group", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: t('routines.groupLabel') }), _jsxs(Select, { value: groupId?.toString() || 'none', onValueChange: (val) => setGroupId(val === 'none' ? null : val), children: [_jsx(SelectTrigger, { id: "routine-group", children: _jsx(SelectValue, { placeholder: t('routines.selectGroup') }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "none", children: t('routines.none') }), groups.map((group) => (_jsx(SelectItem, { value: group.id.toString(), children: group.name }, group.id)))] })] })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-priority", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: t('routines.priorityLabel') }), _jsxs(Select, { value: priority, onValueChange: (val) => setPriority(val), children: [_jsx(SelectTrigger, { id: "routine-priority", children: _jsx(SelectValue, { placeholder: t('routines.selectPriority') }) }), _jsxs(SelectContent, { children: [_jsx(SelectItem, { value: "high", children: _jsxs("div", { className: "flex items-center", children: [React.createElement(PRIORITY_ICONS['high'].icon, {
                                                                         className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['high'].color}`,
-                                                                    }), _jsx("span", { children: "Alta" })] }) }), _jsx(SelectItem, { value: "medium", children: _jsxs("div", { className: "flex items-center", children: [React.createElement(PRIORITY_ICONS['medium'].icon, {
+                                                                    }), _jsx("span", { children: t('routines.high') })] }) }), _jsx(SelectItem, { value: "medium", children: _jsxs("div", { className: "flex items-center", children: [React.createElement(PRIORITY_ICONS['medium'].icon, {
                                                                         className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['medium'].color}`,
-                                                                    }), _jsx("span", { children: "Media" })] }) }), _jsx(SelectItem, { value: "low", children: _jsxs("div", { className: "flex items-center", children: [React.createElement(PRIORITY_ICONS['low'].icon, {
+                                                                    }), _jsx("span", { children: t('routines.medium') })] }) }), _jsx(SelectItem, { value: "low", children: _jsxs("div", { className: "flex items-center", children: [React.createElement(PRIORITY_ICONS['low'].icon, {
                                                                         className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['low'].color}`,
-                                                                    }), _jsx("span", { children: "Baja" })] }) })] })] })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-icon", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Icono (opcional)" }), _jsxs(Select, { value: icon || 'none', onValueChange: (val) => setIcon(val === 'none' ? null : val), children: [_jsx(SelectTrigger, { id: "routine-icon", className: "flex items-center", children: _jsx(SelectValue, { placeholder: "Selecciona un \u00EDcono", children: icon && getIconComponent(icon) ? (_jsxs("div", { className: "flex items-center", children: [React.createElement(getIconComponent(icon), {
+                                                                    }), _jsx("span", { children: t('routines.low') })] }) })] })] })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { htmlFor: "routine-icon", className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: t('routines.iconLabel') }), _jsxs(Select, { value: icon || 'none', onValueChange: (val) => setIcon(val === 'none' ? null : val), children: [_jsx(SelectTrigger, { id: "routine-icon", className: "flex items-center", children: _jsx(SelectValue, { placeholder: t('routines.iconPlaceholder'), children: icon && getIconComponent(icon) ? (_jsxs("div", { className: "flex items-center", children: [React.createElement(getIconComponent(icon), {
                                                                     className: 'mr-2 h-4 w-4',
-                                                                }), _jsx("span", { children: icon.charAt(0).toUpperCase() + icon.slice(1) })] })) : ('Sin icono') }) }), _jsxs(SelectContent, { className: "max-h-[300px]", children: [_jsxs(SelectItem, { value: "none", className: "flex items-center gap-2", children: [_jsx("div", { className: "w-4 h-4 mr-2" }), _jsx("span", { children: "Sin icono" })] }), ICON_CATEGORIES.map((category) => (_jsxs("div", { children: [_jsx("div", { className: "px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1", children: category.name }), category.icons.map(({ name: iconName, icon: Icon, label }) => (_jsx(SelectItem, { value: iconName, className: "flex items-center gap-2", children: _jsxs("div", { className: "flex items-center", children: [_jsx(Icon, { className: "h-4 w-4 mr-2" }), _jsx("span", { children: label })] }) }, iconName)))] }, category.name)))] })] })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "Repetir" }), _jsxs("div", { className: "grid grid-cols-7 gap-1", children: [_jsx(Toggle, { pressed: selectedDays.monday, onPressedChange: () => toggleDay('monday'), className: `text-sm font-medium text-center border ${selectedDays.monday
+                                                                }), _jsx("span", { children: icon.charAt(0).toUpperCase() + icon.slice(1) })] })) : ({}) }) }), _jsxs(SelectContent, { className: "max-h-[300px]", children: [_jsxs(SelectItem, { value: "none", className: "flex items-center gap-2", children: [_jsx("div", { className: "w-4 h-4 mr-2" }), _jsx("span", { children: t('routines.noneIcon') })] }), ICON_CATEGORIES.map((category) => (_jsxs("div", { children: [_jsx("div", { className: "px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1", children: t(`routines.iconCategory.${category.nameKey}`) }), category.icons.map(({ name: iconName, icon: Icon, labelKey }) => (_jsx(SelectItem, { value: iconName, className: "flex items-center gap-2", children: _jsxs("div", { className: "flex items-center", children: [_jsx(Icon, { className: "h-4 w-4 mr-2" }), _jsx("span", { children: t(`routines.iconLabels.${labelKey}`) })] }) }, iconName)))] }, category.nameKey)))] })] })] }), _jsxs("div", { className: "mb-4", children: [_jsx(Label, { className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: t('routines.repeatLabel') }), _jsxs("div", { className: "grid grid-cols-7 gap-1", children: [_jsx(Toggle, { pressed: selectedDays.monday, onPressedChange: () => toggleDay('monday'), className: `text-sm font-medium text-center border ${selectedDays.monday
                                                         ? 'bg-primary text-white border-primary shadow-sm'
                                                         : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`, children: "L" }), _jsx(Toggle, { pressed: selectedDays.tuesday, onPressedChange: () => toggleDay('tuesday'), className: `text-sm font-medium text-center border ${selectedDays.tuesday
                                                         ? 'bg-primary text-white border-primary shadow-sm'
@@ -217,5 +219,5 @@ export function EditRoutineModal({ isOpen, onClose, routine, onRoutineUpdated, }
                                                         ? 'bg-primary text-white border-primary shadow-sm'
                                                         : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`, children: "S" }), _jsx(Toggle, { pressed: selectedDays.sunday, onPressedChange: () => toggleDay('sunday'), className: `text-sm font-medium text-center border ${selectedDays.sunday
                                                         ? 'bg-primary text-white border-primary shadow-sm'
-                                                        : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`, children: "D" })] })] })] }), _jsxs(DialogFooter, { className: "flex justify-end space-x-3 mt-6", children: [_jsx(Button, { type: "button", variant: "outline", onClick: onClose, disabled: isSubmitting, children: "Cancelar" }), _jsx(Button, { type: "submit", disabled: isSubmitting, children: isSubmitting ? 'Guardando...' : 'Guardar cambios' })] })] })] }) }));
+                                                        : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`, children: "D" })] })] })] }), _jsxs(DialogFooter, { className: "flex justify-end space-x-3 mt-6", children: [_jsx(Button, { type: "button", variant: "outline", onClick: onClose, disabled: isSubmitting, children: t('common.cancel') }), _jsx(Button, { type: "submit", disabled: isSubmitting, children: isSubmitting ? t('common.loading') : t('routines.saveChanges') })] })] })] }) }));
 }

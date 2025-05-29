@@ -15,5 +15,14 @@
   "mostCompletedStats": "{{completed}} de {{total}} días",
   "leastCompletedStats": "Completada solo {{completed}} de {{total}} días",
   "mostCompletedTitle": "Más Completada",
-  "leastCompletedTitle": "Necesita Mejorar"
+  "leastCompletedTitle": "Necesita Mejorar",
+  "description": "Seguimiento de tus rutinas a lo largo del tiempo",
+  "rangePlaceholder": "Seleccionar período",
+  "rangeWeek": "Últimos 7 días",
+  "rangeMonth": "Últimos 30 días",
+  "rangeYear": "Últimos 365 días",
+  "dailyCompletionDescription": "Porcentaje de rutinas completadas cada día",
+  "completionByPriorityDescription": "Qué tan bien estás completando rutinas según el nivel de prioridad",
+  "streakMessage": "¡Sigue así! Lo estás haciendo genial.",
+  "streakCalendarDescription": "Tu seguimiento diario de rutinas en los últimos {{days}} días"
 }

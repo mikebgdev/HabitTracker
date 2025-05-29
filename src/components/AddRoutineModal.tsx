@@ -27,6 +27,7 @@ import {
   updateWeekdaySchedule,
 } from '@/lib/firebase';
 import { useToast } from '@/hooks/useToast';
+import { useI18n } from '@/contexts/I18nProvider';
 import type {
   DayKey,
   Group,
@@ -46,6 +47,7 @@ export function AddRoutineModal({
   onRoutineCreated,
 }: AddRoutineModalProps) {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [expectedTime, setExpectedTime] = useState('');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
@@ -136,8 +138,8 @@ export function AddRoutineModal({
       await updateWeekdaySchedule(routineId, selectedDays);
 
       toast({
-        title: 'Rutina creada',
-        description: `La rutina "${name}" ha sido creada correctamente.`,
+        title: t('common.success'),
+        description: t('routines.createdSuccessDescription', { routineName: name }),
       });
 
       if (onRoutineCreated) {
@@ -153,8 +155,8 @@ export function AddRoutineModal({
     } catch (error) {
       console.error(error);
       toast({
-        title: 'Error',
-        description: 'No se pudo crear la rutina. Inténtalo de nuevo.',
+        title: t('common.error'),
+        description: t('routines.createErrorDescription'),
       });
     } finally {
       setIsSubmitting(false);
@@ -166,10 +168,10 @@ export function AddRoutineModal({
       <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-            Add New Routine
+            {t('routines.newTitle')}
           </DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
-            Create a new routine to track daily habits
+            {t('routines.newDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -179,14 +181,12 @@ export function AddRoutineModal({
               <Label
                 htmlFor="routine-name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Routine Name
-              </Label>
+              >{t('routines.name')}</Label>
               <Input
                 id="routine-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter routine name"
+                placeholder={t('routines.namePlaceholder')}
                 required
               />
             </div>
@@ -203,7 +203,7 @@ export function AddRoutineModal({
                 type="time"
                 value={expectedTime}
                 onChange={(e) => setExpectedTime(e.target.value)}
-                placeholder="Optional"
+                placeholder={t('routines.expectedTimePlaceholder')}
               />
             </div>
 
@@ -211,12 +211,10 @@ export function AddRoutineModal({
               <Label
                 htmlFor="routine-group"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Group
-              </Label>
+              >{t('routines.groupLabel')}</Label>
               <Select onValueChange={handleGroupChange}>
                 <SelectTrigger id="routine-group">
-                  <SelectValue placeholder="Select a group" />
+                  <SelectValue placeholder={t('routines.selectGroup')} />
                 </SelectTrigger>
                 <SelectContent>
                   {groups.map((group) => (
@@ -224,7 +222,7 @@ export function AddRoutineModal({
                       {group.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="new">Create New Group...</SelectItem>
+                  <SelectItem value="new">{t('routines.createNewGroup')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -233,7 +231,7 @@ export function AddRoutineModal({
                   <Input
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="Enter new group name"
+                    placeholder={t('routines.newGroupNamePlaceholder')}
                     className="mt-1"
                     required={showNewGroupInput}
                   />
@@ -245,9 +243,7 @@ export function AddRoutineModal({
               <Label
                 htmlFor="routine-priority"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Priority
-              </Label>
+              >{t('routines.priorityLabel')}</Label>
               <Select
                 defaultValue={priority}
                 onValueChange={(val: 'high' | 'medium' | 'low') =>
@@ -255,19 +251,19 @@ export function AddRoutineModal({
                 }
               >
                 <SelectTrigger id="routine-priority">
-                  <SelectValue placeholder="Select priority" />
+                  <SelectValue placeholder={t('routines.selectPriority')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="high">{t('routines.high')}</SelectItem>
+                  <SelectItem value="medium">{t('routines.medium')}</SelectItem>
+                  <SelectItem value="low">{t('routines.low')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="mb-4">
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Repeat
+                {t('routines.repeatLabel')}
               </Label>
               <div className="grid grid-cols-7 gap-1">
                 <Toggle
@@ -365,10 +361,10 @@ export function AddRoutineModal({
               onClick={onClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Routine'}
+              {isSubmitting ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>
         </form>

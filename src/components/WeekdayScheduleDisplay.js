@@ -1,4 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useI18n } from '@/contexts/I18nProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWeekdaySchedule } from '@/lib/firebase';
 const days = [
@@ -16,7 +17,8 @@ export function WeekdayScheduleDisplay({ routineId, }) {
         queryFn: () => getWeekdaySchedule(routineId),
         enabled: !!routineId,
     });
-    return (_jsxs("div", { className: "mb-4", children: [_jsx("div", { className: "text-sm text-gray-500 dark:text-gray-400 mb-1", children: "D\u00EDas de la semana" }), _jsx("div", { className: "flex flex-wrap gap-1", children: days.map(({ key, label }) => {
+    const { t } = useI18n();
+    return (_jsxs("div", { className: "mb-4", children: [_jsx("div", { className: "text-sm text-gray-500 dark:text-gray-400 mb-1", children: t('weekdays.title') }), _jsx("div", { className: "flex flex-wrap gap-1", children: days.map(({ key, label }) => {
                     const selected = weekdaySchedule?.[key];
                     return (_jsx("span", { className: `text-xs px-2 py-1 rounded ${selected
                             ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'

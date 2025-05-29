@@ -22,7 +22,7 @@ export default function Login() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">{t('auth.welcome')}</CardTitle>
           <CardDescription>
-            {t('auth.login')} to continue to your routine tracker
+            {t('auth.loginDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>

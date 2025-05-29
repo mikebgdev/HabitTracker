@@ -25,6 +25,7 @@ import type { DayKey } from '@/lib/types';
 import { useI18n } from '@/contexts/I18nProvider';
 
 export default function Dashboard() {
+  const [setIsAddRoutineModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -237,7 +238,7 @@ export default function Dashboard() {
 
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle>{t('dashboard.progressTitle')}</CardTitle>
+          <CardTitle>{t('dashboard.dailyProgress')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-between items-center mb-2">
@@ -289,7 +290,7 @@ export default function Dashboard() {
         </div>
       ) : isError ? (
         <div className="text-center py-8 text-red-600 dark:text-red-400">
-          <p>{t('dashboard.error')}</p>
+          <p>{t('dashboard.errorLoading')}</p>
           <Button variant="outline" className="mt-4" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4 mr-2" /> {t('dashboard.retry')}
           </Button>
@@ -309,9 +310,9 @@ export default function Dashboard() {
             {t('dashboard.noRoutinesTitle')}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            {t('dashboard.noRoutinesText')}
+            {t('dashboard.noRoutinesSubtitle')}
           </p>
-          <Button variant="primary">
+          <Button onClick={() => setIsAddRoutineModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" /> {t('dashboard.addRoutine')}
           </Button>
         </div>

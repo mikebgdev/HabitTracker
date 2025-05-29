@@ -122,21 +122,21 @@ export default function ProgressPage() {
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Progreso y Análisis</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('progress.title')}</h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Seguimiento de tus rutinas a lo largo del tiempo
+            {t('progress.description')}
           </p>
         </div>
         
         <div className="mt-4 md:mt-0 w-full md:w-48">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar período" />
+              <SelectValue placeholder={t('progress.rangePlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Últimos 7 días</SelectItem>
-              <SelectItem value="month">Últimos 30 días</SelectItem>
-              <SelectItem value="year">Últimos 365 días</SelectItem>
+              <SelectItem value="week">{t('progress.rangeWeek')}</SelectItem>
+              <SelectItem value="month">{t('progress.rangeMonth')}</SelectItem>
+              <SelectItem value="year">{t('progress.rangeYear')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -147,7 +147,7 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Tasa de Completado
+              {t('progress.completionRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -179,15 +179,15 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Racha Actual
+              {t('progress.streakCalendar')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {streak} días
+              {streak} {t('time.days')}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              ¡Sigue así! Lo estás haciendo genial.
+              {t('progress.streakMessage')}
             </p>
           </CardContent>
         </Card>
@@ -195,7 +195,7 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Más Completada
+              {t('progress.mostCompletedTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -214,7 +214,7 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Necesita Mejorar
+              {t('progress.leastCompletedTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -234,9 +234,9 @@ export default function ProgressPage() {
       
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Daily Completion Rate</CardTitle>
+          <CardTitle>{t('progress.dailyCompletion')}</CardTitle>
           <CardDescription>
-            Percentage of routines completed each day
+            {t('progress.dailyCompletionDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -266,9 +266,9 @@ export default function ProgressPage() {
       
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Completion by Priority</CardTitle>
+          <CardTitle>{t('progress.completionByPriority')}</CardTitle>
           <CardDescription>
-            How well you're completing routines based on priority level
+            {t('progress.completionByPriorityDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -294,9 +294,9 @@ export default function ProgressPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Streak Calendar</CardTitle>
+          <CardTitle>{t('progress.streakCalendar')}</CardTitle>
           <CardDescription>
-            Your daily routine completion over the last {timeRange === "week" ? "7" : timeRange === "month" ? "30" : "365"} days
+            {t('progress.streakCalendarDescription', { days: timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 365 })}
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -7,5 +7,18 @@
   "edit": "Editar Grupo",
   "delete": "Eliminar Grupo",
   "noGroups": "No hay grupos creados aún",
-  "createFirst": "Crea tu primer grupo"
+  "createFirst": "Crea tu primer grupo",
+  "description": "Gestiona los grupos de tus rutinas",
+  "loading": "Cargando grupos...",
+  "routinesInGroup": "Rutinas en este grupo",
+  "newTitle": "Crear Grupo",
+  "newDescription": "Crea un nuevo grupo para organizar tus rutinas",
+  "editTitle": "Editar Grupo",
+  "editDescription": "Edita los detalles de tu grupo",
+  "preview": "Vista previa",
+  "confirmDeleteTitle": "Confirmar eliminación de grupo",
+  "confirmDeleteDesc": "Esta acción eliminará permanentemente este grupo de tu lista. Las rutinas asociadas permanecerán, pero ya no estarán vinculadas a este grupo.",
+  "confirmDeleteBtn": "Eliminar",
+  "deletedSuccess": "Grupo eliminado correctamente",
+  "deleteError": "No se pudo eliminar el grupo"
 }

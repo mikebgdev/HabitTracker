@@ -7,8 +7,10 @@ import { formatTime } from '@/lib/date';
 import { useQuery } from '@tanstack/react-query';
 import { getUserGroups } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nProvider';
 export function RoutineItem({ routine, onToggleCompletion, isEditable = true, }) {
     const { user } = useAuth();
+    const { t } = useI18n();
     const { data: groups = [] } = useQuery({
         queryKey: ['groups'],
         queryFn: () => getUserGroups(user?.uid || ''),
@@ -16,9 +18,9 @@ export function RoutineItem({ routine, onToggleCompletion, isEditable = true, })
     });
     const group = groups.find((g) => g.id === routine.groupId);
     const priorityLabels = {
-        high: 'Alta',
-        medium: 'Media',
-        low: 'Baja',
+        high: t('routines.high'),
+        medium: t('routines.medium'),
+        low: t('routines.low'),
     };
     const priorityIcons = {
         high: _jsx(Flame, { className: "w-4 h-4" }),
@@ -60,7 +62,7 @@ export function RoutineItem({ routine, onToggleCompletion, isEditable = true, })
                                         ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
                                         : routine.priority === 'medium'
                                             ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
-                                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'}`, children: [priorityIcons[routine.priority], _jsx("span", { className: "ml-1 font-medium", children: priorityLabels[routine.priority] })] }), group && (_jsxs(Badge, { variant: "secondary", className: "flex items-center text-xs", children: [_jsx(FolderOpen, { className: "w-3 h-3 mr-1" }), _jsx("span", { children: group.name })] }))] }), _jsxs("div", { className: "flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400 gap-3", children: [_jsxs("div", { className: "flex items-center", children: [_jsx(Clock, { className: "w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" }), _jsxs("span", { children: ["Tiempo: ", formatTime(routine.expectedTime)] })] }), routine.completed ? (_jsxs("div", { className: "flex items-center text-green-600 dark:text-green-400", children: [_jsx(CircleCheckBig, { className: "w-4 h-4 mr-1" }), _jsx("span", { children: routine.completedAt
-                                                ? `Completado a las ${formatTime(routine.completedAt)}`
-                                                : 'Completado' })] })) : (_jsxs("div", { className: "flex items-center text-gray-500 dark:text-gray-400", children: [_jsx(AlertTriangle, { className: "w-4 h-4 mr-1" }), _jsx("span", { children: "Pendiente" })] }))] })] })] }) }));
+                                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'}`, children: [priorityIcons[routine.priority], _jsx("span", { className: "ml-1 font-medium", children: priorityLabels[routine.priority] })] }), group && (_jsxs(Badge, { variant: "secondary", className: "flex items-center text-xs", children: [_jsx(FolderOpen, { className: "w-3 h-3 mr-1" }), _jsx("span", { children: group.name })] }))] }), _jsxs("div", { className: "flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400 gap-3", children: [_jsxs("div", { className: "flex items-center", children: [_jsx(Clock, { className: "w-4 h-4 mr-1 text-gray-500 dark:text-gray-400" }), _jsxs("span", { children: [t('routines.expectedTime'), ": ", formatTime(routine.expectedTime)] })] }), routine.completed ? (_jsxs("div", { className: "flex items-center text-green-600 dark:text-green-400", children: [_jsx(CircleCheckBig, { className: "w-4 h-4 mr-1" }), _jsx("span", { children: routine.completedAt
+                                                ? t('routines.completedAt', { time: formatTime(routine.completedAt) })
+                                                : t('routines.completed') })] })) : (_jsxs("div", { className: "flex items-center text-gray-500 dark:text-gray-400", children: [_jsx(AlertTriangle, { className: "w-4 h-4 mr-1" }), _jsx("span", { children: t('routines.pending') })] }))] })] })] }) }));
 }

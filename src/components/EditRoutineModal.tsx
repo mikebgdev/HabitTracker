@@ -416,7 +416,7 @@ export function EditRoutineModal({
                         </span>
                       </div>
                     ) : (
-                      {t('routines.noneIcon')}
+                      <span>{t('routines.noneIcon')}</span>
                     )}
                   </SelectValue>
                 </SelectTrigger>

@@ -1,10 +1,9 @@
-import { Switch, Route, useLocation } from 'wouter';
+import { Switch, Route } from 'wouter';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { I18nProvider } from '@/contexts/I18nProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Dashboard from '@/pages/Dashboard';
-import Login from '@/pages/Login';
 import MyRoutines from '@/pages/MyRoutines';
 import Groups from '@/pages/Groups';
 import ProgressPage from '@/pages/Progress';
@@ -19,7 +18,6 @@ function App() {
         <Toaster />
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/login" component={Login} />
           <Route path="/dashboard">
             <ProtectedRoute>
               <Dashboard />

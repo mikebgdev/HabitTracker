@@ -20,6 +20,8 @@
   "confirmDeleteBtn": "Delete",
   "deletedSuccess": "Routine deleted successfully",
   "deleteError": "Failed to delete routine",
+  "loading": "Loading routines...",
+  "noRoutines": "No routines found.",
   "newTitle": "Create Routine",
   "newDescription": "Create a new routine to track daily habits",
   "editTitle": "Edit Routine",

@@ -12,10 +12,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getUserRoutines, deleteRoutine } from '@/lib/firebase';
 import { DeleteRoutineDialog } from '@/components/dialogs/DeleteRoutineDialog';
 import { WeekdayScheduleDisplay } from '@/components/WeekdayScheduleDisplay';
+import { useI18n } from '@/contexts/I18nProvider';
 import type { Routine } from '@/lib/types';
 
 export default function MyRoutines() {
   const { toast } = useToast();
+  const { t } = useI18n();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
@@ -46,13 +48,13 @@ export default function MyRoutines() {
         queryKey: ['routines', user?.uid],
       });
       toast({
-        title: 'Rutina eliminada',
-        description: 'La rutina ha sido eliminada correctamente',
+        title: t('common.success'),
+        description: t('routines.deletedSuccess'),
       });
     } catch {
       toast({
-        title: 'Error',
-        description: 'No se pudo eliminar la rutina. Inténtalo de nuevo.',
+        title: t('common.error'),
+        description: t('routines.deleteError'),
       });
     } finally {
       setRoutineToDelete(null);
@@ -62,14 +64,14 @@ export default function MyRoutines() {
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Mis Rutinas</h2>
+        <h2 className="text-2xl font-bold">{t('routines.title')}</h2>
         <Button onClick={() => setIsAddRoutineModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Agregar Rutina
+          <Plus className="mr-2 h-4 w-4" /> {t('routines.add')}
         </Button>
       </div>
 
       {isLoading ? (
-        <p className="text-center">Cargando rutinas...</p>
+        <p className="text-center">{t('routines.loading')}</p>
       ) : routines.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {routines.map((routine) => (
@@ -88,20 +90,20 @@ export default function MyRoutines() {
                     setIsEditRoutineModalOpen(true);
                   }}
                 >
-                  <Edit className="mr-1 h-4 w-4" /> Editar
+                  <Edit className="mr-1 h-4 w-4" /> {t('routines.edit')}
                 </Button>
                 <Button
                   variant="destructive"
                   onClick={() => confirmDeleteRoutine(routine)}
                 >
-                  <Trash className="mr-1 h-4 w-4" /> Eliminar
+                  <Trash className="mr-1 h-4 w-4" /> {t('routines.delete')}
                 </Button>
               </div>
             </Card>
           ))}
         </div>
       ) : (
-        <p className="text-center">No se encontraron rutinas.</p>
+        <p className="text-center">{t('routines.noRoutines')}</p>
       )}
 
       <AddRoutineModal

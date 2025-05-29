@@ -33,7 +33,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger, SelectValue
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Plus, Edit, Trash, Clock } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -151,6 +152,15 @@ export default function Groups() {
       setGroupToDelete(null);
     }
   };
+
+  const ICON_OPTIONS = [
+    { value: 'fa-sun', label: 'Morning', color: 'text-amber-500' },
+    { value: 'fa-briefcase', label: 'Work', color: 'text-blue-500' },
+    { value: 'fa-moon', label: 'Evening', color: 'text-purple-500' },
+    { value: 'fa-dumbbell', label: 'Fitness', color: 'text-red-500' },
+    { value: 'fa-book', label: 'Study', color: 'text-green-500' },
+    { value: 'fa-layer-group', label: 'General', color: 'text-gray-500' },
+  ];
 
   return (
     <Layout>
@@ -274,63 +284,34 @@ export default function Groups() {
                 >
                   <SelectTrigger>
                     <SelectValue>
-                      {groupFormState.icon && (
-                        <div className="flex items-center">
-                          <i className={`fas ${groupFormState.icon} mr-2`} />
-                          <span>
-                            {
-                              {
-                                'fa-sun': 'Morning',
-                                'fa-briefcase': 'Work',
-                                'fa-moon': 'Evening',
-                                'fa-dumbbell': 'Fitness',
-                                'fa-book': 'Study',
-                                'fa-layer-group': 'General',
-                              }[groupFormState.icon]
-                            }
-                          </span>
-                        </div>
-                      )}
+                      {groupFormState.icon &&
+                        (() => {
+                          const selected = ICON_OPTIONS.find(
+                            (i) => i.value === groupFormState.icon,
+                          );
+                          return selected ? (
+                            <div className="flex items-center">
+                              <i
+                                className={`fas ${selected.value} mr-2 ${selected.color}`}
+                              />
+                              <span>{selected.label}</span>
+                            </div>
+                          ) : null;
+                        })()}
                     </SelectValue>
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="fa-sun">
-                      <div className="flex items-center">
-                        <i className="fas fa-sun mr-2 text-amber-500"></i>
-                        <span>Morning</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fa-briefcase">
-                      <div className="flex items-center">
-                        <i className="fas fa-briefcase mr-2 text-blue-500"></i>
-                        <span>Work</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fa-moon">
-                      <div className="flex items-center">
-                        <i className="fas fa-moon mr-2 text-purple-500"></i>
-                        <span>Evening</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fa-dumbbell">
-                      <div className="flex items-center">
-                        <i className="fas fa-dumbbell mr-2 text-red-500"></i>
-                        <span>Fitness</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fa-book">
-                      <div className="flex items-center">
-                        <i className="fas fa-book mr-2 text-green-500"></i>
-                        <span>Study</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fa-layer-group">
-                      <div className="flex items-center">
-                        <i className="fas fa-layer-group mr-2 text-gray-500"></i>
-                        <span>General</span>
-                      </div>
-                    </SelectItem>
+                    {ICON_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center">
+                          <i
+                            className={`fas ${option.value} mr-2 ${option.color}`}
+                          />
+                          <span>{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

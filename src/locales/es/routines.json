@@ -20,6 +20,8 @@
   "confirmDeleteBtn": "Eliminar",
   "deletedSuccess": "Rutina eliminada correctamente",
   "deleteError": "No se pudo eliminar la rutina",
+  "loading": "Cargando rutinas...",
+  "noRoutines": "No se encontraron rutinas.",
   "newTitle": "Crear Rutina",
   "newDescription": "Crea una nueva rutina para rastrear hábitos diarios",
   "editTitle": "Editar Rutina",

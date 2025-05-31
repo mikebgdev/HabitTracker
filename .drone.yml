@@ -1,49 +1,72 @@
+name: react-project-build
 kind: pipeline
 type: docker
-name: default
-
-steps:
-  - name: build
-    image: node:20-alpine
-    environment:
-      NODE_ENV: production
-      VITE_FIREBASE_API_KEY:
-        from_secret: VITE_FIREBASE_API_KEY
-      VITE_FIREBASE_AUTH_DOMAIN:
-        from_secret: VITE_FIREBASE_AUTH_DOMAIN
-      VITE_FIREBASE_PROJECT_ID:
-        from_secret: VITE_FIREBASE_PROJECT_ID
-      VITE_FIREBASE_STORAGE_BUCKET:
-        from_secret: VITE_FIREBASE_STORAGE_BUCKET
-      VITE_FIREBASE_MESSAGING_SENDER_ID:
-        from_secret: VITE_FIREBASE_MESSAGING_SENDER_ID
-      VITE_FIREBASE_APP_ID:
-        from_secret: VITE_FIREBASE_APP_ID
-    commands:
-      - npm ci
-      - npm run build
-
-  - name: publish
-    image: plugins/docker
-    when:
-      branch:
-        - main
-      event:
-        - push
-    settings:
-      repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME}
-      tags:
-        - latest
-        - ${DRONE_COMMIT_SHA}
-      dockerfile: Dockerfile
-      context: .
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
 
 trigger:
-  branch:
-    - main
   event:
     - push
+    - pull_request
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  disable: true
+
+steps:
+  - name: clone
+    image: drone/git
+    commands:
+      - git clone https://$GITHUB_TOKEN@github.com/$DRONE_REPO ./$PROJECT_NAME
+      - cd ./$PROJECT_NAME
+      - git checkout $DRONE_COMMIT
+
+  - name: install-deps
+    image: node:20-alpine
+    commands:
+      - cd ./app
+      - npm ci
+
+  - name: build
+    image: node:20-alpine
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm run build
+
+---
+
+name: react-project-promote
+kind: pipeline
+type: docker
+
+trigger:
+  event:
+    - promote
+
+steps:
+  - name: production
+    image: appleboy/drone-ssh
+    when:
+      target:
+        - production
+    settings:
+      host:
+        from_secret: docker_host
+      username:
+        from_secret: username_ssh
+      password:
+        from_secret: password_ssh
+      port: 22
+      command_timeout: 2m
+      script:
+        - |
+          if [ ! -d "/var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}" ]; then
+              git clone https://${GITHUB_TOKEN}@github.com/${DRONE_REPO} /var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}
+          fi
+        - cd /var/www/${DRONE_REPO_NAME}-${DRONE_DEPLOY_TO}
+        - git fetch
+        - git reset --hard origin/${DRONE_BRANCH}
+        - git checkout ${DRONE_BRANCH}
+        - git pull origin ${DRONE_BRANCH}
+        - npm run build

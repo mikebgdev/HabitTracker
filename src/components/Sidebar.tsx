@@ -2,7 +2,7 @@ import { Link, useLocation } from 'wouter';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
-import { Moon, Sun, LogOut } from 'lucide-react';
+import { LogOut, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {

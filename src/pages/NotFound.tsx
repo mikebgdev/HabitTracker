@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/contexts/I18nProvider';
 
@@ -12,7 +12,9 @@ export default function NotFound() {
         <div className="flex justify-center mb-4">
           <AlertTriangle className="h-24 w-24 text-yellow-500" />
         </div>
-        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
+        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          404
+        </h1>
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
           {t('notFound.title')}
         </h2>
@@ -20,7 +22,7 @@ export default function NotFound() {
           {t('notFound.description')}
         </p>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row gap-4">
         <Button asChild variant="outline">
           <Link href="/">
@@ -28,9 +30,13 @@ export default function NotFound() {
             {t('notFound.backHome')}
           </Link>
         </Button>
-        
+
         <Button asChild variant="primary">
-          <a href="https://habitmaster.replit.app/help" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://habitmaster.replit.app/help"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {t('notFound.help')}
           </a>
         </Button>

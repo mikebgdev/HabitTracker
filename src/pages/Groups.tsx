@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   CardDescription,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
   Dialog,
@@ -36,18 +36,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Edit, Trash, Clock } from 'lucide-react';
+import { Clock, Edit, Plus, Trash } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  getUserGroups,
   addGroup,
-  updateGroup,
   deleteGroup,
+  getUserGroups,
+  getUserRoutines,
+  updateGroup,
 } from '@/lib/firebase';
 import { useToast } from '@/hooks/useToast';
 import { useI18n } from '@/contexts/I18nProvider';
-import type { Group, InsertGroup } from '@/lib/types';
+import type { Group, InsertGroup, Routine } from '@/lib/types';
 
 export default function Groups() {
   const { t } = useI18n();
@@ -70,6 +71,12 @@ export default function Groups() {
   const { data: groups = [], isLoading: isLoadingGroups } = useQuery<Group[]>({
     queryKey: ['groups'],
     queryFn: () => getUserGroups(user?.uid || ''),
+    enabled: !!user,
+  });
+
+  const { data: routines = [] } = useQuery<Routine[]>({
+    queryKey: ['routines'],
+    queryFn: () => getUserRoutines(user?.uid || ''),
     enabled: !!user,
   });
 
@@ -180,35 +187,52 @@ export default function Groups() {
         <p className="text-center py-8">{t('groups.loading')}</p>
       ) : groups.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groups.map((group) => (
-            <Card key={group.id}>
-              <CardHeader>
-                <CardTitle>{group.name}</CardTitle>
-                {group.timeRange && (
-                  <CardDescription>
-                    <Clock className="inline w-4 h-4 mr-1" /> {group.timeRange}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <p>{t('groups.routinesInGroup')}</p>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => handleOpenEditGroupModal(group)}
-                >
-                  <Edit className="mr-1 h-4 w-4" /> {t('groups.edit')}
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => confirmDeleteGroup(group.id)}
-                >
-                  <Trash className="mr-1 h-4 w-4" /> {t('groups.delete')}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          {groups.map((group) => {
+            const routineCount = routines.filter(
+              (r) => r.groupId === group.id,
+            ).length;
+            const iconData = ICON_OPTIONS.find((i) => i.value === group.icon);
+            return (
+              <Card key={group.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {iconData && (
+                      <i
+                        className={`fas ${iconData.value} ${iconData.color}`}
+                      />
+                    )}
+                    {group.name}
+                  </CardTitle>
+                  {group.timeRange && (
+                    <CardDescription>
+                      <Clock className="inline w-4 h-4 mr-1" />{' '}
+                      {group.timeRange}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <p>
+                    {t('groups.routinesInGroup')}:{' '}
+                    <strong>{routineCount}</strong>
+                  </p>
+                </CardContent>
+                <CardFooter className="flex flex-wrap justify-end gap-2 p-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenEditGroupModal(group)}
+                  >
+                    <Edit className="mr-1 h-4 w-4" /> {t('groups.edit')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => confirmDeleteGroup(group.id)}
+                  >
+                    <Trash className="mr-1 h-4 w-4" /> {t('groups.delete')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12">

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useI18n } from '@/contexts/I18nProvider';
 import { RoutineItem } from './RoutineItem';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import type { Routine } from '@/lib/types';
 
 interface RoutineGroupProps {
@@ -34,6 +34,16 @@ export function RoutineGroup({
 
   const { t } = useI18n();
 
+  const ICON_OPTIONS = [
+    { value: 'fa-sun', label: 'Morning', color: 'text-amber-500' },
+    { value: 'fa-briefcase', label: 'Work', color: 'text-blue-500' },
+    { value: 'fa-moon', label: 'Evening', color: 'text-purple-500' },
+    { value: 'fa-dumbbell', label: 'Fitness', color: 'text-red-500' },
+    { value: 'fa-book', label: 'Study', color: 'text-green-500' },
+    { value: 'fa-layer-group', label: 'General', color: 'text-gray-500' },
+  ];
+  const iconData = ICON_OPTIONS.find((i) => i.value === group.icon);
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
@@ -43,7 +53,12 @@ export function RoutineGroup({
           aria-expanded={isExpanded}
         >
           <div className="flex items-center">
-            <CardTitle>{group.name}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              {iconData && (
+                <i className={`fas ${iconData.value} ${iconData.color}`} />
+              )}
+              {group.name}
+            </CardTitle>
             {group.timeRange && (
               <div className="ml-4 text-sm text-gray-500 dark:text-gray-400 flex items-center">
                 <Clock className="w-3 h-3 mr-1" />

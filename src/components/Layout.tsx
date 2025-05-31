@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
-  Sun,
-  Moon,
-  Menu,
-  X,
-  User,
-  Home,
-  Calendar,
   BarChart2,
+  Calendar,
+  Home,
   Layers,
+  Menu,
+  Moon,
+  Sun,
+  User,
+  X,
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nProvider';
 
@@ -145,9 +145,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="md:hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-75">
             <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 p-4">
               <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                {t('nav.menu')}
-              </h2>
+                <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                  {t('nav.menu')}
+                </h2>
                 <button
                   onClick={closeMobileMenu}
                   className="text-gray-600 dark:text-gray-300"

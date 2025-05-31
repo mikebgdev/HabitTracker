@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
-import { Moon, Sun, Menu, X } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function MobileNavbar() {

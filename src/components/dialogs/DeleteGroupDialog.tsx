@@ -7,7 +7,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import { useI18n } from '@/contexts/I18nProvider';
 
 interface DeleteGroupDialogProps {
@@ -17,11 +17,11 @@ interface DeleteGroupDialogProps {
   groupName?: string;
 }
 
-export function DeleteGroupDialog({ 
-  open, 
-  onOpenChange, 
+export function DeleteGroupDialog({
+  open,
+  onOpenChange,
   onConfirm,
-  groupName = "este grupo"
+  groupName = 'este grupo',
 }: DeleteGroupDialogProps) {
   const { t } = useI18n();
   return (
@@ -35,7 +35,7 @@ export function DeleteGroupDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >

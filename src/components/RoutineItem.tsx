@@ -1,31 +1,30 @@
 import React from 'react';
 import {
-  Clock,
+  Activity,
   AlertTriangle,
   BatteryMedium,
-  Flame,
-  Activity,
   Bike,
   Book,
   BrainCircuit,
+  CircleCheckBig,
+  Clock,
   Coffee,
   Dumbbell,
+  Flame,
   Footprints,
   HandPlatter,
   Heart,
   Laptop,
+  LucideIcon,
   Microscope,
   Music,
   Palette,
   Pen,
   Smartphone,
   Sparkles,
+  Timer,
   Utensils,
   Waves,
-  LucideIcon,
-  CircleCheckBig,
-  FolderOpen,
-  Timer,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -119,7 +118,11 @@ export function RoutineItem({
         <div className="mr-3">
           <Checkbox
             checked={!!routine.completed}
-            onCheckedChange={handleChange}
+            onCheckedChange={(checked) => {
+              if (typeof checked === 'boolean') {
+                onToggleCompletion(routine.id, checked);
+              }
+            }}
             className="h-5 w-5"
             disabled={!isEditable}
           />
@@ -151,13 +154,6 @@ export function RoutineItem({
                 {priorityLabels[routine.priority]}
               </span>
             </Badge>
-
-            {group && (
-              <Badge variant="secondary" className="flex items-center text-xs">
-                <FolderOpen className="w-3 h-3 mr-1" />
-                <span>{group.name}</span>
-              </Badge>
-            )}
           </div>
 
           <div className="flex flex-wrap items-center mt-2 text-sm text-gray-600 dark:text-gray-400 gap-3">
@@ -173,7 +169,9 @@ export function RoutineItem({
                 <CircleCheckBig className="w-4 h-4 mr-1" />
                 <span>
                   {routine.completedAt
-                    ? t('routines.completedAt', { time: formatTime(routine.completedAt) })
+                    ? t('routines.completedAt', {
+                        time: formatTime(routine.completedAt),
+                      })
                     : t('routines.completed')}
                 </span>
               </div>

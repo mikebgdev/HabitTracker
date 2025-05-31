@@ -20,11 +20,9 @@ export async function loadTranslations(lang: string) {
   return translations;
 }
 
-
-
 export function getNestedTranslation(
   translations: Translations,
-  key: string
+  key: string,
 ): string {
   const parts = key.split('.');
   let result: any = translations;

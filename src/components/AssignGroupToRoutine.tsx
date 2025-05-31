@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { useI18n } from '@/contexts/I18nProvider';
 import {
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserGroups, updateRoutine } from '@/lib/firebase';
 import { useToast } from '@/hooks/useToast';
@@ -113,7 +113,7 @@ export function AssignGroupToRoutine({
               value={selectedGroupId || ''}
               onValueChange={setSelectedGroupId}
             >
-            <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('routines.selectGroup')} />
               </SelectTrigger>
               <SelectContent>

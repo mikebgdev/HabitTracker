@@ -1,14 +1,9 @@
 import React from 'react';
-import { useI18n } from '@/contexts/I18nProvider';
 import { useQuery } from '@tanstack/react-query';
 import { getWeekdaySchedule } from '@/lib/firebase';
-import type { WeekdaySchedule } from '@/lib/types';
+import type { DayKey, WeekdaySchedule } from '@/lib/types';
 
-interface WeekdayScheduleDisplayProps {
-  routineId: string;
-}
-
-const days: { key: keyof WeekdaySchedule; label: string }[] = [
+const DAYS: { key: keyof WeekdaySchedule; label: string }[] = [
   { key: 'monday', label: 'L' },
   { key: 'tuesday', label: 'M' },
   { key: 'wednesday', label: 'X' },
@@ -18,38 +13,28 @@ const days: { key: keyof WeekdaySchedule; label: string }[] = [
   { key: 'sunday', label: 'D' },
 ];
 
-export function WeekdayScheduleDisplay({
-  routineId,
-}: WeekdayScheduleDisplayProps) {
-  const { data: weekdaySchedule } = useQuery<WeekdaySchedule | null>({
+const dayClass = (active: boolean) =>
+  `w-6 h-6 flex items-center justify-center rounded text-xs font-semibold transition-colors ${
+    active
+      ? 'bg-blue-600 text-white shadow'
+      : 'text-gray-400 dark:text-gray-500'
+  }`;
+
+export function WeekdayScheduleDisplay({ routineId }: { routineId: string }) {
+  const { data } = useQuery<WeekdaySchedule>({
     queryKey: ['weekdaySchedule', routineId],
     queryFn: () => getWeekdaySchedule(routineId),
-    enabled: !!routineId,
   });
 
-  const { t } = useI18n();
+  if (!data) return null;
+
   return (
-    <div className="mb-4">
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-        {t('weekdays.title')}
-      </div>
-      <div className="flex flex-wrap gap-1">
-        {days.map(({ key, label }) => {
-          const selected = weekdaySchedule?.[key];
-          return (
-            <span
-              key={key}
-              className={`text-xs px-2 py-1 rounded ${
-                selected
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              {label}
-            </span>
-          );
-        })}
-      </div>
+    <div className="flex gap-1 mt-2">
+      {DAYS.map(({ key, label }) => (
+        <div key={key} className={dayClass(data[key as DayKey])}>
+          {label}
+        </div>
+      ))}
     </div>
   );
 }

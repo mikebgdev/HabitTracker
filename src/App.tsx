@@ -1,4 +1,4 @@
-import { Switch, Route } from 'wouter';
+import { Route, Switch } from 'wouter';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { I18nProvider } from '@/contexts/I18nProvider';

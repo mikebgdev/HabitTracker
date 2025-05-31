@@ -86,6 +86,9 @@ export function AddRoutineModal({
     if (value === 'new') {
       setShowNewGroupInput(true);
       setGroupId(null);
+    } else if (value === 'none') {
+      setShowNewGroupInput(false);
+      setGroupId(null);
     } else {
       setShowNewGroupInput(false);
       setGroupId(value);
@@ -127,7 +130,7 @@ export function AddRoutineModal({
         name,
         expectedTime,
         priority,
-        groupId: finalGroupId || undefined,
+        ...(finalGroupId ? { groupId: finalGroupId } : {}),
       };
 
       const routineId = await addRoutine({
@@ -139,7 +142,9 @@ export function AddRoutineModal({
 
       toast({
         title: t('common.success'),
-        description: t('routines.createdSuccessDescription', { routineName: name }),
+        description: t('routines.createdSuccessDescription', {
+          routineName: name,
+        }),
       });
 
       if (onRoutineCreated) {
@@ -163,6 +168,23 @@ export function AddRoutineModal({
     }
   };
 
+  const dayToggleClass = (selected: boolean) =>
+    `text-xs font-medium text-center px-2 py-1 rounded border transition-colors duration-150 ${
+      selected
+        ? 'bg-blue-600 text-white border-blue-700 shadow'
+        : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+    }`;
+
+  const DAYS: { key: DayKey; label: string }[] = [
+    { key: 'monday', label: 'L' },
+    { key: 'tuesday', label: 'M' },
+    { key: 'wednesday', label: 'X' },
+    { key: 'thursday', label: 'J' },
+    { key: 'friday', label: 'V' },
+    { key: 'saturday', label: 'S' },
+    { key: 'sunday', label: 'D' },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
@@ -181,7 +203,9 @@ export function AddRoutineModal({
               <Label
                 htmlFor="routine-name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.name')}</Label>
+              >
+                {t('routines.name')}
+              </Label>
               <Input
                 id="routine-name"
                 value={name}
@@ -211,21 +235,32 @@ export function AddRoutineModal({
               <Label
                 htmlFor="routine-group"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.groupLabel')}</Label>
-              <Select onValueChange={handleGroupChange}>
+              >
+                {t('routines.groupLabel')}
+              </Label>
+              <Select
+                value={groupId ?? 'none'}
+                onValueChange={handleGroupChange}
+              >
                 <SelectTrigger id="routine-group">
                   <SelectValue placeholder={t('routines.selectGroup')} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">{t('routines.none')}</SelectItem>
                   {groups.map((group) => (
                     <SelectItem key={group.id} value={group.id.toString()}>
                       {group.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="new">{t('routines.createNewGroup')}</SelectItem>
+                  <SelectItem value="new">
+                    {t('routines.createNewGroup')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('routines.assignToGroupDescription')}
+              </p>
               {showNewGroupInput && (
                 <div className="mt-2">
                   <Input
@@ -243,7 +278,9 @@ export function AddRoutineModal({
               <Label
                 htmlFor="routine-priority"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.priorityLabel')}</Label>
+              >
+                {t('routines.priorityLabel')}
+              </Label>
               <Select
                 defaultValue={priority}
                 onValueChange={(val: 'high' | 'medium' | 'low') =>
@@ -266,90 +303,16 @@ export function AddRoutineModal({
                 {t('routines.repeatLabel')}
               </Label>
               <div className="grid grid-cols-7 gap-1">
-                <Toggle
-                  variant={selectedDays.monday ? 'selected' : 'day'}
-                  pressed={selectedDays.monday}
-                  onPressedChange={() => toggleDay('monday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.monday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  L
-                </Toggle>
-                <Toggle
-                  variant={selectedDays.tuesday ? 'selected' : 'day'}
-                  pressed={selectedDays.tuesday}
-                  onPressedChange={() => toggleDay('tuesday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.tuesday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  M
-                </Toggle>
-                <Toggle
-                  variant={selectedDays.wednesday ? 'selected' : 'day'}
-                  pressed={selectedDays.wednesday}
-                  onPressedChange={() => toggleDay('wednesday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.wednesday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  X
-                </Toggle>
-                <Toggle
-                  variant={selectedDays.thursday ? 'selected' : 'day'}
-                  pressed={selectedDays.thursday}
-                  onPressedChange={() => toggleDay('thursday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.thursday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  J
-                </Toggle>
-                <Toggle
-                  variant={selectedDays.friday ? 'selected' : 'day'}
-                  pressed={selectedDays.friday}
-                  onPressedChange={() => toggleDay('friday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.friday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  V
-                </Toggle>
-                <Toggle
-                  variant={selectedDays.saturday ? 'selected' : 'day'}
-                  pressed={selectedDays.saturday}
-                  onPressedChange={() => toggleDay('saturday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.saturday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  S
-                </Toggle>
-                <Toggle
-                  variant={selectedDays.sunday ? 'selected' : 'day'}
-                  pressed={selectedDays.sunday}
-                  onPressedChange={() => toggleDay('sunday')}
-                  className={`text-xs font-medium text-center ${
-                    selectedDays.sunday
-                      ? 'bg-blue-500 text-white dark:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  D
-                </Toggle>
+                {DAYS.map(({ key, label }) => (
+                  <Toggle
+                    key={key}
+                    pressed={selectedDays[key]}
+                    onPressedChange={() => toggleDay(key)}
+                    className={dayToggleClass(selectedDays[key])}
+                  >
+                    {label}
+                  </Toggle>
+                ))}
               </div>
             </div>
           </div>

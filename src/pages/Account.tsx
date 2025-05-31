@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Trash2, Globe, LogOut } from 'lucide-react';
+import { Globe, LogOut, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { Language } from '@/lib/i18n';
 

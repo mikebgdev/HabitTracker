@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
 import { RoutineGroup } from '@/components/RoutineGroup';
 import Layout from '@/components/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Calendar,
-  Plus,
-  RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Plus,
+  RefreshCw,
 } from 'lucide-react';
-import { format, addDays, subDays } from 'date-fns';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { addDays, format, subDays } from 'date-fns';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
+  addCompletion,
+  getCompletionsByDate,
   getUserGroups,
   getUserRoutines,
   getWeekdaySchedule,
-  getCompletionsByDate,
-  addCompletion,
   removeCompletion,
 } from '@/lib/firebase';
 import type { DayKey } from '@/lib/types';
 import { useI18n } from '@/contexts/I18nProvider';
+import { Timestamp } from 'firebase/firestore';
 
 export default function Dashboard() {
   const [setIsAddRoutineModalOpen] = useState(false);
@@ -100,7 +101,13 @@ export default function Dashboard() {
         const schedule = weekdaySchedules.find(
           (s) => s.routineId === routine.id,
         );
-        return schedule ? schedule[currentDay] : false;
+        const allowArchived =
+          format(selectedDate, 'yyyy-MM-dd') ===
+          format(new Date(), 'yyyy-MM-dd');
+        return (
+          (allowArchived || !routine.archived) &&
+          (schedule ? schedule[currentDay] : false)
+        );
       });
 
       const routinesWithCompletion = routinesForToday.map((routine) => {
@@ -159,20 +166,22 @@ export default function Dashboard() {
       completed: boolean;
     }) => {
       if (!user) return;
-      completed
-        ? await addCompletion({
-            userId: user.uid,
-            routineId,
-            completedAt: new Date().toISOString(),
-          })
-        : await removeCompletion(user.uid, routineId, dateParam);
+      if (completed) {
+        await addCompletion({
+          userId: user.uid,
+          routineId,
+          completedAt: Timestamp.fromDate(new Date()),
+        });
+      } else {
+        await removeCompletion(user.uid, routineId, dateParam);
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['routines', 'daily', dateParam],
-      });
+      queryClient.invalidateQueries({ queryKey: ['routines', 'daily'] });
       queryClient.invalidateQueries({ queryKey: ['completions', dateParam] });
-      queryClient.invalidateQueries({ queryKey: ['completions', 'stats'] });
+      queryClient.invalidateQueries({
+        queryKey: ['completions', user?.uid, dateParam],
+      });
     },
   });
 
@@ -180,13 +189,6 @@ export default function Dashboard() {
 
   const handleToggleCompletion = (id: string, completed: boolean) => {
     if (!isToday) return;
-    const updated = data?.map((group) => ({
-      ...group,
-      routines: group.routines.map((r) =>
-        r.id === id ? { ...r, completed } : r,
-      ),
-    }));
-    queryClient.setQueryData(['routines', 'daily', dateParam], updated);
     toggleCompletionMutation.mutate({ routineId: id, completed });
   };
 

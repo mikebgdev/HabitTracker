@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogIn, ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, LogIn } from 'lucide-react';
 
 export default function Home() {
   const { user, signIn } = useAuth();
@@ -28,7 +28,10 @@ export default function Home() {
       <header className="flex justify-between items-center py-6 max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold text-blue-600">HabitMaster</h1>
         {!showLogin && (
-          <Button onClick={() => setShowLogin(true)} className="rounded-full px-6">
+          <Button
+            onClick={() => setShowLogin(true)}
+            className="rounded-full px-6"
+          >
             Sign In
           </Button>
         )}
@@ -46,13 +49,19 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-                Build better <span className="text-black dark:text-white">habits,</span>{' '}
+                Build better{' '}
+                <span className="text-black dark:text-white">habits,</span>{' '}
                 <span className="text-blue-600">one day at a time</span>
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto mb-8">
-                HabitMaster helps you build consistent habits with beautiful visuals, smart reminders, and real progress tracking.
+                HabitMaster helps you build consistent habits with beautiful
+                visuals, smart reminders, and real progress tracking.
               </p>
-              <Button onClick={() => setShowLogin(true)} size="lg" className="px-8 py-3 text-lg">
+              <Button
+                onClick={() => setShowLogin(true)}
+                size="lg"
+                className="px-8 py-3 text-lg"
+              >
                 Get Started <ArrowRight className="ml-2" />
               </Button>
 
@@ -64,14 +73,16 @@ export default function Home() {
                   'Beautiful habit heatmaps',
                   'Smart reminders and notifications',
                   'Detailed analytics and insights',
-                  'Goal setting and motivation'
+                  'Goal setting and motivation',
                 ].map((feature, i) => (
                   <div
                     key={i}
                     className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex items-start gap-4"
                   >
                     <CheckCircle className="text-blue-600 mt-1" />
-                    <p className="text-gray-700 dark:text-gray-300">{feature}</p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {feature}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -85,7 +96,9 @@ export default function Home() {
               transition={{ duration: 0.4 }}
               className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg max-w-md mx-auto"
             >
-              <h3 className="text-2xl font-bold mb-2 text-blue-600 text-center">Welcome to HabitMaster</h3>
+              <h3 className="text-2xl font-bold mb-2 text-blue-600 text-center">
+                Welcome to HabitMaster
+              </h3>
               <p className="text-gray-500 dark:text-gray-400 text-center mb-6">
                 Sign in to start tracking your habits
               </p>

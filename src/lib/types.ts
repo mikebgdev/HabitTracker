@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Routine {
   id: string;
   name: string;
@@ -18,7 +20,7 @@ export interface InsertRoutine {
   priority: 'high' | 'medium' | 'low';
   icon?: string;
   userId: string;
-  groupId?: string;
+  groupId?: string | null;
   archived?: boolean;
   archivedAt?: string;
 }
@@ -71,7 +73,7 @@ export interface Completion {
 
 export interface InsertCompletion {
   routineId: string;
-  completedAt: string;
+  completedAt: Timestamp;
   userId: string;
 }
 

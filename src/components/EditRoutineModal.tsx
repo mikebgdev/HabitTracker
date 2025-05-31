@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -18,26 +18,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Toggle } from '@/components/ui/toggle';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getUserGroups,
   getWeekdaySchedule,
-  updateWeekdaySchedule,
   updateRoutine,
+  updateWeekdaySchedule,
 } from '@/lib/firebase';
 import { useToast } from '@/hooks/useToast';
 import { useI18n } from '@/contexts/I18nProvider';
 import {
-  Flame,
-  Timer,
-  BatteryMedium,
   Activity,
+  BatteryMedium,
   Bike,
   Book,
   BrainCircuit,
   Coffee,
   Dumbbell,
+  Flame,
   Footprints,
   HandPlatter,
   Heart,
@@ -49,16 +48,17 @@ import {
   Pen,
   Smartphone,
   Sparkles,
+  Timer,
   Utensils,
   Waves,
 } from 'lucide-react';
 import type {
-  Group,
-  Routine,
-  InsertRoutine,
-  WeekdaySchedule,
-  InsertWeekdaySchedule,
   DayKey,
+  Group,
+  InsertRoutine,
+  InsertWeekdaySchedule,
+  Routine,
+  WeekdaySchedule,
 } from '@/lib/types';
 
 interface EditRoutineModalProps {
@@ -141,19 +141,17 @@ export function EditRoutineModal({
   const [routineId, setRoutineId] = useState<string | null>(null);
 
   const { user } = useAuth();
-  const client = useQueryClient();
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ['groups'],
     queryFn: () => getUserGroups(user?.uid || ''),
     enabled: !!user,
   });
 
-  const { data: weekdaySchedule, isLoading: isLoadingSchedule } =
-    useQuery<WeekdaySchedule>({
-      queryKey: ['weekdaySchedule', routineId],
-      queryFn: () => getWeekdaySchedule(routineId!),
-      enabled: !!routineId,
-    });
+  const { data: weekdaySchedule } = useQuery<WeekdaySchedule>({
+    queryKey: ['weekdaySchedule', routineId],
+    queryFn: () => getWeekdaySchedule(routineId!),
+    enabled: !!routineId,
+  });
 
   useEffect(() => {
     if (routine) {
@@ -220,20 +218,16 @@ export function EditRoutineModal({
 
     try {
       const routineData: Partial<InsertRoutine> & {
-        groupId?: string;
+        groupId?: string | null;
         weekdays?: Record<string, boolean>;
       } = {
         name,
         expectedTime,
         priority,
         ...(icon ? { icon } : {}),
+        groupId: groupId ?? null,
+        weekdays: selectedDays,
       };
-
-      if (groupId) {
-        routineData.groupId = groupId;
-      }
-
-      routineData.weekdays = selectedDays;
 
       if (routineId) {
         await updateRoutine(routineId, routineData);
@@ -241,7 +235,9 @@ export function EditRoutineModal({
 
         toast({
           title: t('common.success'),
-          description: t('routines.updatedSuccessDescription', { routineName: name }),
+          description: t('routines.updatedSuccessDescription', {
+            routineName: name,
+          }),
         });
       } else {
         console.error('Trying to update routine without ID');
@@ -263,11 +259,6 @@ export function EditRoutineModal({
     }
   };
 
-  const renderPriorityIcon = (priorityLevel: 'high' | 'medium' | 'low') => {
-    const { icon: Icon, color } = PRIORITY_ICONS[priorityLevel];
-    return <Icon className={`mr-2 h-4 w-4 inline-flex ${color}`} />;
-  };
-
   const getIconComponent = (iconName: string | null): LucideIcon | null => {
     if (!iconName) return null;
     return ROUTINE_ICONS.find((item) => item.name === iconName)?.icon || null;
@@ -281,6 +272,22 @@ export function EditRoutineModal({
 
   const SelectedIcon = getSelectedIcon();
 
+  const dayToggleClass = (selected: boolean) =>
+    `text-xs font-medium text-center px-2 py-1 rounded border transition-colors duration-150 ${
+      selected
+        ? 'bg-blue-600 text-white border-blue-700 shadow'
+        : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+    }`;
+
+  const DAYS: { key: DayKey; label: string }[] = [
+    { key: 'monday', label: 'L' },
+    { key: 'tuesday', label: 'M' },
+    { key: 'wednesday', label: 'X' },
+    { key: 'thursday', label: 'J' },
+    { key: 'friday', label: 'V' },
+    { key: 'saturday', label: 'S' },
+    { key: 'sunday', label: 'D' },
+  ];
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
@@ -300,7 +307,9 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.name')}</Label>
+              >
+                {t('routines.name')}
+              </Label>
               <Input
                 id="routine-name"
                 value={name}
@@ -314,7 +323,9 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-time"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.expectedTimeLabel')}</Label>
+              >
+                {t('routines.expectedTimeLabel')}
+              </Label>
               <Input
                 id="routine-time"
                 type="time"
@@ -328,9 +339,11 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-group"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.groupLabel')}</Label>
+              >
+                {t('routines.groupLabel')}
+              </Label>
               <Select
-                value={groupId?.toString() || 'none'}
+                value={groupId ?? 'none'}
                 onValueChange={(val) => setGroupId(val === 'none' ? null : val)}
               >
                 <SelectTrigger id="routine-group">
@@ -345,20 +358,25 @@ export function EditRoutineModal({
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('routines.assignToGroupDescription')}
+              </p>
             </div>
 
             <div className="mb-4">
               <Label
                 htmlFor="routine-priority"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.priorityLabel')}</Label>
+              >
+                {t('routines.priorityLabel')}
+              </Label>
               <Select
                 value={priority}
                 onValueChange={(val: 'high' | 'medium' | 'low') =>
                   setPriority(val)
                 }
               >
-                  <SelectTrigger id="routine-priority">
+                <SelectTrigger id="routine-priority">
                   <SelectValue placeholder={t('routines.selectPriority')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -394,14 +412,16 @@ export function EditRoutineModal({
               <Label
                 htmlFor="routine-icon"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >{t('routines.iconLabel')}</Label>
+              >
+                {t('routines.iconLabel')}
+              </Label>
               <Select
                 value={icon || 'none'}
                 onValueChange={(val: string) =>
                   setIcon(val === 'none' ? null : val)
                 }
               >
-                  <SelectTrigger id="routine-icon" className="flex items-center">
+                <SelectTrigger id="routine-icon" className="flex items-center">
                   <SelectValue placeholder={t('routines.iconPlaceholder')}>
                     {icon && getIconComponent(icon) ? (
                       <div className="flex items-center">
@@ -426,7 +446,7 @@ export function EditRoutineModal({
                     <span>{t('routines.noneIcon')}</span>
                   </SelectItem>
 
-{ICON_CATEGORIES.map((category) => (
+                  {ICON_CATEGORIES.map((category) => (
                     <div key={category.nameKey}>
                       <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1">
                         {t(`routines.iconCategory.${category.nameKey}`)}
@@ -440,7 +460,9 @@ export function EditRoutineModal({
                           >
                             <div className="flex items-center">
                               <Icon className="h-4 w-4 mr-2" />
-                              <span>{t(`routines.iconLabels.${labelKey}`)}</span>
+                              <span>
+                                {t(`routines.iconLabels.${labelKey}`)}
+                              </span>
                             </div>
                           </SelectItem>
                         ),
@@ -456,83 +478,16 @@ export function EditRoutineModal({
                 {t('routines.repeatLabel')}
               </Label>
               <div className="grid grid-cols-7 gap-1">
-                <Toggle
-                  pressed={selectedDays.monday}
-                  onPressedChange={() => toggleDay('monday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.monday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  L
-                </Toggle>
-                <Toggle
-                  pressed={selectedDays.tuesday}
-                  onPressedChange={() => toggleDay('tuesday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.tuesday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  M
-                </Toggle>
-                <Toggle
-                  pressed={selectedDays.wednesday}
-                  onPressedChange={() => toggleDay('wednesday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.wednesday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  X
-                </Toggle>
-                <Toggle
-                  pressed={selectedDays.thursday}
-                  onPressedChange={() => toggleDay('thursday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.thursday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  J
-                </Toggle>
-                <Toggle
-                  pressed={selectedDays.friday}
-                  onPressedChange={() => toggleDay('friday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.friday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  V
-                </Toggle>
-                <Toggle
-                  pressed={selectedDays.saturday}
-                  onPressedChange={() => toggleDay('saturday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.saturday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  S
-                </Toggle>
-                <Toggle
-                  pressed={selectedDays.sunday}
-                  onPressedChange={() => toggleDay('sunday')}
-                  className={`text-sm font-medium text-center border ${
-                    selectedDays.sunday
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                  }`}
-                >
-                  D
-                </Toggle>
+                {DAYS.map(({ key, label }) => (
+                  <Toggle
+                    key={key}
+                    pressed={selectedDays[key]}
+                    onPressedChange={() => toggleDay(key)}
+                    className={dayToggleClass(selectedDays[key])}
+                  >
+                    {label}
+                  </Toggle>
+                ))}
               </div>
             </div>
           </div>

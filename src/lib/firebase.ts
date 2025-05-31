@@ -176,6 +176,7 @@ export async function getCompletionsByDate(
     } else {
       console.error('Error checking existing completions:', err);
     }
+    return []
   }
 }
 

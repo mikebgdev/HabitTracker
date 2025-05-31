@@ -26,7 +26,7 @@ import { useI18n } from '@/contexts/I18nProvider';
 import { Timestamp } from 'firebase/firestore';
 
 export default function Dashboard() {
-  const [setIsAddRoutineModalOpen] = useState(false);
+  const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const queryClient = useQueryClient();
   const { user } = useAuth();

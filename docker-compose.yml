@@ -1,10 +1,10 @@
 version: '3.9'
 
 services:
-  nginx:
-    image: nginx:stable-alpine
-    container_name: habittracker-nginx
+  habit-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: react-${PROJECT_NAME}
     ports:
-      - "${HTTP_PORT_FRONT:-80}:80"
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ${HTTP_PORT}:80

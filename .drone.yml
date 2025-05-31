@@ -3,31 +3,47 @@ type: docker
 name: default
 
 steps:
-  - name: build-backend
-    image: node:20
+  - name: build
+    image: node:20-alpine
     environment:
-      DATABASE_URL:
-        from_secret: db_url
+      NODE_ENV: production
+      VITE_FIREBASE_API_KEY:
+        from_secret: VITE_FIREBASE_API_KEY
+      VITE_FIREBASE_AUTH_DOMAIN:
+        from_secret: VITE_FIREBASE_AUTH_DOMAIN
+      VITE_FIREBASE_PROJECT_ID:
+        from_secret: VITE_FIREBASE_PROJECT_ID
+      VITE_FIREBASE_STORAGE_BUCKET:
+        from_secret: VITE_FIREBASE_STORAGE_BUCKET
+      VITE_FIREBASE_MESSAGING_SENDER_ID:
+        from_secret: VITE_FIREBASE_MESSAGING_SENDER_ID
+      VITE_FIREBASE_APP_ID:
+        from_secret: VITE_FIREBASE_APP_ID
     commands:
-      - cd backend
       - npm ci
       - npm run build
 
-  - name: build-frontend
-    image: node:20
-    commands:
-      - cd frontend
-      - npm ci
-      - npm run build
-
-  - name: dockerize
+  - name: publish
     image: plugins/docker
+    when:
+      branch:
+        - main
+      event:
+        - push
     settings:
-      repo: your-dockerhub-username/habittracker
+      repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME}
       tags:
         - latest
         - ${DRONE_COMMIT_SHA}
+      dockerfile: Dockerfile
+      context: .
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
+
+trigger:
+  branch:
+    - main
+  event:
+    - push

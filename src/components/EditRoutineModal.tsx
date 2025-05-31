@@ -29,12 +29,11 @@ import {
 import { useToast } from '@/hooks/useToast';
 import { useI18n } from '@/contexts/I18nProvider';
 import {
+  dayToggleClass,
   ICON_CATEGORIES,
-  ROUTINE_ICONS,
   PRIORITY_ICONS,
   ROUTINE_ICON_MAP,
   WEEKDAYS,
-  dayToggleClass,
 } from '@/lib/constants';
 import type {
   DayKey,
@@ -51,7 +50,6 @@ interface EditRoutineModalProps {
   routine?: Routine;
   onRoutineUpdated?: () => Promise<void>;
 }
-
 
 export function EditRoutineModal({
   isOpen,
@@ -238,7 +236,8 @@ export function EditRoutineModal({
                 htmlFor="routine-time"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
-                {t('routines.expectedTime')} ({t('routines.expectedTimePlaceholder')})
+                {t('routines.expectedTime')} (
+                {t('routines.expectedTimePlaceholder')})
               </Label>
               <Input
                 id="routine-time"
@@ -335,13 +334,15 @@ export function EditRoutineModal({
                   setIcon(val === 'none' ? null : val)
                 }
               >
-                  <SelectTrigger id="routine-icon" className="flex items-center">
+                <SelectTrigger id="routine-icon" className="flex items-center">
                   <SelectValue placeholder={t('routines.iconPlaceholder')}>
                     {SelectedIcon ? (
                       <div className="flex items-center">
                         <SelectedIcon className="mr-2 h-4 w-4" />
                         <span>
-                          {icon?.charAt(0).toUpperCase() + icon?.slice(1)}
+                          {icon
+                            ? icon.charAt(0).toUpperCase() + icon?.slice(1)
+                            : ''}
                         </span>
                       </div>
                     ) : (

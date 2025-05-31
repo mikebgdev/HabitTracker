@@ -70,4 +70,6 @@ steps:
         - git reset --hard origin/${DRONE_BRANCH}
         - git checkout ${DRONE_BRANCH}
         - git pull origin ${DRONE_BRANCH}
-        - npm run build
+        - docker compose build
+        - docker compose down
+        - docker compose up -d --force-recreate

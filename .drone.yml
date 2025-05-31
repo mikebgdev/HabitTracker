@@ -25,13 +25,14 @@ steps:
   - name: install-deps
     image: node:20-alpine
     commands:
-      - cd ./app
+      - cd ./$PROJECT_NAME
       - npm ci
 
   - name: build
     image: node:20-alpine
     commands:
       - cd ./$PROJECT_NAME
+      - npm ci
       - npm run build
 
 ---

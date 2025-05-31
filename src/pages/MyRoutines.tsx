@@ -46,27 +46,7 @@ import { DeleteRoutineDialog } from '@/components/dialogs/DeleteRoutineDialog';
 import { WeekdayScheduleDisplay } from '@/components/WeekdayScheduleDisplay';
 import { useI18n } from '@/contexts/I18nProvider';
 import type { Group, Routine } from '@/lib/types';
-
-const PRIORITY_ICONS = {
-  high: {
-    icon: Flame,
-    color: 'text-red-500',
-    badge:
-      'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
-  },
-  medium: {
-    icon: BatteryMedium,
-    color: 'text-yellow-500',
-    badge:
-      'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-  },
-  low: {
-    icon: Timer,
-    color: 'text-blue-500',
-    badge:
-      'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-  },
-};
+import { ROUTINE_ICONS, PRIORITY_ICONS } from '@/lib/constants';
 
 export default function MyRoutines() {
   const { toast } = useToast();
@@ -137,26 +117,7 @@ export default function MyRoutines() {
     }
   };
 
-  const ROUTINE_ICONS = [
-    { name: 'activity', icon: Activity },
-    { name: 'bike', icon: Bike },
-    { name: 'footprints', icon: Footprints },
-    { name: 'dumbbell', icon: Dumbbell },
-    { name: 'palette', icon: Palette },
-    { name: 'music', icon: Music },
-    { name: 'waves', icon: Waves },
-    { name: 'book', icon: Book },
-    { name: 'brain', icon: BrainCircuit },
-    { name: 'laptop', icon: Laptop },
-    { name: 'microscope', icon: Microscope },
-    { name: 'pen', icon: Pen },
-    { name: 'phone', icon: Smartphone },
-    { name: 'coffee', icon: Coffee },
-    { name: 'food', icon: HandPlatter },
-    { name: 'heart', icon: Heart },
-    { name: 'sparkles', icon: Sparkles },
-    { name: 'utensils', icon: Utensils },
-  ];
+  // Moved to constants
 
   return (
     <Layout>

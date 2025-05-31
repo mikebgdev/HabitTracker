@@ -29,29 +29,13 @@ import {
 import { useToast } from '@/hooks/useToast';
 import { useI18n } from '@/contexts/I18nProvider';
 import {
-  Activity,
-  BatteryMedium,
-  Bike,
-  Book,
-  BrainCircuit,
-  Coffee,
-  Dumbbell,
-  Flame,
-  Footprints,
-  HandPlatter,
-  Heart,
-  Laptop,
-  LucideIcon,
-  Microscope,
-  Music,
-  Palette,
-  Pen,
-  Smartphone,
-  Sparkles,
-  Timer,
-  Utensils,
-  Waves,
-} from 'lucide-react';
+  ICON_CATEGORIES,
+  ROUTINE_ICONS,
+  PRIORITY_ICONS,
+  ROUTINE_ICON_MAP,
+  WEEKDAYS,
+  dayToggleClass,
+} from '@/lib/constants';
 import type {
   DayKey,
   Group,
@@ -68,49 +52,6 @@ interface EditRoutineModalProps {
   onRoutineUpdated?: () => Promise<void>;
 }
 
-const ICON_CATEGORIES = [
-  {
-    nameKey: 'activities',
-    icons: [
-      { name: 'activity', icon: Activity, labelKey: 'activity' },
-      { name: 'bike', icon: Bike, labelKey: 'bike' },
-      { name: 'footprints', icon: Footprints, labelKey: 'footprints' },
-      { name: 'dumbbell', icon: Dumbbell, labelKey: 'dumbbell' },
-      { name: 'palette', icon: Palette, labelKey: 'palette' },
-      { name: 'music', icon: Music, labelKey: 'music' },
-      { name: 'waves', icon: Waves, labelKey: 'waves' },
-    ],
-  },
-  {
-    nameKey: 'workStudy',
-    icons: [
-      { name: 'book', icon: Book, labelKey: 'book' },
-      { name: 'brain', icon: BrainCircuit, labelKey: 'brain' },
-      { name: 'laptop', icon: Laptop, labelKey: 'laptop' },
-      { name: 'microscope', icon: Microscope, labelKey: 'microscope' },
-      { name: 'pen', icon: Pen, labelKey: 'pen' },
-      { name: 'phone', icon: Smartphone, labelKey: 'phone' },
-    ],
-  },
-  {
-    nameKey: 'healthWellness',
-    icons: [
-      { name: 'coffee', icon: Coffee, labelKey: 'coffee' },
-      { name: 'food', icon: HandPlatter, labelKey: 'food' },
-      { name: 'heart', icon: Heart, labelKey: 'heart' },
-      { name: 'sparkles', icon: Sparkles, labelKey: 'sparkles' },
-      { name: 'utensils', icon: Utensils, labelKey: 'utensils' },
-    ],
-  },
-];
-
-const ROUTINE_ICONS = ICON_CATEGORIES.flatMap((category) => category.icons);
-
-const PRIORITY_ICONS = {
-  high: { icon: Flame, color: 'text-red-500' },
-  medium: { icon: BatteryMedium, color: 'text-yellow-500' },
-  low: { icon: Timer, color: 'text-blue-500' },
-};
 
 export function EditRoutineModal({
   isOpen,
@@ -259,35 +200,8 @@ export function EditRoutineModal({
     }
   };
 
-  const getIconComponent = (iconName: string | null): LucideIcon | null => {
-    if (!iconName) return null;
-    return ROUTINE_ICONS.find((item) => item.name === iconName)?.icon || null;
-  };
+  const SelectedIcon = icon ? ROUTINE_ICON_MAP[icon] : null;
 
-  const getSelectedIcon = (): LucideIcon | null => {
-    if (!icon) return null;
-    const found = ROUTINE_ICONS.find((i) => i.name === icon);
-    return found ? found.icon : null;
-  };
-
-  const SelectedIcon = getSelectedIcon();
-
-  const dayToggleClass = (selected: boolean) =>
-    `text-xs font-medium text-center px-2 py-1 rounded border transition-colors duration-150 ${
-      selected
-        ? 'bg-blue-600 text-white border-blue-700 shadow'
-        : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
-    }`;
-
-  const DAYS: { key: DayKey; label: string }[] = [
-    { key: 'monday', label: 'L' },
-    { key: 'tuesday', label: 'M' },
-    { key: 'wednesday', label: 'X' },
-    { key: 'thursday', label: 'J' },
-    { key: 'friday', label: 'V' },
-    { key: 'saturday', label: 'S' },
-    { key: 'sunday', label: 'D' },
-  ];
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-white dark:bg-gray-800 max-w-md mx-auto">
@@ -421,18 +335,13 @@ export function EditRoutineModal({
                   setIcon(val === 'none' ? null : val)
                 }
               >
-                <SelectTrigger id="routine-icon" className="flex items-center">
+                  <SelectTrigger id="routine-icon" className="flex items-center">
                   <SelectValue placeholder={t('routines.iconPlaceholder')}>
-                    {icon && getIconComponent(icon) ? (
+                    {SelectedIcon ? (
                       <div className="flex items-center">
-                        {React.createElement(
-                          getIconComponent(icon) as React.ElementType,
-                          {
-                            className: 'mr-2 h-4 w-4',
-                          },
-                        )}
+                        <SelectedIcon className="mr-2 h-4 w-4" />
                         <span>
-                          {icon.charAt(0).toUpperCase() + icon.slice(1)}
+                          {icon?.charAt(0).toUpperCase() + icon?.slice(1)}
                         </span>
                       </div>
                     ) : (
@@ -478,7 +387,7 @@ export function EditRoutineModal({
                 {t('routines.repeatLabel')}
               </Label>
               <div className="grid grid-cols-7 gap-1">
-                {DAYS.map(({ key, label }) => (
+                {WEEKDAYS.map(({ key, label }) => (
                   <Toggle
                     key={key}
                     pressed={selectedDays[key]}

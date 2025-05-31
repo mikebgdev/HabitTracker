@@ -49,6 +49,7 @@ import {
 import { useToast } from '@/hooks/useToast';
 import { useI18n } from '@/contexts/I18nProvider';
 import type { Group, InsertGroup, Routine } from '@/lib/types';
+import { GROUP_ICON_OPTIONS } from '@/lib/constants';
 
 export default function Groups() {
   const { t } = useI18n();
@@ -160,14 +161,6 @@ export default function Groups() {
     }
   };
 
-  const ICON_OPTIONS = [
-    { value: 'fa-sun', label: 'Morning', color: 'text-amber-500' },
-    { value: 'fa-briefcase', label: 'Work', color: 'text-blue-500' },
-    { value: 'fa-moon', label: 'Evening', color: 'text-purple-500' },
-    { value: 'fa-dumbbell', label: 'Fitness', color: 'text-red-500' },
-    { value: 'fa-book', label: 'Study', color: 'text-green-500' },
-    { value: 'fa-layer-group', label: 'General', color: 'text-gray-500' },
-  ];
 
   return (
     <Layout>
@@ -191,7 +184,7 @@ export default function Groups() {
             const routineCount = routines.filter(
               (r) => r.groupId === group.id,
             ).length;
-            const iconData = ICON_OPTIONS.find((i) => i.value === group.icon);
+                    const iconData = GROUP_ICON_OPTIONS.find((i) => i.value === group.icon);
             return (
               <Card key={group.id}>
                 <CardHeader>
@@ -306,11 +299,11 @@ export default function Groups() {
                     setGroupFormState({ ...groupFormState, icon: val })
                   }
                 >
-                  <SelectTrigger>
+                <SelectTrigger>
                     <SelectValue>
                       {groupFormState.icon &&
                         (() => {
-                          const selected = ICON_OPTIONS.find(
+                          const selected = GROUP_ICON_OPTIONS.find(
                             (i) => i.value === groupFormState.icon,
                           );
                           return selected ? (
@@ -326,7 +319,7 @@ export default function Groups() {
                   </SelectTrigger>
 
                   <SelectContent>
-                    {ICON_OPTIONS.map((option) => (
+                    {GROUP_ICON_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex items-center">
                           <i

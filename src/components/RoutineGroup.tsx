@@ -4,6 +4,7 @@ import { RoutineItem } from './RoutineItem';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import type { Routine } from '@/lib/types';
+import { GROUP_ICON_OPTIONS } from '@/lib/constants';
 
 interface RoutineGroupProps {
   group: {
@@ -34,15 +35,7 @@ export function RoutineGroup({
 
   const { t } = useI18n();
 
-  const ICON_OPTIONS = [
-    { value: 'fa-sun', label: 'Morning', color: 'text-amber-500' },
-    { value: 'fa-briefcase', label: 'Work', color: 'text-blue-500' },
-    { value: 'fa-moon', label: 'Evening', color: 'text-purple-500' },
-    { value: 'fa-dumbbell', label: 'Fitness', color: 'text-red-500' },
-    { value: 'fa-book', label: 'Study', color: 'text-green-500' },
-    { value: 'fa-layer-group', label: 'General', color: 'text-gray-500' },
-  ];
-  const iconData = ICON_OPTIONS.find((i) => i.value === group.icon);
+  const iconData = GROUP_ICON_OPTIONS.find((i) => i.value === group.icon);
 
   return (
     <Card className="mb-6">

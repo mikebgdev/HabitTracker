@@ -34,6 +34,7 @@ import type {
   InsertRoutine,
   InsertWeekdaySchedule,
 } from '@/lib/types';
+import { WEEKDAYS, dayToggleClass } from '@/lib/constants';
 
 interface AddRoutineModalProps {
   isOpen: boolean;
@@ -168,22 +169,6 @@ export function AddRoutineModal({
     }
   };
 
-  const dayToggleClass = (selected: boolean) =>
-    `text-xs font-medium text-center px-2 py-1 rounded border transition-colors duration-150 ${
-      selected
-        ? 'bg-blue-600 text-white border-blue-700 shadow'
-        : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
-    }`;
-
-  const DAYS: { key: DayKey; label: string }[] = [
-    { key: 'monday', label: 'L' },
-    { key: 'tuesday', label: 'M' },
-    { key: 'wednesday', label: 'X' },
-    { key: 'thursday', label: 'J' },
-    { key: 'friday', label: 'V' },
-    { key: 'saturday', label: 'S' },
-    { key: 'sunday', label: 'D' },
-  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -303,7 +288,7 @@ export function AddRoutineModal({
                 {t('routines.repeatLabel')}
               </Label>
               <div className="grid grid-cols-7 gap-1">
-                {DAYS.map(({ key, label }) => (
+                {WEEKDAYS.map(({ key, label }) => (
                   <Toggle
                     key={key}
                     pressed={selectedDays[key]}

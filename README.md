@@ -1,5 +1,7 @@
 # Habit Tracker
 
+[![Build Status](https://drone.mikebgdev.com/api/badges/mikebgdev/HabitTracker/status.svg)](https://drone.mikebgdev.com/mikebgdev/HabitTracker)
+
 **Habit Tracker** is a web application to create, organize, and track your daily routines and habits.
 
 ## Features

@@ -25,4 +25,6 @@
   "completionByPriorityDescription": "How well you're completing routines based on priority level",
   "streakMessage": "Keep it up! You're doing great.",
   "streakCalendarDescription": "Your daily routine completion over the last {{days}} days"
+,  "legendLess": "Less",
+  "legendMore": "More"
 }

@@ -1,0 +1,18 @@
+{
+  "hero": {
+    "part1": "Build better",
+    "highlightHabit": "habits,",
+    "highlightTime": "one day at a time"
+  },
+  "heroSubtitle": "HabitMaster helps you build consistent habits with beautiful visuals, smart reminders, and real progress tracking.",
+  "getStarted": "Get Started",
+  "features": {
+    "trackHabits": "Track daily, weekly, or custom habits",
+    "progressTracking": "Progress tracking and streaks",
+    "heatmap": "Beautiful habit heatmaps",
+    "smartReminders": "Smart reminders and notifications",
+    "analytics": "Detailed analytics and insights",
+    "goalSetting": "Goal setting and motivation"
+  },
+  "backToHome": "← Back to home"
+}

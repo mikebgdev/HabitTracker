@@ -1,0 +1,18 @@
+{
+  "hero": {
+    "part1": "Construye mejores",
+    "highlightHabit": "hábitos,",
+    "highlightTime": "un día a la vez"
+  },
+  "heroSubtitle": "HabitMaster te ayuda a construir hábitos consistentes con visuales hermosos, recordatorios inteligentes y seguimiento de progreso real.",
+  "getStarted": "Comenzar",
+  "features": {
+    "trackHabits": "Sigue hábitos diarios, semanales o personalizados",
+    "progressTracking": "Seguimiento de progreso y rachas",
+    "heatmap": "Hermosos mapas de calor de hábitos",
+    "smartReminders": "Recordatorios y notificaciones inteligentes",
+    "analytics": "Análisis detallados e ideas",
+    "goalSetting": "Establecimiento de metas y motivación"
+  },
+  "backToHome": "← Volver al inicio"
+}

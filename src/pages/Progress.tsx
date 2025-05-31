@@ -376,13 +376,13 @@ export default function ProgressPage() {
                   tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip
-                  formatter={(value) => [`${value}%`, 'Completion Rate']}
+                  formatter={(value) => [`${value}%`, t('progress.completionRate')]}
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="percentage"
-                  name="Completion Rate"
+                  name={t('progress.completionRate')}
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={{ r: 4 }}
@@ -409,12 +409,12 @@ export default function ProgressPage() {
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => `${value}%`} />
                 <Tooltip
-                  formatter={(value) => [`${value}%`, 'Completion Rate']}
+                  formatter={(value) => [`${value}%`, t('progress.completionRate')]}
                 />
                 <Legend />
                 <Bar
                   dataKey="completed"
-                  name="Completion Rate"
+                  name={t('progress.completionRate')}
                   fill="hsl(var(--primary))"
                 />
               </BarChart>
@@ -462,14 +462,14 @@ export default function ProgressPage() {
               })}
           </div>
           <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>Less</span>
+            <span>{t('progress.legendLess')}</n+            </span>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
               <div className="w-3 h-3 bg-green-300 rounded-sm"></div>
               <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
               <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
             </div>
-            <span>More</span>
+            <span>{t('progress.legendMore')}</span>
           </div>
         </CardContent>
       </Card>

@@ -31,7 +31,7 @@ export function getNestedTranslation(
     if (result && typeof result === 'object' && part in result) {
       result = result[part];
     } else {
-      return key; // fallback
+      return key;
     }
   }
 

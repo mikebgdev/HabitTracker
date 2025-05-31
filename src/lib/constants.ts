@@ -24,7 +24,6 @@ import {
   BatteryMedium,
 } from 'lucide-react';
 
-// Weekday labels and classes
 export const WEEKDAYS: { key: DayKey; label: string }[] = [
   { key: 'monday', label: 'L' },
   { key: 'tuesday', label: 'M' },
@@ -49,7 +48,6 @@ export const dayDisplayClass = (active: boolean) =>
       : 'text-gray-400 dark:text-gray-500'
   }`;
 
-// Icon categories for routines
 export const ICON_CATEGORIES = [
   {
     nameKey: 'activities',
@@ -86,12 +84,10 @@ export const ICON_CATEGORIES = [
   },
 ];
 
-// Flat list of routine icons for selection
 export const ROUTINE_ICONS = ICON_CATEGORIES.flatMap((c) =>
   c.icons.map(({ name, icon }) => ({ name, icon }))
 );
 
-// Priority icon configuration
 export const PRIORITY_ICONS: Record<
   'high' | 'medium' | 'low',
   { icon: LucideIcon; color: string; badge: string }
@@ -113,7 +109,6 @@ export const PRIORITY_ICONS: Record<
   },
 };
 
-// Map of icon name to component for routine items
 export const ROUTINE_ICON_MAP: Record<string, LucideIcon> = {
   activity: Activity,
   bike: Bike,
@@ -135,7 +130,6 @@ export const ROUTINE_ICON_MAP: Record<string, LucideIcon> = {
   waves: Waves,
 };
 
-// Icon options for groups
 export const GROUP_ICON_OPTIONS: { value: string; label: string; color: string }[] = [
   { value: 'fa-sun', label: 'Morning', color: 'text-amber-500' },
   { value: 'fa-briefcase', label: 'Work', color: 'text-blue-500' },

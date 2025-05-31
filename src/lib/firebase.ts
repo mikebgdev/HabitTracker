@@ -49,7 +49,6 @@ export async function signOutUser() {
   return firebaseSignOut(auth);
 }
 
-// Groups
 
 export async function getUserGroups(userId: string): Promise<Group[]> {
   const q = query(collection(db, 'groups'), where('userId', '==', userId));
@@ -78,7 +77,6 @@ export async function deleteGroup(id: string): Promise<void> {
   await deleteDoc(doc(db, 'groups', id));
 }
 
-// Routines
 
 export async function getUserRoutines(userId: string): Promise<Routine[]> {
   const q = query(collection(db, 'routines'), where('userId', '==', userId));
@@ -107,7 +105,6 @@ export async function deleteRoutine(id: string): Promise<void> {
   await deleteDoc(doc(db, 'routines', id));
 }
 
-// Weekday Schedule
 
 export async function getWeekdaySchedule(
   routineId: string,
@@ -145,7 +142,6 @@ export async function updateWeekdaySchedule(
   }
 }
 
-// Completions
 
 function getDayRange(date: string) {
   return {

@@ -24,7 +24,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f9fbfd] dark:bg-gray-900 text-gray-900 dark:text-white px-4 sm:px-6">
-      {/* Header */}
       <header className="flex justify-between items-center py-6 max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold text-blue-600">HabitMaster</h1>
         {!showLogin && (
@@ -37,7 +36,6 @@ export default function Home() {
         )}
       </header>
 
-      {/* Main content */}
       <main className="max-w-5xl mx-auto text-center pt-12 pb-24">
         <AnimatePresence mode="wait">
           {!showLogin ? (
@@ -65,7 +63,6 @@ export default function Home() {
                 Get Started <ArrowRight className="ml-2" />
               </Button>
 
-              {/* Feature Section */}
               <div className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 text-left px-4">
                 {[
                   'Track daily, weekly, or custom habits',

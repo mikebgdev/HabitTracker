@@ -169,7 +169,6 @@ export default function ProgressPage() {
     };
   });
 
-  // Ahora puedes usar routinesForToday en todas las métricas del día
   const totalCount = routinesForToday.length;
   const completedCount = todayCompletions.filter((c) =>
     routinesForToday.some((r) => r.id === c.routineId),
@@ -179,7 +178,6 @@ export default function ProgressPage() {
       ? Math.min(Math.round((completedCount / totalCount) * 100), 100)
       : 0;
 
-  // Puedes usar routinesForToday en priorityData también
   const priorityData = ['high', 'medium', 'low'].map((priority) => {
     const filtered = routinesForToday.filter((r) => r.priority === priority);
     const expected = filtered.length || 1;

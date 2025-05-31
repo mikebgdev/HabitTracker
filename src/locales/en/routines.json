@@ -70,5 +70,11 @@
     "sparkles": "Wellness",
     "utensils": "Eating"
   },
-  "noRoutinesInGroup": "No routines in this group yet"
+  "noRoutinesInGroup": "No routines in this group yet",
+  "active": "Active",
+  "archived": "Archived",
+  "archive": "Archive",
+  "archivedSuccess": "Routine archived successfully",
+  "archiveError": "Failed to archive routine",
+  "unknownGroup": "Unknown Group"
 }

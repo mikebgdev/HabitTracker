@@ -117,7 +117,6 @@ export default function MyRoutines() {
     }
   };
 
-  // Moved to constants
 
   return (
     <Layout>
@@ -178,7 +177,7 @@ export default function MyRoutines() {
                     <WeekdayScheduleDisplay routineId={routine.id} />
                     {routine.groupId && (
                       <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                        {t('routines.group')}:{' '}
+                        {t('routines.groupLabel')}:{' '}
                         {groups.find((g) => g.id === routine.groupId)?.name ||
                           t('routines.unknownGroup')}
                       </div>

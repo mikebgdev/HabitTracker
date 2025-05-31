@@ -238,7 +238,7 @@ export function EditRoutineModal({
                 htmlFor="routine-time"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
-                {t('routines.expectedTimeLabel')}
+                {t('routines.expectedTime')} ({t('routines.expectedTimePlaceholder')})
               </Label>
               <Input
                 id="routine-time"

@@ -93,7 +93,6 @@ export default function Account() {
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">{t('account.title')}</h1>
 
-        {/* Language settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -127,7 +126,6 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* User info */}
         <Card>
           <CardHeader>
             <CardTitle>{t('account.userInfo')}</CardTitle>
@@ -155,7 +153,6 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Session actions */}
         <Card>
           <CardHeader>
             <CardTitle>{t('account.actions')}</CardTitle>

@@ -205,7 +205,7 @@ export function AddRoutineModal({
                 htmlFor="routine-time"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
-                Expected Time (Optional)
+                {t('routines.expectedTime')} ({t('routines.expectedTimePlaceholder')})
               </Label>
               <Input
                 id="routine-time"

@@ -28,7 +28,6 @@ export function ThemeProvider({
       : defaultTheme;
   });
 
-  // Apply theme to <html>
   useEffect(() => {
     const root = document.documentElement;
     const applyTheme = (t: Theme) => {
@@ -48,7 +47,6 @@ export function ThemeProvider({
     applyTheme(theme);
   }, [theme]);
 
-  // Respond to system theme changes
   useEffect(() => {
     if (theme !== 'system') return;
 

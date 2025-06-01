@@ -303,6 +303,11 @@ export default function Dashboard() {
             key={group.id}
             group={group}
             onToggleCompletion={handleToggleCompletion}
+            onBulkComplete={() =>
+              group.routines
+                .filter((r) => !r.completed)
+                .forEach((r) => handleToggleCompletion(r.id, true))
+            }
             isEditable={isToday}
           />
         ))

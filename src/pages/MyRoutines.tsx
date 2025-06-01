@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { AddRoutineModal } from '@/components/AddRoutineModal';
 import { EditRoutineModal } from '@/components/EditRoutineModal';
-import { AssignGroupToRoutine } from '@/components/AssignGroupToRoutine';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Archive, Edit, Plus, Trash } from 'lucide-react';
+import { Archive, ArchiveRestore, Edit, Plus, Trash } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -90,6 +89,24 @@ export default function MyRoutines() {
       toast({
         title: t('common.error'),
         description: t('routines.archiveError'),
+        variant: 'error',
+      });
+    }
+  };
+
+  const handleUnarchiveRoutine = async (id: string) => {
+    try {
+      await updateRoutine(id, { archived: false });
+      await refetchRoutines();
+      toast({
+        title: t('common.success'),
+        description: t('routines.unarchiveSuccess'),
+        variant: 'success',
+      });
+    } catch {
+      toast({
+        title: t('common.error'),
+        description: t('routines.unarchiveError'),
         variant: 'error',
       });
     }
@@ -180,13 +197,23 @@ export default function MyRoutines() {
                     >
                       <Edit className="mr-1 h-4 w-4" /> {t('routines.edit')}
                     </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleArchiveRoutine(routine.id)}
-                    >
-                      <Archive className="mr-1 h-4 w-4" />{' '}
-                      {t('routines.archive')}
-                    </Button>
+                    {viewArchived ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleUnarchiveRoutine(routine.id)}
+                      >
+                        <ArchiveRestore className="mr-1 h-4 w-4" />{' '}
+                        {t('routines.unarchive')}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleArchiveRoutine(routine.id)}
+                      >
+                        <Archive className="mr-1 h-4 w-4" />{' '}
+                        {t('routines.archive')}
+                      </Button>
+                    )}
                     <Button
                       variant="destructive"
                       onClick={() => confirmDeleteRoutine(routine)}
@@ -231,12 +258,6 @@ export default function MyRoutines() {
         routineName={routineToDelete?.name}
       />
 
-      <AssignGroupToRoutine
-        isOpen={isAssignGroupModalOpen}
-        onClose={() => setIsAssignGroupModalOpen(false)}
-        routine={routineToEdit || undefined}
-        onComplete={refetchRoutines}
-      />
     </Layout>
   );
 }

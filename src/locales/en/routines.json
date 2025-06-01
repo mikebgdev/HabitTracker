@@ -79,5 +79,8 @@
   "archive": "Archive",
   "archivedSuccess": "Routine archived successfully",
   "archiveError": "Failed to archive routine",
+  "unarchive": "Restore",
+  "unarchiveSuccess": "Routine restored successfully",
+  "unarchiveError": "Failed to restore routine",
   "unknownGroup": "Unknown Group"
 }

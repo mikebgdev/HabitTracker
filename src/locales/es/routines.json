@@ -79,5 +79,8 @@
   "archive": "Archivar",
   "archivedSuccess": "Rutina archivada correctamente",
   "archiveError": "Error al archivar la rutina",
+  "unarchive": "Restaurar",
+  "unarchiveSuccess": "Rutina restaurada correctamente",
+  "unarchiveError": "Error al restaurar la rutina",
   "unknownGroup": "Grupo desconocido"
 }

@@ -8,34 +8,34 @@ type Metadata = {
 
 const metadataMap: Record<string, Metadata> = {
   '/': {
-    title: 'HabitMaster - Home',
+    title: 'HabitTracker - Home',
     description:
-      'HabitMaster helps you build consistent habits with beautiful visuals, smart reminders, and real progress tracking.',
+      'HabitTracker helps you build consistent habits with beautiful visuals, smart reminders, and real progress tracking.',
   },
   '/dashboard': {
-    title: 'HabitMaster - Daily Routines',
+    title: 'HabitTracker - Daily Routines',
     description: 'View and complete your daily routines and tasks.',
   },
   '/routines': {
-    title: 'HabitMaster - My Routines',
+    title: 'HabitTracker - My Routines',
     description: 'Create, edit, and organize your habits and routines.',
   },
   '/groups': {
-    title: 'HabitMaster - Groups',
+    title: 'HabitTracker - Groups',
     description: 'Group your routines to stay organized by category or time of day.',
   },
   '/progress': {
-    title: 'HabitMaster - Progress',
+    title: 'HabitTracker - Progress',
     description: 'Track your habit progress and streaks over time.',
   },
   '/account': {
-    title: 'HabitMaster - Account',
+    title: 'HabitTracker - Account',
     description: 'Manage your account settings and preferences.',
   },
   default: {
-    title: 'HabitMaster',
+    title: 'HabitTracker',
     description:
-      'HabitMaster is a web application to create, organize, and track your daily routines and habits.',
+      'HabitTracker is a web application to create, organize, and track your daily routines and habits.',
   },
 };
 

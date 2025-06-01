@@ -35,7 +35,7 @@ export function Sidebar({ className }: SidebarProps) {
           <i className="fas fa-check-circle"></i>
         </div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-          HabitMaster
+          HabitTracker
         </h1>
       </div>
 

@@ -33,7 +33,7 @@ export default function NotFound() {
 
         <Button asChild variant="primary">
           <a
-            href="https://habitmaster.replit.app/help"
+            href="https://HabitTracker.replit.app/help"
             target="_blank"
             rel="noopener noreferrer"
           >

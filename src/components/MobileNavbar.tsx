@@ -70,7 +70,7 @@ export function MobileNavbar() {
             <i className="fas fa-check-circle"></i>
           </div>
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-            HabitMaster
+            HabitTracker
           </h1>
         </div>
 
@@ -98,7 +98,7 @@ export function MobileNavbar() {
                   <i className="fas fa-check-circle"></i>
                 </div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  HabitMaster
+                  HabitTracker
                 </h1>
               </div>
               <Button

@@ -12,6 +12,13 @@
 - Archive and restore routines
 - Internationalization (English and Spanish)
 - Light and dark themes
+- Bulk complete routines by group (mass actions)
+- Browser notifications for scheduled routines and group time‑ranges
+- Export progress heatmap and analytics as CSV or PNG image
+- SEO optimizations: dynamic metadata (Open Graph, Twitter Cards), robots & canonical tags, sitemap
+- Analytics & error monitoring with Umami
+- Pre‑commit hooks with Husky & lint‑staged (autoformat & type checks)
+- CI pipeline with linting, type‑check, tests and build on PRs (with caching)
 
 ## Technologies
 
@@ -35,13 +42,14 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/habit-tracker.git
+   git clone https://github.com/mikebgdev/HabitTracker.git
    cd habit-tracker
    ```
 
-2. Install dependencies:
+2. Install dependencies and set up Git hooks:
    ```bash
    npm install
+   npm run prepare
    ```
 
 3. Configure environment variables:
@@ -51,9 +59,6 @@
       ```
     - Edit `.env.local` with:
       ```ini
-      DATABASE_URL=...
-      JWT_SECRET=...
-      JWT_EXPIRES_IN=...
       VITE_FIREBASE_API_KEY=...
       VITE_FIREBASE_PROJECT_ID=...
       VITE_FIREBASE_APP_ID=...
@@ -71,6 +76,9 @@
 - `npm run build` — Build for production.
 - `npm run preview` — Preview the production build.
 - `npm run lint` — Run ESLint.
+- `npm test` — Run unit tests with Jest.
+- `npm run test:coverage` — Run tests with coverage report.
+- `npm run prepare` — Set up Git hooks (Husky + lint-staged; run once after cloning)
 
 ## Project Structure
 
@@ -88,6 +96,11 @@
 ├── tsconfig.json
 └── vite.config.ts
 ```
+
+## Architecture & API Documentation
+
+For details on the Firestore schema, security rules, and TypeScript data models, see
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Internationalization
 

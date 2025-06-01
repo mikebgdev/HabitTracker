@@ -28,6 +28,24 @@ steps:
       - cd ./$PROJECT_NAME
       - npm ci
 
+  - name: lint
+    image: node:20-alpine
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm run lint
+
+  - name: type-check
+    image: node:20-alpine
+    commands:
+      - cd ./$PROJECT_NAME
+      - npx tsc --noEmit
+
+  - name: test
+    image: node:20-alpine
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm test -- --ci --reporters=default
+
   - name: build
     image: node:20-alpine
     commands:

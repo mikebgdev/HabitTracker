@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RoutineGroup } from '@/components/RoutineGroup';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -191,6 +191,67 @@ export default function Dashboard() {
     if (!isToday) return;
     toggleCompletionMutation.mutate({ routineId: id, completed });
   };
+
+  useEffect(() => {
+    if (!data || data.length === 0) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const timeouts: number[] = [];
+    const now = Date.now();
+    data.forEach((group) => {
+      if (group.timeRange) {
+        const parts = group.timeRange.split(/\s*-\s*/);
+        if (parts.length === 2) {
+          const regex12h = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+          const m = parts[0].trim().match(regex12h);
+          let sh: number;
+          let sm: number;
+          if (m) {
+            sh = parseInt(m[1], 10);
+            if (m[3].toUpperCase() === 'PM' && sh < 12) sh += 12;
+            if (m[3].toUpperCase() === 'AM' && sh === 12) sh = 0;
+            sm = parseInt(m[2], 10);
+          } else {
+            [sh, sm] = parts[0].trim().split(':').map((v) => parseInt(v, 10));
+          }
+          const triggerTime = new Date(selectedDate);
+          triggerTime.setHours(sh, sm, 0, 0);
+          const delay = triggerTime.getTime() - now;
+          if (delay > 0) {
+            const id = window.setTimeout(() => {
+              new Notification(
+                t('notifications.groupReminderTitle', { name: group.name }),
+                { body: t('notifications.groupReminderBody', { name: group.name }) }
+              );
+            }, delay);
+            timeouts.push(id);
+          }
+        }
+      }
+
+      group.routines.forEach((routine) => {
+        if (!routine.completed) {
+          const [hStr, mStr] = routine.expectedTime.split(':');
+          const h = parseInt(hStr, 10);
+          const m = parseInt(mStr, 10);
+          const triggerTime = new Date(selectedDate);
+          triggerTime.setHours(h, m, 0, 0);
+          const delay = triggerTime.getTime() - now;
+          if (delay > 0) {
+            const id = window.setTimeout(() => {
+              new Notification(
+                t('notifications.routineReminderTitle', { name: routine.name }),
+                { body: t('notifications.routineReminderBody') }
+              );
+            }, delay);
+            timeouts.push(id);
+          }
+        }
+      });
+    });
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
+  }, [data, selectedDate, t]);
 
   const total = data?.reduce((sum, g) => sum + g.routines.length, 0) || 0;
   const done =

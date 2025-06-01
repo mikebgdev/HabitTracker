@@ -26,5 +26,7 @@
   "streakMessage": "¡Sigue así! Lo estás haciendo genial.",
   "streakCalendarDescription": "Tu seguimiento diario de rutinas en los últimos {{days}} días",
   "legendLess": "Menos",
-  "legendMore": "Más"
+  "legendMore": "Más",
+  "exportCSV": "Exportar como CSV",
+  "exportImage": "Exportar como imagen"
 }

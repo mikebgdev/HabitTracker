@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getCompletionsByDate,
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import {
   Bar,
   BarChart,
@@ -227,6 +228,38 @@ export default function ProgressPage() {
     .reverse()
     .reduce((acc, d) => (d.completed > 0 ? acc + 1 : 0), 0);
 
+  const heatmapRef = useRef<HTMLDivElement>(null);
+
+  const handleExportCSV = () => {
+    const rows: string[][] = [];
+    rows.push([t('progress.dailyCompletion')]);
+    rows.push(['Date', 'Completed', 'Total', 'Percentage']);
+    dailyData.forEach((d) => rows.push([d.date, String(d.completed), String(d.total), String(d.percentage)]));
+    rows.push([]);
+    rows.push([t('progress.completionByPriority')]);
+    rows.push(['Priority', 'Percentage']);
+    priorityData.forEach((p) => rows.push([p.name, String(p.completed)]));
+    const csvContent = rows.map((r) => r.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'progress.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportImage = () => {
+    const el = heatmapRef.current;
+    if (!el || !(window as any).html2canvas) return;
+    (window as any).html2canvas(el).then((canvas: any) => {
+      const link = document.createElement('a');
+      link.download = 'heatmap.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  };
+
   return (
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -239,17 +272,25 @@ export default function ProgressPage() {
           </p>
         </div>
 
-        <div className="mt-4 md:mt-0 w-full md:w-48">
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger>
-              <SelectValue placeholder={t('progress.rangePlaceholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="week">{t('progress.rangeWeek')}</SelectItem>
-              <SelectItem value="month">{t('progress.rangeMonth')}</SelectItem>
-              <SelectItem value="year">{t('progress.rangeYear')}</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="mt-4 md:mt-0 flex items-center gap-2">
+          <div className="w-full md:w-48">
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('progress.rangePlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">{t('progress.rangeWeek')}</SelectItem>
+                <SelectItem value="month">{t('progress.rangeMonth')}</SelectItem>
+                <SelectItem value="year">{t('progress.rangeYear')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportCSV}>
+            {t('progress.exportCSV')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExportImage}>
+            {t('progress.exportImage')}
+          </Button>
         </div>
       </div>
 
@@ -439,7 +480,7 @@ export default function ProgressPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-1">
+            <div ref={heatmapRef} className="grid grid-cols-7 gap-1">
             {[...dailyData]
               .slice(-35)
               .reverse()

@@ -16,6 +16,9 @@ import PageMetadata from '@/components/PageMetadata';
 
 function App() {
   useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
     const handleErrorEvent = (event: ErrorEvent) => {
       const umami = (window as any).umami;
       if (umami) {

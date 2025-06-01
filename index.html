@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="HabitMaster is a web application to create, organize, and track your daily routines and habits."/>
     <meta name="author" content="mikebg_dev"/>
-    <meta name="theme-color" content="#ffffff"/>
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"/>
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111827"/>
     <meta name="robots" content="index, follow"/>
     <link rel="canonical" href="https://habits.mikebgdev.com/"/>
 
@@ -26,16 +27,20 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <script async defer src="https://umami.mikebgdev.com/script.js" data-website-id="0d1f9f49-1993-40e9-ad4a-3ca4265e019c"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        if (
-            localStorage.theme === 'dark' ||
-            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        ) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+      (function() {
+        const theme = localStorage.getItem('theme');
+        const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = theme === 'dark' || (!theme && preferDark);
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.style.backgroundColor = isDark ? '#111827' : '#ffffff';
+      })();
     </script>
+    <style>
+      html { background-color: #ffffff; }
+      html.dark { background-color: #111827; }
+    </style>
 
 </head>
 <body>

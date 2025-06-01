@@ -1,0 +1,6 @@
+{
+  "routineReminderTitle": "Es hora de tu rutina: {{name}}",
+  "routineReminderBody": "¡No olvides completar tu rutina!",
+  "groupReminderTitle": "Es hora de las rutinas de {{name}}",
+  "groupReminderBody": "Es momento de enfocarte en tus rutinas de {{name}}."
+}

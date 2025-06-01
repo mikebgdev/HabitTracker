@@ -94,7 +94,7 @@ export default function ProgressPage() {
     queryFn: async () => {
       return Promise.all(
         userRoutines.map((routine) =>
-          getWeekdaySchedule(routine.id).catch(() => ({
+          getWeekdaySchedule(routine.id, user!.uid).catch(() => ({
             id: '0',
             routineId: routine.id,
             monday: true,
@@ -376,7 +376,10 @@ export default function ProgressPage() {
                   tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip
-                  formatter={(value) => [`${value}%`, t('progress.completionRate')]}
+                  formatter={(value) => [
+                    `${value}%`,
+                    t('progress.completionRate'),
+                  ]}
                 />
                 <Legend />
                 <Line
@@ -409,7 +412,10 @@ export default function ProgressPage() {
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => `${value}%`} />
                 <Tooltip
-                  formatter={(value) => [`${value}%`, t('progress.completionRate')]}
+                  formatter={(value) => [
+                    `${value}%`,
+                    t('progress.completionRate'),
+                  ]}
                 />
                 <Legend />
                 <Bar
@@ -462,7 +468,7 @@ export default function ProgressPage() {
               })}
           </div>
           <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>{t('progress.legendLess')}</n+            </span>
+            <span>{t('progress.legendLess')} </span>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
               <div className="w-3 h-3 bg-green-300 rounded-sm"></div>

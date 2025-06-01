@@ -7,31 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  Activity,
   Archive,
-  BatteryMedium,
-  Bike,
-  Book,
-  BrainCircuit,
-  Coffee,
-  Dumbbell,
   Edit,
-  Flame,
-  Footprints,
-  HandPlatter,
-  Heart,
-  Laptop,
-  Microscope,
-  Music,
-  Palette,
-  Pen,
   Plus,
-  Smartphone,
-  Sparkles,
-  Timer,
   Trash,
-  Utensils,
-  Waves,
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
@@ -51,7 +30,6 @@ import { ROUTINE_ICONS, PRIORITY_ICONS } from '@/lib/constants';
 export default function MyRoutines() {
   const { toast } = useToast();
   const { t } = useI18n();
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isAddRoutineModalOpen, setIsAddRoutineModalOpen] = useState(false);
   const [isEditRoutineModalOpen, setIsEditRoutineModalOpen] = useState(false);
@@ -59,6 +37,7 @@ export default function MyRoutines() {
   const [routineToDelete, setRoutineToDelete] = useState<Routine | null>(null);
   const [routineToEdit, setRoutineToEdit] = useState<Routine | null>(null);
   const [viewArchived, setViewArchived] = useState(false);
+  const { user } = useAuth();
 
   const {
     data: routines = [],
@@ -83,7 +62,7 @@ export default function MyRoutines() {
   const handleDeleteRoutine = async () => {
     if (!routineToDelete) return;
     try {
-      await deleteRoutine(routineToDelete.id);
+      await deleteRoutine(routineToDelete.id, userId);
       await queryClient.invalidateQueries({
         queryKey: ['routines', user?.uid],
       });
@@ -117,7 +96,7 @@ export default function MyRoutines() {
     }
   };
 
-
+  const userId = user?.uid ?? '';
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
@@ -174,7 +153,7 @@ export default function MyRoutines() {
                   </CardHeader>
 
                   <CardContent>
-                    <WeekdayScheduleDisplay routineId={routine.id} />
+                    <WeekdayScheduleDisplay routineId={routine.id} userId={ userId} />
                     {routine.groupId && (
                       <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                         {t('routines.groupLabel')}:{' '}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,13 @@ import type {
   InsertRoutine,
   InsertWeekdaySchedule,
 } from '@/lib/types';
-import { WEEKDAYS, dayToggleClass } from '@/lib/constants';
+import {
+  dayToggleClass,
+  ICON_CATEGORIES,
+  PRIORITY_ICONS,
+  ROUTINE_ICON_MAP,
+  WEEKDAYS,
+} from '@/lib/constants';
 
 interface AddRoutineModalProps {
   isOpen: boolean;
@@ -52,6 +58,7 @@ export function AddRoutineModal({
   const [name, setName] = useState('');
   const [expectedTime, setExpectedTime] = useState('');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [icon, setIcon] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
   const [showNewGroupInput, setShowNewGroupInput] = useState(false);
@@ -139,7 +146,7 @@ export function AddRoutineModal({
         userId: user.uid,
       });
 
-      await updateWeekdaySchedule(routineId, selectedDays);
+      await updateWeekdaySchedule(routineId, user.uid, selectedDays);
 
       toast({
         title: t('common.success'),
@@ -169,6 +176,7 @@ export function AddRoutineModal({
     }
   };
 
+  const SelectedIcon = icon ? ROUTINE_ICON_MAP[icon] : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -205,7 +213,8 @@ export function AddRoutineModal({
                 htmlFor="routine-time"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
-                {t('routines.expectedTime')} ({t('routines.expectedTimePlaceholder')})
+                {t('routines.expectedTime')} (
+                {t('routines.expectedTimePlaceholder')})
               </Label>
               <Input
                 id="routine-time"
@@ -267,7 +276,7 @@ export function AddRoutineModal({
                 {t('routines.priorityLabel')}
               </Label>
               <Select
-                defaultValue={priority}
+                value={priority}
                 onValueChange={(val: 'high' | 'medium' | 'low') =>
                   setPriority(val)
                 }
@@ -276,9 +285,92 @@ export function AddRoutineModal({
                   <SelectValue placeholder={t('routines.selectPriority')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="high">{t('routines.high')}</SelectItem>
-                  <SelectItem value="medium">{t('routines.medium')}</SelectItem>
-                  <SelectItem value="low">{t('routines.low')}</SelectItem>
+                  <SelectItem value="high">
+                    <div className="flex items-center">
+                      {React.createElement(PRIORITY_ICONS['high'].icon, {
+                        className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['high'].color}`,
+                      })}
+                      <span>{t('routines.high')}</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    <div className="flex items-center">
+                      {React.createElement(PRIORITY_ICONS['medium'].icon, {
+                        className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['medium'].color}`,
+                      })}
+                      <span>{t('routines.medium')}</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="low">
+                    <div className="flex items-center">
+                      {React.createElement(PRIORITY_ICONS['low'].icon, {
+                        className: `mr-2 h-4 w-4 ${PRIORITY_ICONS['low'].color}`,
+                      })}
+                      <span>{t('routines.low')}</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="mb-4">
+              <Label
+                htmlFor="routine-icon"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                {t('routines.iconLabel')}
+              </Label>
+              <Select
+                value={icon || 'none'}
+                onValueChange={(val: string) =>
+                  setIcon(val === 'none' ? null : val)
+                }
+              >
+                <SelectTrigger id="routine-icon" className="flex items-center">
+                  <SelectValue placeholder={t('routines.iconPlaceholder')}>
+                    {SelectedIcon ? (
+                      <div className="flex items-center">
+                        <SelectedIcon className="mr-2 h-4 w-4" />
+                        <span>
+                          {icon
+                            ? icon.charAt(0).toUpperCase() + icon?.slice(1)
+                            : ''}
+                        </span>
+                      </div>
+                    ) : (
+                      <span>{t('routines.noneIcon')}</span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  <SelectItem value="none" className="flex items-center gap-2">
+                    <div className="w-4 h-4 mr-2"></div>
+                    <span>{t('routines.noneIcon')}</span>
+                  </SelectItem>
+
+                  {ICON_CATEGORIES.map((category) => (
+                    <div key={category.nameKey}>
+                      <div className="px-2 py-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 border-t mt-1">
+                        {t(`routines.iconCategory.${category.nameKey}`)}
+                      </div>
+                      {category.icons.map(
+                        ({ name: iconName, icon: Icon, labelKey }) => (
+                          <SelectItem
+                            key={iconName}
+                            value={iconName}
+                            className="flex items-center gap-2"
+                          >
+                            <div className="flex items-center">
+                              <Icon className="h-4 w-4 mr-2" />
+                              <span>
+                                {t(`routines.iconLabels.${labelKey}`)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ),
+                      )}
+                    </div>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

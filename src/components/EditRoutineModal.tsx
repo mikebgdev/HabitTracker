@@ -88,7 +88,7 @@ export function EditRoutineModal({
 
   const { data: weekdaySchedule } = useQuery<WeekdaySchedule>({
     queryKey: ['weekdaySchedule', routineId],
-    queryFn: () => getWeekdaySchedule(routineId!),
+    queryFn: () => getWeekdaySchedule(routineId!, user!.uid),
     enabled: !!routineId,
   });
 
@@ -170,7 +170,7 @@ export function EditRoutineModal({
 
       if (routineId) {
         await updateRoutine(routineId, routineData);
-        await updateWeekdaySchedule(routineId, selectedDays);
+        await updateWeekdaySchedule(routineId, user!.uid, selectedDays);
 
         toast({
           title: t('common.success'),

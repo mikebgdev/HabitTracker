@@ -52,7 +52,7 @@ export default function Dashboard() {
     queryFn: async () => {
       return Promise.all(
         userRoutines.map((routine) =>
-          getWeekdaySchedule(routine.id).catch(() => ({
+          getWeekdaySchedule(routine.id, user!.uid).catch(() => ({
             id: '0',
             routineId: routine.id,
             monday: true,

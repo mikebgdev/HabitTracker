@@ -49,7 +49,6 @@ export async function signOutUser() {
   return firebaseSignOut(auth);
 }
 
-
 export async function getUserGroups(userId: string): Promise<Group[]> {
   const q = query(collection(db, 'groups'), where('userId', '==', userId));
   const snaps = await getDocs(q);
@@ -77,7 +76,6 @@ export async function deleteGroup(id: string): Promise<void> {
   await deleteDoc(doc(db, 'groups', id));
 }
 
-
 export async function getUserRoutines(userId: string): Promise<Routine[]> {
   const q = query(collection(db, 'routines'), where('userId', '==', userId));
   const snaps = await getDocs(q);
@@ -101,18 +99,51 @@ export async function updateRoutine(
   await updateDoc(doc(db, 'routines', id), data);
 }
 
-export async function deleteRoutine(id: string): Promise<void> {
+export async function deleteRoutine(id: string, userId: string): Promise<void> {
+  try {
+    const schedules = await getDocs(
+      query(
+        collection(db, 'weekdaySchedules'),
+        where('routineId', '==', id),
+        where('userId', '==', userId),
+      ),
+    );
+
+    for (const s of schedules.docs) {
+      await deleteDoc(doc(db, 'weekdaySchedules', s.id));
+    }
+
+    const completions = await getDocs(
+      query(
+        collection(db, 'completions'),
+        where('routineId', '==', id),
+        where('userId', '==', userId),
+      ),
+    );
+
+    for (const c of completions.docs) {
+      await deleteDoc(doc(db, 'completions', c.id));
+    }
+  } catch (err: any) {
+    if (err.code === 'failed-precondition') {
+      console.error('Index missing:', err.message);
+    } else {
+      console.error('Error deleteRoutine:', err);
+    }
+  }
   await deleteDoc(doc(db, 'routines', id));
 }
 
-
 export async function getWeekdaySchedule(
   routineId: string,
+  userId: string,
 ): Promise<WeekdaySchedule> {
+  if (!routineId || !userId) throw new Error('Invalid routineId or userId');
   const snaps = await getDocs(
     query(
       collection(db, 'weekdaySchedules'),
       where('routineId', '==', routineId),
+      where('userId', '==', userId),
     ),
   );
   if (snaps.empty) {
@@ -127,21 +158,27 @@ export async function getWeekdaySchedule(
 
 export async function updateWeekdaySchedule(
   routineId: string,
-  data: Omit<InsertWeekdaySchedule, 'id' | 'routineId'>,
+  userId: string,
+  data: Omit<InsertWeekdaySchedule, 'id' | 'routineId' | 'userId'>,
 ): Promise<void> {
+  if (!routineId || !userId) throw new Error('Invalid routineId or userId');
   const snaps = await getDocs(
     query(
       collection(db, 'weekdaySchedules'),
       where('routineId', '==', routineId),
+      where('userId', '==', userId),
     ),
   );
   if (!snaps.empty) {
     await updateDoc(doc(db, 'weekdaySchedules', snaps.docs[0].id), data);
   } else {
-    await addDoc(collection(db, 'weekdaySchedules'), { routineId, ...data });
+    await addDoc(collection(db, 'weekdaySchedules'), {
+      routineId,
+      userId,
+      ...data,
+    });
   }
 }
-
 
 function getDayRange(date: string) {
   return {
@@ -155,17 +192,14 @@ export async function getCompletionsByDate(
   date: string,
 ): Promise<Completion[]> {
   const { startAt, endAt } = getDayRange(date);
-
   const q = query(
     collection(db, 'completions'),
     where('userId', '==', userId),
     where('completedAt', '>=', startAt),
     where('completedAt', '<=', endAt),
   );
-
   try {
     const snaps = await getDocs(q);
-
     return snaps.docs.map((d) => ({
       id: d.id,
       ...(d.data() as Omit<Completion, 'id'>),
@@ -176,7 +210,7 @@ export async function getCompletionsByDate(
     } else {
       console.error('Error checking existing completions:', err);
     }
-    return []
+    return [];
   }
 }
 
@@ -204,34 +238,22 @@ export async function addCompletion(
   data: Omit<InsertCompletion, 'id'> & { userId: string },
 ): Promise<string> {
   const completedDate = data.completedAt.toDate().toISOString();
-
-  try {
-    const existing = await getDocs(
-      query(
-        collection(db, 'completions'),
-        where('userId', '==', data.userId),
-        where('routineId', '==', data.routineId),
-        where('completedAt', '<=', completedDate),
-        where('completedAt', '>=', completedDate),
-      ),
-    );
-
-    for (const d of existing.docs) {
-      await deleteDoc(doc(db, 'completions', d.id));
-    }
-  } catch (err: any) {
-    if (err.code === 'failed-precondition') {
-      console.error('Index missing:', err.message);
-    } else {
-      console.error('Error checking existing completions:', err);
-    }
+  const existing = await getDocs(
+    query(
+      collection(db, 'completions'),
+      where('userId', '==', data.userId),
+      where('routineId', '==', data.routineId),
+      where('completedAt', '<=', completedDate),
+      where('completedAt', '>=', completedDate),
+    ),
+  );
+  for (const d of existing.docs) {
+    await deleteDoc(doc(db, 'completions', d.id));
   }
-
   const ref = await addDoc(collection(db, 'completions'), {
     ...data,
     completedAt: completedDate,
   });
-
   return ref.id;
 }
 

@@ -193,6 +193,7 @@ export function EditRoutineModal({
       toast({
         title: t('common.error'),
         description: t('routines.updateErrorDescription'),
+        variant: 'error',
       });
     } finally {
       setIsSubmitting(false);

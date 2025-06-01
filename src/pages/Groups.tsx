@@ -152,9 +152,10 @@ export default function Groups() {
       toast({
         title: t('common.success'),
         description: t('groups.deletedSuccess'),
+        variant: 'success',
       });
     } catch (err) {
-      toast({ title: t('common.error'), description: t('groups.deleteError') });
+      toast({ title: t('common.error'), description: t('groups.deleteError'), variant: 'error' });
     } finally {
       setIsDeleteDialogOpen(false);
       setGroupToDelete(null);

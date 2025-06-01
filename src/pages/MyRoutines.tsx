@@ -64,11 +64,13 @@ export default function MyRoutines() {
       toast({
         title: t('common.success'),
         description: t('routines.deletedSuccess'),
+        variant: 'success',
       });
     } catch {
       toast({
         title: t('common.error'),
         description: t('routines.deleteError'),
+        variant: 'error',
       });
     } finally {
       setRoutineToDelete(null);
@@ -82,11 +84,13 @@ export default function MyRoutines() {
       toast({
         title: t('common.success'),
         description: t('routines.archivedSuccess'),
+        variant: 'success',
       });
     } catch {
       toast({
         title: t('common.error'),
         description: t('routines.archiveError'),
+        variant: 'error',
       });
     }
   };

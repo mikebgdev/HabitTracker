@@ -153,6 +153,7 @@ export function AddRoutineModal({
         description: t('routines.createdSuccessDescription', {
           routineName: name,
         }),
+        variant: 'success',
       });
 
       if (onRoutineCreated) {
@@ -170,6 +171,7 @@ export function AddRoutineModal({
       toast({
         title: t('common.error'),
         description: t('routines.createErrorDescription'),
+        variant: 'error',
       });
     } finally {
       setIsSubmitting(false);

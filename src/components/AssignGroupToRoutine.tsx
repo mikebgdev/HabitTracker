@@ -73,6 +73,7 @@ export function AssignGroupToRoutine({
           : t('routines.unassignSuccessDescription', {
               routineName: routine!.name,
             }),
+        variant: 'success',
       });
       client.invalidateQueries({ queryKey: ['routines'] });
       client.invalidateQueries({ queryKey: ['groupRoutines'] });
@@ -85,6 +86,7 @@ export function AssignGroupToRoutine({
       toast({
         title: t('common.error'),
         description: t('routines.assignErrorDescription'),
+        variant: 'error',
       });
     },
   });

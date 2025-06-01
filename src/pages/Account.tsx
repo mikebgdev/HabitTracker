@@ -52,6 +52,7 @@ export default function Account() {
         selectedLanguage === 'en'
           ? t('account.languageChangedEn')
           : t('account.languageChangedEs'),
+      variant: 'success',
     });
   };
 
@@ -61,11 +62,13 @@ export default function Account() {
       toast({
         title: t('common.success'),
         description: t('auth.signOutSuccess'),
+        variant: 'success',
       });
     } catch (err) {
       toast({
         title: t('common.error'),
         description: t('auth.signOutError'),
+        variant: 'error',
       });
     }
   };
@@ -82,12 +85,14 @@ export default function Account() {
       toast({
         title: t('common.success'),
         description: t('account.deletedSuccess'),
+        variant: 'success',
       });
     } catch (err: any) {
       console.error(err);
       toast({
         title: t('common.error'),
         description: err.message || t('account.deletedError'),
+        variant: 'error',
       });
     } finally {
       setIsDeleting(false);

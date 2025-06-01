@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "ci": "npm ci --legacy-peer-deps"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.11",

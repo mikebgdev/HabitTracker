@@ -1,13 +1,6 @@
 {
-  "title": "Daily Routines",
-  "todayRoutines": "Today's Routines",
-  "noRoutinesScheduled": "No routines scheduled for today",
   "addRoutine": "Add Routine",
   "completeAllToday": "Complete all for today",
-  "markCompleted": "Mark as completed",
-  "markIncomplete": "Mark as incomplete",
-  "editRoutine": "Edit routine",
-  "deleteRoutine": "Delete routine",
   "previousDay": "Previous Day",
   "today": "Today",
   "nextDay": "Next Day",

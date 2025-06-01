@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://habits.mikebgdev.com/sitemap.xml

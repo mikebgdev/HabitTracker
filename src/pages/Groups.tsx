@@ -89,17 +89,35 @@ export default function Groups() {
         icon: group.icon || 'fa-layer-group',
         timeRange: group.timeRange || '',
       });
-      const [start, end] = (group.timeRange || '08:00 - 09:00')
-        .split(' - ')
-        .map((time) => {
-          const [h, m, ap] = time.match(/(\d+):(\d+) (AM|PM)/i)!.slice(1);
-          let hour = parseInt(h);
-          if (ap.toUpperCase() === 'PM' && hour < 12) hour += 12;
-          if (ap.toUpperCase() === 'AM' && hour === 12) hour = 0;
-          return `${hour.toString().padStart(2, '0')}:${m}`;
-        });
-      setStartTime(start);
-      setEndTime(end);
+      const timeRangeStr = group.timeRange || '08:00 - 09:00';
+      const parts = timeRangeStr.split(/\s*-\s*/);
+      let parsedStart = '08:00';
+      let parsedEnd = '09:00';
+      if (parts.length === 2) {
+        const [startStr, endStr] = parts.map((s) => s.trim());
+        const regex12h = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+        const m1 = startStr.match(regex12h);
+        const m2 = endStr.match(regex12h);
+        if (m1 && m2) {
+          let sh = parseInt(m1[1], 10);
+          const sm = m1[2];
+          let eh = parseInt(m2[1], 10);
+          const em = m2[2];
+          const sap = m1[3].toUpperCase();
+          const eap = m2[3].toUpperCase();
+          if (sap === 'PM' && sh < 12) sh += 12;
+          if (sap === 'AM' && sh === 12) sh = 0;
+          if (eap === 'PM' && eh < 12) eh += 12;
+          if (eap === 'AM' && eh === 12) eh = 0;
+          parsedStart = sh.toString().padStart(2, '0') + ':' + sm;
+          parsedEnd = eh.toString().padStart(2, '0') + ':' + em;
+        } else {
+          parsedStart = startStr;
+          parsedEnd = endStr;
+        }
+      }
+      setStartTime(parsedStart);
+      setEndTime(parsedEnd);
     } else {
       setGroupFormState({ name: '', icon: 'fa-layer-group', timeRange: '' });
       setStartTime('08:00');

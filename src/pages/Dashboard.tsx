@@ -248,9 +248,9 @@ export default function Dashboard() {
               <span className="text-3xl font-bold">
                 {done}/{total}
               </span>
-              <span className="ml-2 text-gray-500 dark:text-gray-400">
-                {t('dashboard.completed')}
-              </span>
+                <span className="ml-2 text-gray-500 dark:text-gray-400">
+                  {t('dashboard.routinesCompletedLabel')}
+                </span>
             </div>
             <div className="text-3xl font-bold">
               <span

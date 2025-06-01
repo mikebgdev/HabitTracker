@@ -26,7 +26,7 @@ import {
   getUserGroups,
   updateWeekdaySchedule,
 } from '@/lib/firebase';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/contexts/ToastContext';
 import { useI18n } from '@/contexts/I18nProvider';
 import type {
   DayKey,

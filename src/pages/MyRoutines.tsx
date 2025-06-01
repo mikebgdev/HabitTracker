@@ -6,14 +6,9 @@ import { AssignGroupToRoutine } from '@/components/AssignGroupToRoutine';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Archive,
-  Edit,
-  Plus,
-  Trash,
-} from 'lucide-react';
+import { Archive, Edit, Plus, Trash } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteRoutine,
@@ -25,7 +20,7 @@ import { DeleteRoutineDialog } from '@/components/dialogs/DeleteRoutineDialog';
 import { WeekdayScheduleDisplay } from '@/components/WeekdayScheduleDisplay';
 import { useI18n } from '@/contexts/I18nProvider';
 import type { Group, Routine } from '@/lib/types';
-import { ROUTINE_ICONS, PRIORITY_ICONS } from '@/lib/constants';
+import { PRIORITY_ICONS, ROUTINE_ICONS } from '@/lib/constants';
 
 export default function MyRoutines() {
   const { toast } = useToast();
@@ -153,7 +148,10 @@ export default function MyRoutines() {
                   </CardHeader>
 
                   <CardContent>
-                    <WeekdayScheduleDisplay routineId={routine.id} userId={ userId} />
+                    <WeekdayScheduleDisplay
+                      routineId={routine.id}
+                      userId={userId}
+                    />
                     {routine.groupId && (
                       <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                         {t('routines.groupLabel')}:{' '}

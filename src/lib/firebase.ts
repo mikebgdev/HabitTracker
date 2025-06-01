@@ -285,7 +285,7 @@ export async function deleteUserData(userId: string): Promise<void> {
     const snaps = await getDocs(q);
 
     const deletions = snaps.docs.map((docSnap) =>
-        deleteDoc(doc(db, name, docSnap.id))
+      deleteDoc(doc(db, name, docSnap.id)),
     );
 
     await Promise.all(deletions);

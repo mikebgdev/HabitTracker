@@ -46,7 +46,7 @@ import {
   getUserRoutines,
   updateGroup,
 } from '@/lib/firebase';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/contexts/ToastContext';
 import { useI18n } from '@/contexts/I18nProvider';
 import type { Group, InsertGroup, Routine } from '@/lib/types';
 import { GROUP_ICON_OPTIONS } from '@/lib/constants';
@@ -150,7 +150,7 @@ export default function Groups() {
       await deleteGroup(groupToDelete);
       await client.invalidateQueries({ queryKey: ['groups'] });
       toast({
-        title: t('groups.confirmDeleteBtn'),
+        title: t('common.success'),
         description: t('groups.deletedSuccess'),
       });
     } catch (err) {
@@ -160,7 +160,6 @@ export default function Groups() {
       setGroupToDelete(null);
     }
   };
-
 
   return (
     <Layout>
@@ -184,7 +183,9 @@ export default function Groups() {
             const routineCount = routines.filter(
               (r) => r.groupId === group.id,
             ).length;
-                    const iconData = GROUP_ICON_OPTIONS.find((i) => i.value === group.icon);
+            const iconData = GROUP_ICON_OPTIONS.find(
+              (i) => i.value === group.icon,
+            );
             return (
               <Card key={group.id}>
                 <CardHeader>
@@ -299,7 +300,7 @@ export default function Groups() {
                     setGroupFormState({ ...groupFormState, icon: val })
                   }
                 >
-                <SelectTrigger>
+                  <SelectTrigger>
                     <SelectValue>
                       {groupFormState.icon &&
                         (() => {

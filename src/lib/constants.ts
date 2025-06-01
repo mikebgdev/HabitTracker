@@ -2,11 +2,13 @@ import type { DayKey } from './types';
 import type { LucideIcon } from 'lucide-react';
 import {
   Activity,
+  BatteryMedium,
   Bike,
   Book,
   BrainCircuit,
   Coffee,
   Dumbbell,
+  Flame,
   Footprints,
   HandPlatter,
   Heart,
@@ -20,8 +22,6 @@ import {
   Timer,
   Utensils,
   Waves,
-  Flame,
-  BatteryMedium,
 } from 'lucide-react';
 
 export const WEEKDAYS: { key: DayKey; label: string }[] = [
@@ -85,7 +85,7 @@ export const ICON_CATEGORIES = [
 ];
 
 export const ROUTINE_ICONS = ICON_CATEGORIES.flatMap((c) =>
-  c.icons.map(({ name, icon }) => ({ name, icon }))
+  c.icons.map(({ name, icon }) => ({ name, icon })),
 );
 
 export const PRIORITY_ICONS: Record<
@@ -95,17 +95,20 @@ export const PRIORITY_ICONS: Record<
   high: {
     icon: Flame,
     color: 'text-red-500',
-    badge: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
+    badge:
+      'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
   },
   medium: {
     icon: BatteryMedium,
     color: 'text-yellow-500',
-    badge: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+    badge:
+      'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
   },
   low: {
     icon: Timer,
     color: 'text-blue-500',
-    badge: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+    badge:
+      'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
   },
 };
 
@@ -130,7 +133,11 @@ export const ROUTINE_ICON_MAP: Record<string, LucideIcon> = {
   waves: Waves,
 };
 
-export const GROUP_ICON_OPTIONS: { value: string; label: string; color: string }[] = [
+export const GROUP_ICON_OPTIONS: {
+  value: string;
+  label: string;
+  color: string;
+}[] = [
   { value: 'fa-sun', label: 'Morning', color: 'text-amber-500' },
   { value: 'fa-briefcase', label: 'Work', color: 'text-blue-500' },
   { value: 'fa-moon', label: 'Evening', color: 'text-purple-500' },

@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserGroups, updateRoutine } from '@/lib/firebase';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/contexts/ToastContext';
 import type { Group, Routine } from '@/lib/types';
 
 interface AssignGroupToRoutineProps {
@@ -65,10 +65,14 @@ export function AssignGroupToRoutine({
     },
     onSuccess: () => {
       toast({
-        title: 'Grupo asignado',
+        title: t('common.success'),
         description: selectedGroupId
-          ? `La rutina ha sido asignada al grupo correctamente.`
-          : `La rutina ha sido removida del grupo.`,
+          ? t('routines.assignSuccessDescription', {
+              routineName: routine!.name,
+            })
+          : t('routines.unassignSuccessDescription', {
+              routineName: routine!.name,
+            }),
       });
       client.invalidateQueries({ queryKey: ['routines'] });
       client.invalidateQueries({ queryKey: ['groupRoutines'] });
@@ -79,9 +83,8 @@ export function AssignGroupToRoutine({
     onError: (error) => {
       console.error('Error assigning group:', error);
       toast({
-        title: 'Error',
-        description:
-          'No se pudo asignar el grupo a la rutina. Inténtalo de nuevo.',
+        title: t('common.error'),
+        description: t('routines.assignErrorDescription'),
       });
     },
   });

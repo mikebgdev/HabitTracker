@@ -26,7 +26,7 @@ import {
   updateRoutine,
   updateWeekdaySchedule,
 } from '@/lib/firebase';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/contexts/ToastContext';
 import { useI18n } from '@/contexts/I18nProvider';
 import {
   dayToggleClass,
@@ -177,6 +177,7 @@ export function EditRoutineModal({
           description: t('routines.updatedSuccessDescription', {
             routineName: name,
           }),
+          variant: 'success',
         });
       } else {
         console.error('Trying to update routine without ID');

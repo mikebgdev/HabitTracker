@@ -45,19 +45,19 @@
    ```
 
 3. Configure environment variables:
-   - Copy `.env` to `.env.local` and fill in the sensitive values:
-     ```bash
-     cp .env .env.local
-     ```
-   - Edit `.env.local` with:
-     ```ini
-     DATABASE_URL=...
-     JWT_SECRET=...
-     JWT_EXPIRES_IN=...
-     VITE_FIREBASE_API_KEY=...
-     VITE_FIREBASE_PROJECT_ID=...
-     VITE_FIREBASE_APP_ID=...
-     ```
+    - Copy `.env` to `.env.local` and fill in the sensitive values:
+      ```bash
+      cp .env .env.local
+      ```
+    - Edit `.env.local` with:
+      ```ini
+      DATABASE_URL=...
+      JWT_SECRET=...
+      JWT_EXPIRES_IN=...
+      VITE_FIREBASE_API_KEY=...
+      VITE_FIREBASE_PROJECT_ID=...
+      VITE_FIREBASE_APP_ID=...
+      ```
 
 4. Run in development mode:
    ```bash
@@ -91,7 +91,8 @@
 
 ## Internationalization
 
-All UI text strings are centralized in `src/locales/{en,es}`. To add or modify translations, edit the corresponding JSON files.
+All UI text strings are centralized in `src/locales/{en,es}`. To add or modify translations, edit the corresponding JSON
+files.
 
 ## Contributing
 

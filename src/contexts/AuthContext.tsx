@@ -5,9 +5,13 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  reauthenticateWithPopup,
+  User,
+} from 'firebase/auth';
 import { auth, signInWithGoogle, signOutUser } from '@/lib/firebase';
-import { reauthenticateWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;

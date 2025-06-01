@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import {
   BarChart2,
   Calendar,
+  CheckCircle,
   Home,
   Layers,
   Menu,
@@ -86,7 +87,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
             <Link href="/dashboard">
-              <a className="text-xl font-bold text-blue-600 dark:text-blue-400">
+              <a className="text-xl font-bold text-blue-600 flex">
+                <CheckCircle className="text-blue-600 mt-1 mr-2" />
                 {t('common.appName')}
               </a>
             </Link>

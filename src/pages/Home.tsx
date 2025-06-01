@@ -27,9 +27,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#f9fbfd] dark:bg-gray-900 text-gray-900 dark:text-white px-4 sm:px-6">
       <header className="flex justify-between items-center py-6 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-blue-600">{t('common.appName')}</h1>
+        <h1 className="text-2xl font-bold text-blue-600 flex">
+          <CheckCircle className="text-blue-600 mt-1 mr-2" />
+          {t('common.appName')}
+        </h1>
         {!showLogin && (
-          <Button onClick={() => setShowLogin(true)} className="rounded-full px-6">
+          <Button
+            onClick={() => setShowLogin(true)}
+            className="rounded-full px-6"
+          >
             {t('auth.login')}
           </Button>
         )}
@@ -47,13 +53,21 @@ export default function Home() {
             >
               <h2 className="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
                 {t('home.hero.part1')}{' '}
-                <span className="text-black dark:text-white">{t('home.hero.highlightHabit')}</span>{' '}
-                <span className="text-blue-600">{t('home.hero.highlightTime')}</span>
+                <span className="text-black dark:text-white">
+                  {t('home.hero.highlightHabit')}
+                </span>{' '}
+                <span className="text-blue-600">
+                  {t('home.hero.highlightTime')}
+                </span>
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-xl mx-auto mb-8">
                 {t('home.heroSubtitle')}
               </p>
-              <Button onClick={() => setShowLogin(true)} size="lg" className="px-8 py-3 text-lg">
+              <Button
+                onClick={() => setShowLogin(true)}
+                size="lg"
+                className="px-8 py-3 text-lg"
+              >
                 {t('home.getStarted')} <ArrowRight className="ml-2" />
               </Button>
 
@@ -71,7 +85,9 @@ export default function Home() {
                     className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex items-start gap-4"
                   >
                     <CheckCircle className="text-blue-600 mt-1" />
-                    <p className="text-gray-700 dark:text-gray-300">{t(`home.features.${key}`)}</p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {t(`home.features.${key}`)}
+                    </p>
                   </div>
                 ))}
               </div>

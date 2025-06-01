@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, signInWithGoogle, signOutUser } from '@/lib/firebase';
+import { reauthenticateWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -54,4 +55,9 @@ export function useAuth(): AuthContextType {
     throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
+}
+
+export async function reauthenticateWithGoogle(user: User) {
+  const provider = new GoogleAuthProvider();
+  await reauthenticateWithPopup(user, provider);
 }

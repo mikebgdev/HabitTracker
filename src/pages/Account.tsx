@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { reauthenticateWithGoogle, useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/contexts/I18nProvider';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,10 @@ import {
 import { Globe, LogOut, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { Language } from '@/lib/i18n';
+import { deleteUserData } from '@/lib/firebase';
 
 export default function Account() {
-  const { user, signOut } = useAuth();
+  const { user, signOut,  } = useAuth();
   const { t, language, setLanguage } = useI18n();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -72,16 +73,21 @@ export default function Account() {
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
-      if (user) await user.delete();
+      if (!user) throw new Error('No user');
+
+      await reauthenticateWithGoogle(user);           // Paso 1
+      await deleteUserData(user.uid);           // Paso 2
+      await user.delete();                      // Paso 3
 
       toast({
         title: t('common.success'),
         description: t('account.deletedSuccess'),
       });
-    } catch (err) {
+    } catch (err: any) {
+      console.error(err);
       toast({
         title: t('common.error'),
-        description: t('account.deletedError'),
+        description: err.message || t('account.deletedError'),
       });
     } finally {
       setIsDeleting(false);

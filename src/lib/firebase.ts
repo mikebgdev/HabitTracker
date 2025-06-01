@@ -276,3 +276,18 @@ export async function removeCompletion(
     await deleteDoc(doc(db, 'completions', d.id));
   }
 }
+
+export async function deleteUserData(userId: string): Promise<void> {
+  const collections = ['groups', 'routines', 'weekdaySchedules', 'completions'];
+
+  for (const name of collections) {
+    const q = query(collection(db, name), where('userId', '==', userId));
+    const snaps = await getDocs(q);
+
+    const deletions = snaps.docs.map((docSnap) =>
+        deleteDoc(doc(db, name, docSnap.id))
+    );
+
+    await Promise.all(deletions);
+  }
+}

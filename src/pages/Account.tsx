@@ -46,12 +46,15 @@ export default function Account() {
 
   const handleSaveLanguage = () => {
     setLanguage(selectedLanguage);
+    let messageKey = 'account.languageChangedEn';
+    if (selectedLanguage === 'es') {
+      messageKey = 'account.languageChangedEs';
+    } else if (selectedLanguage === 'fr') {
+      messageKey = 'account.languageChangedFr';
+    }
     toast({
       title: t('common.success'),
-      description:
-        selectedLanguage === 'en'
-          ? t('account.languageChangedEn')
-          : t('account.languageChangedEs'),
+      description: t(messageKey),
       variant: 'success',
     });
   };
@@ -124,6 +127,7 @@ export default function Account() {
                 <SelectContent>
                   <SelectItem value="en">{t('account.english')}</SelectItem>
                   <SelectItem value="es">{t('account.spanish')}</SelectItem>
+                  <SelectItem value="fr">{t('account.french')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button

@@ -1,0 +1,15 @@
+{
+  "addRoutine": "Add Routine",
+  "completeAllToday": "Complete all for today",
+  "previousDay": "Previous Day",
+  "today": "Today",
+  "nextDay": "Next Day",
+  "dailyProgress": "Daily Progress",
+  "routinesCompletedLabel": "routines completed",
+  "loading": "Loading routines...",
+  "errorLoading": "Error loading routines. Please try again.",
+  "retry": "Retry",
+  "ungrouped": "Ungrouped",
+  "noRoutinesTitle": "No routines scheduled for today",
+  "noRoutinesSubtitle": "You don't have any routines scheduled for this day."
+}

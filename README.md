@@ -48,7 +48,7 @@
 
 2. Install dependencies and set up Git hooks:
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    npm run prepare
    ```
 
@@ -62,6 +62,9 @@
       VITE_FIREBASE_API_KEY=...
       VITE_FIREBASE_PROJECT_ID=...
       VITE_FIREBASE_APP_ID=...
+      APP_ENV=dev
+      PROJECT_NAME=habits
+      HTTP_PORT=5002
       ```
 
 4. Run in development mode:
@@ -97,6 +100,18 @@
 └── vite.config.ts
 ```
 
+## Docker Usage
+
+To run HabitTracker using Docker:
+
+```bash
+docker compose up -d
+```
+
+The app will be available at `http://localhost:<HTTP_PORT>` (5002 by default).
+
+Ensure that the environment variables in `.env` or `.env.local` are configured before building the image.
+
 ## Architecture & API Documentation
 
 For details on the Firestore schema, security rules, and TypeScript data models, see
@@ -104,7 +119,7 @@ For details on the Firestore schema, security rules, and TypeScript data models,
 
 ## Internationalization
 
-All UI text strings are centralized in `src/locales/{en,es}`. To add or modify translations, edit the corresponding JSON
+All UI text strings are centralized in `src/locales/{en,es,fr}`. To add or modify translations, edit the corresponding JSON
 files.
 
 ## Contributing

@@ -28,6 +28,12 @@ steps:
       - cd ./$PROJECT_NAME
       - npm run ci
 
+  - name: lint
+    image: node:20-alpine
+    commands:
+      - cd ./$PROJECT_NAME
+      - npm run lint
+
   - name: test
     image: node:20-alpine
     commands:

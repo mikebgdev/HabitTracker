@@ -1,4 +1,4 @@
-export type Language = 'en' | 'es';
+export type Language = 'en' | 'es' | 'fr';
 
 export type Translations = Record<string, any>;
 

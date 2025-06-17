@@ -1,7 +1,7 @@
 # Pending Tasks
 
 - [ ] Install project dependencies using `npm install --legacy-peer-deps` so Jest and ESLint work locally and in CI.
-- [x] Configure CI pipeline to execute `npm run lint` and `npm test` after installing dependencies.
+- [x] Configure CI pipeline to execute `npm test` after installing dependencies.
 - [ ] Expand unit test coverage for components and pages (only ThemeProvider has tests currently).
 - [ ] Fix existing ESLint errors and remove `any` types and unused variables.
 - [ ] Add end-to-end tests using a framework such as Playwright or Cypress.

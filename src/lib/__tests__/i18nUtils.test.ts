@@ -1,4 +1,4 @@
-import { getNestedTranslation } from '../i18n';
+import { getNestedTranslation } from '../i18nUtils';
 
 describe('getNestedTranslation', () => {
   it('returns the value for a nested key', () => {

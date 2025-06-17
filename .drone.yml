@@ -27,7 +27,6 @@ steps:
     commands:
       - cd ./$PROJECT_NAME
       - npm run ci
-
   - name: test
     image: node:20-alpine
     commands:

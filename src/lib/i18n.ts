@@ -1,6 +1,8 @@
-export type Language = 'en' | 'es';
+export type Language = 'en' | 'es' | 'fr';
 
 export type Translations = Record<string, any>;
+
+export { getNestedTranslation } from './i18nUtils';
 
 export async function loadTranslations(lang: string) {
   const modules = import.meta.glob('@/locales/*/*.json', { eager: true });
@@ -20,20 +22,3 @@ export async function loadTranslations(lang: string) {
   return translations;
 }
 
-export function getNestedTranslation(
-  translations: Translations,
-  key: string,
-): string {
-  const parts = key.split('.');
-  let result: any = translations;
-
-  for (const part of parts) {
-    if (result && typeof result === 'object' && part in result) {
-      result = result[part];
-    } else {
-      return key;
-    }
-  }
-
-  return typeof result === 'string' ? result : key;
-}
